@@ -2,5 +2,6 @@ backend/venv
 backend/images
 backend/canvas.db
 backend/.env
+*.pyc
 frontend/node_modules
 frontend/dist

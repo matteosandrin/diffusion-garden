@@ -133,6 +133,7 @@ export function Canvas() {
         multiSelectionKeyCode={['Shift', 'Meta']}
         selectionOnDrag
         panOnDrag={[1, 2]} // Middle and right mouse button
+        panOnScroll={true} // Enable two-finger trackpad panning
         selectionMode={SelectionMode.Partial}
         proOptions={{ hideAttribution: true }}
       >

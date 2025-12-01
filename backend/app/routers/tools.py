@@ -115,24 +115,36 @@ async def generate_image(
     """
     try:
         # Generate image
-        image_bytes = await ai_service.generate_image(request.prompt)
+        image, mime_type = await ai_service.generate_image(request.prompt)
+        
+        # Map mime_type to file extension and format
+        mime_to_extension = {
+            "image/png": ("png", "PNG"),
+            "image/jpeg": ("jpg", "JPEG"),
+            "image/jpg": ("jpg", "JPEG"),
+            "image/gif": ("gif", "GIF"),
+            "image/webp": ("webp", "WEBP"),
+            "image/bmp": ("bmp", "BMP"),
+            "image/tiff": ("tiff", "TIFF"),
+        }
+        
+        # Get extension and format, default to PNG if unknown
+        extension, format_name = mime_to_extension.get(mime_type, ("png", "PNG"))
         
         # Save image to filesystem
         image_id = str(uuid.uuid4())
-        filename = f"{image_id}.png"
+        filename = f"{image_id}.{extension}"
         filepath = os.path.join(settings.images_dir, filename)
         
         # Ensure images directory exists
         os.makedirs(settings.images_dir, exist_ok=True)
-        
-        with open(filepath, "wb") as f:
-            f.write(image_bytes)
+        image.save(filepath)
         
         # Save image record to database
         image_record = Image(
             id=image_id,
             filename=filename,
-            content_type="image/png",
+            content_type=mime_type,
             source="generated",
             prompt=request.prompt,
         )

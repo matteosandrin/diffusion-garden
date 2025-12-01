@@ -5,6 +5,7 @@ import {
   Loader2,
   ChevronDown,
   Play,
+  Image,
 } from 'lucide-react';
 import type { TextBlockData, TextModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
@@ -19,7 +20,7 @@ const TEXT_MODELS: { value: TextModel; label: string }[] = [
 
 function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as TextBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock, getInputBlockContent } = useCanvasStore();
+  const { updateBlockData, updateBlockStatus, addTextBlock, addImageBlock, getInputBlockContent } = useCanvasStore();
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -123,6 +124,37 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     }
   }, [id, blockData, updateBlockStatus, updateBlockData, getInputBlockContent]);
 
+  const handleGenerateImage = useCallback(() => {
+    if (!blockData.content.trim()) return;
+
+    // Get current node position
+    const store = useCanvasStore.getState();
+    const currentNode = store.nodes.find((n) => n.id === id);
+    if (!currentNode) return;
+
+    // Create new image block with prompt and running status
+    const newBlockId = addImageBlock(
+      {
+        x: currentNode.position.x + 350,
+        y: currentNode.position.y,
+      },
+      {
+        prompt: blockData.content,
+        source: 'generated',
+        status: 'running',
+        sourceBlockId: id,
+      }
+    );
+
+    // Connect text block to image block
+    store.onConnect({
+      source: id,
+      target: newBlockId,
+      sourceHandle: null,
+      targetHandle: null,
+    });
+  }, [id, blockData.content, addImageBlock]);
+
   return (
     <BaseBlockNode
       id={id}
@@ -133,18 +165,32 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       glowShadow="var(--shadow-glow)"
       blockType="text"
       toolbarButtons={
-        <button
-          onClick={handleExpand}
-          disabled={blockData.status === 'running' || !blockData.content.trim()}
-          className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
-          style={{
-            background: blockData.status === 'running' || !blockData.content.trim() ? 'transparent' : 'var(--accent-primary)',
-            color: 'white',
-          }}
-          title="Expand this text"
-        >
-          <Sparkles size={16} />
-        </button>
+        <>
+          <button
+            onClick={handleExpand}
+            disabled={blockData.status === 'running' || !blockData.content.trim()}
+            className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
+            style={{
+              background: blockData.status === 'running' || !blockData.content.trim() ? 'transparent' : 'var(--accent-primary)',
+              color: 'white',
+            }}
+            title="Expand this text"
+          >
+            <Sparkles size={16} />
+          </button>
+          <button
+            onClick={handleGenerateImage}
+            disabled={blockData.status === 'running' || !blockData.content.trim()}
+            className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
+            style={{
+              background: blockData.status === 'running' || !blockData.content.trim() ? 'transparent' : 'var(--accent-primary)',
+              color: 'white',
+            }}
+            title="Generate image from this text"
+          >
+            <Image size={16} />
+          </button>
+        </>
       }
       footer={
         <div

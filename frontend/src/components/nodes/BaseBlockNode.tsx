@@ -35,13 +35,53 @@ export function BaseBlockNode({
     deleteNode(id);
   }, [id, deleteNode]);
 
+  // Determine box shadow based on status and selection
+  const getBoxShadow = () => {
+    if (status === 'running') {
+      return glowShadow;
+    }
+    if (selected) {
+      return glowShadow;
+    }
+    return 'var(--shadow-card)';
+  };
+
+  // Determine if we should animate the glow
+  const shouldAnimateGlow = status === 'running';
+
+  // Create a brighter version of the glow for the pulse effect
+  const getPulseGlow = () => {
+    // Extract rgba values and increase opacity for pulse
+    if (glowShadow.includes('rgba')) {
+      const match = glowShadow.match(/rgba\(([^)]+)\)/);
+      if (match) {
+        const values = match[1].split(',').map(v => v.trim());
+        if (values.length === 4) {
+          const r = values[0];
+          const g = values[1];
+          const b = values[2];
+          const a = parseFloat(values[3]);
+          const pulseA = Math.min(1, a * 2); // Double the opacity for pulse
+          return glowShadow.replace(/rgba\([^)]+\)/, `rgba(${r}, ${g}, ${b}, ${pulseA})`);
+        }
+      }
+    }
+    // Fallback: increase blur radius
+    return glowShadow.replace(/(\d+)px/, (_match, num) => `${parseInt(num) + 20}px`);
+  };
+
   return (
     <div
       className="relative min-w-[280px] max-w-[400px] rounded-xl transition-all duration-200"
       style={{
         background: 'var(--bg-card)',
         border: `2px solid ${selected ? accentColor : 'var(--border-subtle)'}`,
-        boxShadow: selected ? glowShadow : 'var(--shadow-card)',
+        boxShadow: getBoxShadow(),
+        ...(shouldAnimateGlow && {
+          animation: 'glowPulse 2s ease-in-out infinite',
+          '--glow-shadow': glowShadow,
+          '--glow-shadow-pulse': getPulseGlow(),
+        } as React.CSSProperties),
       }}
     >
       {/* Block type label */}

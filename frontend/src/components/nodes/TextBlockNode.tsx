@@ -12,6 +12,7 @@ import { toolsApi } from '../../api/client';
 import { BaseBlockNode } from './BaseBlockNode';
 
 const TEXT_MODELS: { value: TextModel; label: string }[] = [
+  { value: 'gpt-5.1', label: 'GPT-5.1' },
   { value: 'gpt-4o', label: 'GPT-4o' },
   { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
 ];

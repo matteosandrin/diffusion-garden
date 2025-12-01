@@ -16,7 +16,7 @@ settings = get_settings()
 class ExpandRequest(BaseModel):
     """Request for text expansion."""
     text: str
-    model: str = "gpt-4o"
+    model: str = "gpt-5.1"
 
 
 class ExpandResponse(BaseModel):

@@ -82,7 +82,7 @@ export const useCanvasStore = create<CanvasStore>()(
     viewport: { x: 0, y: 0, zoom: 1 },
     selectedNodeIds: [],
     settings: {
-      defaultTextModel: 'gpt-4o',
+      defaultTextModel: 'gpt-5.1',
       defaultImageModel: 'gemini-pro',
       apiKeyStatus: {
         openai: false,

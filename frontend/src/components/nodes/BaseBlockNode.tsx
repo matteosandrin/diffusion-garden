@@ -14,6 +14,7 @@ interface BaseBlockNodeProps {
   footer?: ReactNode;
   accentColor?: string;
   glowShadow?: string;
+  blockType?: 'text' | 'image';
 }
 
 export function BaseBlockNode({
@@ -26,6 +27,7 @@ export function BaseBlockNode({
   footer,
   accentColor = 'var(--accent-primary)',
   glowShadow = 'var(--shadow-glow)',
+  blockType,
 }: BaseBlockNodeProps) {
   const { deleteNode } = useCanvasStore();
 
@@ -42,6 +44,22 @@ export function BaseBlockNode({
         boxShadow: selected ? glowShadow : 'var(--shadow-card)',
       }}
     >
+      {/* Block type label */}
+      {blockType && (
+        <div
+          className="absolute -top-5 left-0 text-xs px-1.5 py-0.5 rounded"
+          style={{
+            color: 'var(--text-muted)',
+            background: 'transparent',
+            fontSize: '10px',
+            textTransform: 'capitalize',
+            pointerEvents: 'none',
+          }}
+        >
+          {blockType}
+        </div>
+      )}
+
       {/* Input handle */}
       <Handle type="target" position={Position.Left} />
 

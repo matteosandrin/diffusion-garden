@@ -134,6 +134,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         error={blockData.error}
         accentColor="var(--accent-secondary)"
         glowShadow="0 0 30px rgba(236, 72, 153, 0.3)"
+        blockType="image"
         toolbarButtons={
           blockData.imageUrl ? (
             <button

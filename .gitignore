@@ -1,0 +1,6 @@
+backend/venv
+backend/images
+backend/canvas.db
+backend/.env
+frontend/node_modules
+frontend/dist

@@ -1,21 +1,18 @@
 import { memo, useCallback, useState, useRef } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { type NodeProps } from '@xyflow/react';
 import {
   FileText,
   Upload,
-  Loader2,
-  CheckCircle,
-  AlertCircle,
   X,
-  Trash2,
 } from 'lucide-react';
 import type { ImageBlockData } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 import { toolsApi, imageApi } from '../../api/client';
+import { BaseBlockNode } from './BaseBlockNode';
 
 function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as ImageBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock, deleteNode } = useCanvasStore();
+  const { updateBlockData, updateBlockStatus, addTextBlock } = useCanvasStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -128,33 +125,48 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     [handleFileUpload]
   );
 
-  const handleDelete = useCallback(() => {
-    deleteNode(id);
-  }, [id, deleteNode]);
-
-  const statusIcon = {
-    idle: null,
-    running: <Loader2 size={14} className="animate-spin" style={{ color: 'var(--accent-secondary)' }} />,
-    success: <CheckCircle size={14} style={{ color: 'var(--accent-success)' }} />,
-    error: <AlertCircle size={14} style={{ color: 'var(--accent-error)' }} />,
-  }[blockData.status];
-
   return (
     <>
-      <div
-        className="relative min-w-[280px] max-w-[400px] rounded-xl transition-all duration-200"
-        style={{
-          background: 'var(--bg-card)',
-          border: `2px solid ${selected ? 'var(--accent-secondary)' : 'var(--border-subtle)'}`,
-          boxShadow: selected ? '0 0 30px rgba(236, 72, 153, 0.3)' : 'var(--shadow-card)',
-        }}
+      <BaseBlockNode
+        id={id}
+        selected={selected}
+        status={blockData.status}
+        error={blockData.error}
+        accentColor="var(--accent-secondary)"
+        glowShadow="0 0 30px rgba(236, 72, 153, 0.3)"
+        toolbarButtons={
+          blockData.imageUrl ? (
+            <button
+              onClick={handleDescribe}
+              disabled={blockData.status === 'running'}
+              className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
+              style={{
+                background: blockData.status === 'running' ? 'transparent' : 'var(--accent-primary)',
+                color: 'white',
+              }}
+              title="Describe this image"
+            >
+              <FileText size={16} />
+            </button>
+          ) : null
+        }
+        footer={
+          blockData.imageUrl && blockData.prompt ? (
+            <div
+              className="px-3 py-2 border-t"
+              style={{ borderColor: 'var(--border-subtle)' }}
+            >
+              <p
+                className="text-xs truncate"
+                style={{ color: 'var(--text-muted)' }}
+                title={blockData.prompt}
+              >
+                {blockData.prompt}
+              </p>
+            </div>
+          ) : null
+        }
       >
-        {/* Input handle */}
-        <Handle
-          type="target"
-          position={Position.Left}
-        />
-
         {/* Image content */}
         <div
           className="p-3"
@@ -202,82 +214,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
             </div>
           )}
         </div>
-
-        {/* Footer with prompt */}
-        {blockData.imageUrl && blockData.prompt && (
-          <div
-            className="px-3 py-2 border-t"
-            style={{ borderColor: 'var(--border-subtle)' }}
-          >
-            <p
-              className="text-xs truncate"
-              style={{ color: 'var(--text-muted)' }}
-              title={blockData.prompt}
-            >
-              {blockData.prompt}
-            </p>
-          </div>
-        )}
-
-        {/* Toolbar - shown when selected */}
-        {selected && (
-          <div
-            className="absolute left-1/2 -translate-x-1/2 top-full mt-2 flex items-center gap-1 px-2 py-1 rounded-lg z-10"
-            style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-subtle)',
-              boxShadow: 'var(--shadow-card)',
-            }}
-          >
-            {blockData.imageUrl && (
-              <button
-                onClick={handleDescribe}
-                disabled={blockData.status === 'running'}
-                className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
-                style={{
-                  background: blockData.status === 'running' ? 'transparent' : 'var(--accent-primary)',
-                  color: 'white',
-                }}
-                title="Describe this image"
-              >
-                <FileText size={16} />
-              </button>
-            )}
-            <button
-              onClick={handleDelete}
-              disabled={blockData.status === 'running'}
-              className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
-              style={{
-                background: blockData.status === 'running' ? 'transparent' : 'var(--accent-error)',
-                color: 'white',
-              }}
-              title="Delete this block"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        )}
-
-        {/* Error message */}
-        {blockData.status === 'error' && blockData.error && (
-          <div
-            className="px-3 py-2 text-xs border-t"
-            style={{
-              borderColor: 'var(--accent-error)',
-              color: 'var(--accent-error)',
-              background: 'rgba(239, 68, 68, 0.1)',
-            }}
-          >
-            {blockData.error}
-          </div>
-        )}
-
-        {/* Output handle */}
-        <Handle
-          type="source"
-          position={Position.Right}
-        />
-      </div>
+      </BaseBlockNode>
 
       {/* Image Modal */}
       {isModalOpen && blockData.imageUrl && (

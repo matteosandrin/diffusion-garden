@@ -1,15 +1,15 @@
 import { memo, useCallback, useState, useRef, useEffect } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { type NodeProps } from '@xyflow/react';
 import {
   Sparkles,
   Loader2,
   ChevronDown,
-  Trash2,
   Play,
 } from 'lucide-react';
 import type { TextBlockData, TextModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 import { toolsApi } from '../../api/client';
+import { BaseBlockNode } from './BaseBlockNode';
 
 const TEXT_MODELS: { value: TextModel; label: string }[] = [
   { value: 'gpt-4o', label: 'GPT-4o' },
@@ -18,7 +18,7 @@ const TEXT_MODELS: { value: TextModel; label: string }[] = [
 
 function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as TextBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock, deleteNode } = useCanvasStore();
+  const { updateBlockData, updateBlockStatus, addTextBlock } = useCanvasStore();
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -118,25 +118,95 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     }
   }, [id, blockData, updateBlockStatus, updateBlockData]);
 
-  const handleDelete = useCallback(() => {
-    deleteNode(id);
-  }, [id, deleteNode]);
-
   return (
-    <div
-      className="relative min-w-[280px] max-w-[400px] rounded-xl transition-all duration-200"
-      style={{
-        background: 'var(--bg-card)',
-        border: `2px solid ${selected ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
-        boxShadow: selected ? 'var(--shadow-glow)' : 'var(--shadow-card)',
-      }}
-    >
-      {/* Input handle */}
-      <Handle
-        type="target"
-        position={Position.Left}
-      />
+    <BaseBlockNode
+      id={id}
+      selected={selected}
+      status={blockData.status}
+      error={blockData.error}
+      accentColor="var(--accent-primary)"
+      glowShadow="var(--shadow-glow)"
+      toolbarButtons={
+        <button
+          onClick={handleExpand}
+          disabled={blockData.status === 'running' || !blockData.content.trim()}
+          className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
+          style={{
+            background: blockData.status === 'running' || !blockData.content.trim() ? 'transparent' : 'var(--accent-primary)',
+            color: 'white',
+          }}
+          title="Expand this text"
+        >
+          <Sparkles size={16} />
+        </button>
+      }
+      footer={
+        <div
+          className="flex items-center justify-between px-3 py-2 border-t"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
+          {/* Model selector */}
+          <div className="relative">
+            <button
+              onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors"
+              style={{
+                background: 'var(--bg-elevated)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              {TEXT_MODELS.find((m) => m.value === blockData.model)?.label || blockData.model}
+              <ChevronDown size={12} />
+            </button>
 
+            {isModelDropdownOpen && (
+              <div
+                className="absolute bottom-full left-0 mb-1 py-1 rounded-lg z-10 min-w-[120px]"
+                style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  boxShadow: 'var(--shadow-card)',
+                }}
+              >
+                {TEXT_MODELS.map((model) => (
+                  <button
+                    key={model.value}
+                    onClick={() => handleModelChange(model.value)}
+                    className="w-full px-3 py-1.5 text-left text-xs transition-colors"
+                    style={{
+                      color: blockData.model === model.value ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                      background: blockData.model === model.value ? 'var(--bg-card-hover)' : 'transparent',
+                    }}
+                  >
+                    {model.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Play button */}
+          <button
+            onClick={handleExecute}
+            disabled={blockData.status === 'running' || (!blockData.prompt?.trim() && !blockData.content.trim())}
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-all disabled:opacity-50"
+            style={{
+              background: blockData.status === 'running' || (!blockData.prompt?.trim() && !blockData.content.trim()) 
+                ? 'transparent' 
+                : 'var(--accent-primary)',
+              color: 'white',
+            }}
+            title="Execute prompt"
+          >
+            {blockData.status === 'running' ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Play size={14} />
+            )}
+          </button>
+        </div>
+      }
+    >
       {/* Content section (top half) */}
       <div className="p-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
         <textarea
@@ -170,130 +240,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
           }}
         />
       </div>
-
-      {/* Footer with model selector and play button */}
-      <div
-        className="flex items-center justify-between px-3 py-2 border-t"
-        style={{ borderColor: 'var(--border-subtle)' }}
-      >
-        {/* Model selector */}
-        <div className="relative">
-          <button
-            onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors"
-            style={{
-              background: 'var(--bg-elevated)',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            {TEXT_MODELS.find((m) => m.value === blockData.model)?.label || blockData.model}
-            <ChevronDown size={12} />
-          </button>
-
-          {isModelDropdownOpen && (
-            <div
-              className="absolute bottom-full left-0 mb-1 py-1 rounded-lg z-10 min-w-[120px]"
-              style={{
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-subtle)',
-                boxShadow: 'var(--shadow-card)',
-              }}
-            >
-              {TEXT_MODELS.map((model) => (
-                <button
-                  key={model.value}
-                  onClick={() => handleModelChange(model.value)}
-                  className="w-full px-3 py-1.5 text-left text-xs transition-colors"
-                  style={{
-                    color: blockData.model === model.value ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                    background: blockData.model === model.value ? 'var(--bg-card-hover)' : 'transparent',
-                  }}
-                >
-                  {model.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Play button */}
-        <button
-          onClick={handleExecute}
-          disabled={blockData.status === 'running' || (!blockData.prompt?.trim() && !blockData.content.trim())}
-          className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-all disabled:opacity-50"
-          style={{
-            background: blockData.status === 'running' || (!blockData.prompt?.trim() && !blockData.content.trim()) 
-              ? 'transparent' 
-              : 'var(--accent-primary)',
-            color: 'white',
-          }}
-          title="Execute prompt"
-        >
-          {blockData.status === 'running' ? (
-            <Loader2 size={14} className="animate-spin" />
-          ) : (
-            <Play size={14} />
-          )}
-        </button>
-      </div>
-
-      {/* Toolbar - shown when selected */}
-      {selected && (
-        <div
-          className="absolute left-1/2 -translate-x-1/2 top-full mt-2 flex items-center gap-1 px-2 py-1 rounded-lg z-10"
-          style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            boxShadow: 'var(--shadow-card)',
-          }}
-        >
-          <button
-            onClick={handleExpand}
-            disabled={blockData.status === 'running' || !blockData.content.trim()}
-            className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
-            style={{
-              background: blockData.status === 'running' || !blockData.content.trim() ? 'transparent' : 'var(--accent-primary)',
-              color: 'white',
-            }}
-            title="Expand this text"
-          >
-            <Sparkles size={16} />
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={blockData.status === 'running'}
-            className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
-            style={{
-              background: blockData.status === 'running' ? 'transparent' : 'var(--accent-error)',
-              color: 'white',
-            }}
-            title="Delete this block"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      )}
-
-      {/* Error message */}
-      {blockData.status === 'error' && blockData.error && (
-        <div
-          className="px-3 py-2 text-xs border-t"
-          style={{
-            borderColor: 'var(--accent-error)',
-            color: 'var(--accent-error)',
-            background: 'rgba(239, 68, 68, 0.1)',
-          }}
-        >
-          {blockData.error}
-        </div>
-      )}
-
-      {/* Output handle */}
-      <Handle
-        type="source"
-        position={Position.Right}
-      />
-    </div>
+    </BaseBlockNode>
   );
 }
 

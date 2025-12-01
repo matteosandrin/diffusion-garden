@@ -32,13 +32,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     }
   }, [blockData.content]);
 
-  const handleTitleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      updateBlockData(id, { title: e.target.value });
-    },
-    [id, updateBlockData]
-  );
-
   const handleContentChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       updateBlockData(id, { content: e.target.value });
@@ -74,7 +67,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         },
         {
           content: response.result,
-          title: blockData.title ? `${blockData.title} (expanded)` : 'Expanded',
           generatedBy: 'expand',
           sourceBlockId: id,
           model: blockData.model,
@@ -117,7 +109,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
           imageUrl: response.imageUrl,
           imageId: response.imageId,
           source: 'generated',
-          title: blockData.title || 'Generated Image',
           prompt: blockData.content,
           sourceBlockId: id,
         }
@@ -164,22 +155,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         }}
       />
 
-      {/* Header */}
-      <div
-        className="flex items-center gap-2 px-3 py-2 border-b"
-        style={{ borderColor: 'var(--border-subtle)' }}
-      >
-        <Type size={16} style={{ color: 'var(--accent-primary)' }} />
-        <input
-          type="text"
-          value={blockData.title}
-          onChange={handleTitleChange}
-          placeholder="Untitled"
-          className="flex-1 bg-transparent text-sm font-medium outline-none"
-          style={{ color: 'var(--text-primary)' }}
-        />
-        {statusIcon}
-      </div>
+      
 
       {/* Content */}
       <div className="p-3">

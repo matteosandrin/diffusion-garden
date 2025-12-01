@@ -21,13 +21,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleTitleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      updateBlockData(id, { title: e.target.value });
-    },
-    [id, updateBlockData]
-  );
-
   const handleDescribe = useCallback(async () => {
     if (!blockData.imageUrl) return;
 
@@ -61,7 +54,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         },
         {
           content: result.description,
-          title: blockData.title ? `${blockData.title} (description)` : 'Image Description',
           generatedBy: 'describe',
           sourceBlockId: id,
         }
@@ -96,14 +88,13 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           imageUrl: result.imageUrl,
           imageId: result.imageId,
           source: 'upload',
-          title: blockData.title || file.name.split('.')[0],
         });
         updateBlockStatus(id, 'success');
       } catch (error) {
         updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Upload failed');
       }
     },
-    [id, blockData.title, updateBlockData, updateBlockStatus]
+    [id, updateBlockData, updateBlockStatus]
   );
 
   const handleDrop = useCallback(
@@ -166,34 +157,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           }}
         />
 
-        {/* Header */}
-        <div
-          className="flex items-center gap-2 px-3 py-2 border-b"
-          style={{ borderColor: 'var(--border-subtle)' }}
-        >
-          <Image size={16} style={{ color: 'var(--accent-secondary)' }} />
-          <input
-            type="text"
-            value={blockData.title}
-            onChange={handleTitleChange}
-            placeholder="Untitled Image"
-            className="flex-1 bg-transparent text-sm font-medium outline-none"
-            style={{ color: 'var(--text-primary)' }}
-          />
-          {blockData.source === 'generated' && (
-            <span
-              className="px-1.5 py-0.5 rounded text-[10px] font-medium"
-              style={{
-                background: 'rgba(236, 72, 153, 0.2)',
-                color: 'var(--accent-secondary)',
-              }}
-            >
-              AI
-            </span>
-          )}
-          {statusIcon}
-        </div>
-
         {/* Image content */}
         <div
           className="p-3"
@@ -206,19 +169,9 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
               <img
                 src={blockData.imageUrl}
                 alt={blockData.title || 'Block image'}
-                className="w-full h-auto rounded-lg max-h-[200px] object-cover cursor-pointer"
+                className="w-full rounded-lg cursor-pointer"
                 onClick={() => setIsModalOpen(true)}
               />
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{
-                  background: 'rgba(0, 0, 0, 0.6)',
-                  color: 'white',
-                }}
-              >
-                <Maximize2 size={14} />
-              </button>
             </div>
           ) : (
             <div

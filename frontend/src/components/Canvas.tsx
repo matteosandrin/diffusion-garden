@@ -141,7 +141,7 @@ export function Canvas() {
           variant={BackgroundVariant.Dots}
           gap={20}
           size={1}
-          color="var(--border-subtle)"
+          color="var(--border-default)"
         />
         <Controls
           showZoom

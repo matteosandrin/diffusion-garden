@@ -8,6 +8,7 @@ import {
   CheckCircle,
   AlertCircle,
   ChevronDown,
+  Trash2,
 } from 'lucide-react';
 import type { TextBlockData, TextModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
@@ -20,7 +21,7 @@ const TEXT_MODELS: { value: TextModel; label: string }[] = [
 
 function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as TextBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock, addImageBlock } = useCanvasStore();
+  const { updateBlockData, updateBlockStatus, addTextBlock, addImageBlock, deleteNode } = useCanvasStore();
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -128,6 +129,10 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     }
   }, [id, blockData, updateBlockStatus, addImageBlock]);
 
+  const handleDelete = useCallback(() => {
+    deleteNode(id);
+  }, [id, deleteNode]);
+
   const statusIcon = {
     idle: null,
     running: <Loader2 size={14} className="animate-spin" style={{ color: 'var(--accent-primary)' }} />,
@@ -148,7 +153,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       <Handle
         type="target"
         position={Position.Left}
-        className="w-3! h-3!"
+        className="!w-3 !h-3"
         style={{
           background: 'var(--bg-card)',
           border: '2px solid var(--border-default)',
@@ -242,6 +247,18 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
           >
             <Sparkles size={16} />
           </button>
+          <button
+            onClick={handleDelete}
+            disabled={blockData.status === 'running'}
+            className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
+            style={{
+              background: blockData.status === 'running' ? 'transparent' : 'var(--accent-error)',
+              color: 'white',
+            }}
+            title="Delete this block"
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       )}
 
@@ -263,7 +280,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3! h-3!"
+        className="!w-3 !h-3"
         style={{
           background: 'var(--bg-card)',
           border: '2px solid var(--border-default)',

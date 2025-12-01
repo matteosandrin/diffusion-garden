@@ -44,6 +44,7 @@ interface CanvasStore {
   addImageBlock: (position: { x: number; y: number }, data?: Partial<ImageBlockData>) => string;
   updateBlockData: (nodeId: string, data: Partial<TextBlockData | ImageBlockData>) => void;
   updateBlockStatus: (nodeId: string, status: BlockStatus, error?: string) => void;
+  deleteNode: (nodeId: string) => void;
   deleteSelectedNodes: () => void;
   
   // Selection
@@ -195,6 +196,16 @@ export const useCanvasStore = create<CanvasStore>()(
             ? { ...node, data: { ...node.data, status, error } }
             : node
         ) as AppNode[],
+      }));
+    },
+
+    deleteNode: (nodeId) => {
+      set((state) => ({
+        nodes: state.nodes.filter((node) => node.id !== nodeId),
+        edges: state.edges.filter(
+          (edge) => edge.source !== nodeId && edge.target !== nodeId
+        ),
+        selectedNodeIds: state.selectedNodeIds.filter((id) => id !== nodeId),
       }));
     },
 

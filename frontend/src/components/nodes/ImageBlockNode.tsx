@@ -252,35 +252,43 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           )}
         </div>
 
-        {/* Footer with tools */}
-        {blockData.imageUrl && (
+        {/* Footer with prompt */}
+        {blockData.imageUrl && blockData.prompt && (
           <div
-            className="flex items-center justify-between px-3 py-2 border-t"
+            className="px-3 py-2 border-t"
             style={{ borderColor: 'var(--border-subtle)' }}
           >
-            {blockData.prompt && (
-              <p
-                className="text-xs truncate max-w-[150px]"
-                style={{ color: 'var(--text-muted)' }}
-                title={blockData.prompt}
-              >
-                {blockData.prompt}
-              </p>
-            )}
-            {!blockData.prompt && <div />}
+            <p
+              className="text-xs truncate"
+              style={{ color: 'var(--text-muted)' }}
+              title={blockData.prompt}
+            >
+              {blockData.prompt}
+            </p>
+          </div>
+        )}
 
+        {/* Toolbar - shown when selected */}
+        {selected && blockData.imageUrl && (
+          <div
+            className="absolute left-1/2 -translate-x-1/2 top-full mt-2 flex items-center gap-1 px-2 py-1 rounded-lg z-10"
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          >
             <button
               onClick={handleDescribe}
               disabled={blockData.status === 'running'}
-              className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all disabled:opacity-50"
+              className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
               style={{
-                background: 'var(--accent-primary)',
+                background: blockData.status === 'running' ? 'transparent' : 'var(--accent-primary)',
                 color: 'white',
               }}
               title="Describe this image"
             >
-              <FileText size={12} />
-              Describe
+              <FileText size={16} />
             </button>
           </div>
         )}

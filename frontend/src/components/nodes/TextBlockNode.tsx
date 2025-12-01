@@ -208,7 +208,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       }
     >
       {/* Content section (top half) */}
-      <div className="p-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+      <div className="nowheel p-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
         <textarea
           ref={contentTextareaRef}
           value={blockData.content}
@@ -225,7 +225,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       </div>
 
       {/* Prompt section (bottom half) */}
-      <div className="p-3">
+      <div className="nowheel p-3">
         <textarea
           ref={promptTextareaRef}
           value={blockData.prompt || ''}

@@ -51,6 +51,7 @@ html, body, #root {
 
 body {
   font-family: var(--font-sans);
+  font-size: 12px;
   background-color: var(--bg-canvas);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;

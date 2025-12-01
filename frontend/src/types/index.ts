@@ -65,6 +65,10 @@ export interface ExpandResponse {
   result: string;
 }
 
+export interface ExecuteResponse {
+  result: string;
+}
+
 export interface DescribeResponse {
   description: string;
 }

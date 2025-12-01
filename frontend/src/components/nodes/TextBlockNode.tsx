@@ -103,13 +103,13 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   }, [id, blockData, updateBlockStatus, addTextBlock]);
 
   const handleExecute = useCallback(async () => {
-    const promptToExecute = blockData.prompt?.trim() || blockData.content.trim();
+    const promptToExecute = blockData.prompt?.trim();
     if (!promptToExecute) return;
 
     updateBlockStatus(id, 'running');
 
     try {
-      const response = await toolsApi.expand(promptToExecute, blockData.model);
+      const response = await toolsApi.execute(promptToExecute, undefined, blockData.model);
       
       // Update content with the result
       updateBlockData(id, { content: response.result });

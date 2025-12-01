@@ -3,8 +3,8 @@
 
 /* CSS Variables for theming */
 :root {
-  --font-sans: 'Outfit', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: system-ui, sans-serif;
+  --font-mono: monospace;
   
   /* Dark theme - cyberpunk-inspired palette */
   --bg-canvas: #0a0a0f;

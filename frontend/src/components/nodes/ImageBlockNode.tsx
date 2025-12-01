@@ -1,13 +1,11 @@
 import { memo, useCallback, useState, useRef } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import {
-  Image,
   FileText,
   Upload,
   Loader2,
   CheckCircle,
   AlertCircle,
-  Maximize2,
   X,
   Trash2,
 } from 'lucide-react';
@@ -155,11 +153,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         <Handle
           type="target"
           position={Position.Left}
-          className="!w-3 !h-3"
-          style={{
-            background: 'var(--bg-card)',
-            border: '2px solid var(--border-default)',
-          }}
         />
 
         {/* Image content */}
@@ -283,11 +276,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         <Handle
           type="source"
           position={Position.Right}
-          className="!w-3 !h-3"
-          style={{
-            background: 'var(--bg-card)',
-            border: '2px solid var(--border-default)',
-          }}
         />
       </div>
 

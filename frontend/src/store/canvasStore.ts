@@ -68,6 +68,12 @@ interface CanvasStore {
   
   // Get ancestors and descendants for lineage highlighting
   getLineage: (nodeId: string) => { ancestors: string[]; descendants: string[] };
+  
+  // Get input blocks (blocks that connect TO this block)
+  getInputBlocks: (nodeId: string) => AppNode[];
+  
+  // Get concatenated content from all input blocks
+  getInputBlockContent: (nodeId: string) => string;
 }
 
 // Helper to generate unique IDs
@@ -368,6 +374,45 @@ export const useCanvasStore = create<CanvasStore>()(
         ancestors: Array.from(ancestors),
         descendants: Array.from(descendants),
       };
+    },
+
+    // Get input blocks (blocks that connect TO this block)
+    getInputBlocks: (nodeId) => {
+      const { edges, nodes } = get();
+      
+      // Find all edges where this node is the target
+      const inputEdgeSources = edges
+        .filter((edge) => edge.target === nodeId)
+        .map((edge) => edge.source);
+      
+      // Find corresponding nodes
+      return nodes.filter((node) => inputEdgeSources.includes(node.id));
+    },
+
+    // Get concatenated content from all input blocks
+    getInputBlockContent: (nodeId) => {
+      const inputBlocks = get().getInputBlocks(nodeId);
+      
+      if (inputBlocks.length === 0) {
+        return '';
+      }
+      
+      const contentParts: string[] = [];
+      
+      for (const block of inputBlocks) {
+        if (block.data.type === 'text') {
+          const textData = block.data as TextBlockData;
+          if (textData.content.trim()) {
+            contentParts.push(textData.content.trim());
+          }
+        } else if (block.data.type === 'image') {
+          const imageData = block.data as ImageBlockData;
+          // TODO: Implement image block content handling
+          contentParts.push(imageData.imageUrl);
+        }
+      }
+      
+      return contentParts.join('\n\n');
     },
   }))
 );

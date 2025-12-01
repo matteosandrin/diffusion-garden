@@ -19,7 +19,7 @@ const TEXT_MODELS: { value: TextModel; label: string }[] = [
 
 function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as TextBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock } = useCanvasStore();
+  const { updateBlockData, updateBlockStatus, addTextBlock, getInputBlockContent } = useCanvasStore();
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -109,7 +109,11 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     updateBlockStatus(id, 'running');
 
     try {
-      const response = await toolsApi.execute(promptToExecute, undefined, blockData.model);
+      // Get content from connected input blocks
+      const inputContent = getInputBlockContent(id);
+      const inputToUse = inputContent || undefined;
+      
+      const response = await toolsApi.execute(promptToExecute, inputToUse, blockData.model);
       
       // Update content with the result
       updateBlockData(id, { content: response.result });
@@ -117,7 +121,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     } catch (error) {
       updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Failed to execute');
     }
-  }, [id, blockData, updateBlockStatus, updateBlockData]);
+  }, [id, blockData, updateBlockStatus, updateBlockData, getInputBlockContent]);
 
   return (
     <BaseBlockNode

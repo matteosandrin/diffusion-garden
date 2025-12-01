@@ -258,19 +258,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
             <Sparkles size={12} />
             Expand
           </button>
-          <button
-            onClick={handleGenerateImage}
-            disabled={blockData.status === 'running' || !blockData.content.trim()}
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all disabled:opacity-50"
-            style={{
-              background: 'var(--accent-secondary)',
-              color: 'white',
-            }}
-            title="Generate image from this text"
-          >
-            <Image size={12} />
-            Generate
-          </button>
         </div>
       </div>
 

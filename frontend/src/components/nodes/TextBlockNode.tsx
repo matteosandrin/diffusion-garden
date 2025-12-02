@@ -1,8 +1,8 @@
 import { memo, useCallback } from 'react';
 import { type NodeProps } from '@xyflow/react';
 import {
-  Sparkles,
   Image,
+  ListChevronsUpDown,
 } from 'lucide-react';
 import type { TextBlockData, TextModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
@@ -130,14 +130,14 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
           <BlockToolbarButton
             onClick={handleExpand}
             disabled={blockData.status === 'running' || !blockData.content.trim()}
-            title="Expand this text"
+            title="Expand"
           >
-            <Sparkles size={16} />
+            <ListChevronsUpDown size={16} />
           </BlockToolbarButton>
           <BlockToolbarButton
             onClick={handleGenerateImage}
             disabled={blockData.status === 'running' || !blockData.content.trim()}
-            title="Generate image from this text"
+            title="Generate image"
           >
             <Image size={16} />
           </BlockToolbarButton>

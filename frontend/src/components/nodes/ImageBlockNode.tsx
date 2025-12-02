@@ -12,14 +12,13 @@ import { BlockToolbarButton } from '../ui/BlockToolbarButton';
 
 function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as ImageBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock, getInputBlocks, getInputBlockContent } = useCanvasStore();
+  const { updateBlockData, updateBlockStatus, addTextBlock, getInputBlockContent } = useCanvasStore();
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const promptFromInputRef = useRef(false);
   const lastInputContentRef = useRef<string>('');
 
   // Get input blocks and their content
-  const inputBlocks = getInputBlocks(id);
   const inputContentItems = getInputBlockContent(id);
   // Convert array to string: extract text content and join with newlines
   const inputContent = inputContentItems.length > 0
@@ -29,11 +28,11 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         .join('\n\n')
         .trim()
     : '';
-  const hasInputBlocks = inputBlocks.length > 0;
 
   // Monitor input blocks and update prompt accordingly
   useEffect(() => {
-    if (hasInputBlocks) {
+    const hasTextualInput = inputContentItems.some(item => item.type === 'text');
+    if (hasTextualInput) {
       // Only update if the input content actually changed
       if (inputContent !== lastInputContentRef.current) {
         updateBlockData(id, { prompt: inputContent });
@@ -41,28 +40,28 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         promptFromInputRef.current = true;
       }
     } else {
-      // No input blocks - clear prompt if it was from input
+      // No textual input blocks - clear prompt if it was from input
       if (promptFromInputRef.current) {
         updateBlockData(id, { prompt: '' });
         promptFromInputRef.current = false;
         lastInputContentRef.current = '';
       }
     }
-  }, [id, hasInputBlocks, inputContent, updateBlockData]);
+  }, [id, inputContentItems, inputContent, updateBlockData]);
 
-  // Determine if prompt is from input blocks
-  const promptFromInput = getInputBlocks(id).length > 0;
+  // Determine if prompt is from textual input blocks
+  const promptFromInput = inputContentItems.some(item => item.type === 'text');
 
   const handlePromptChange = useCallback(
     (value: string) => {
-      // Only allow manual changes if prompt is not from input blocks
-      const hasInputBlocks = getInputBlocks(id).length > 0;
-      if (!hasInputBlocks) {
+      // Only allow manual changes if prompt is not from textual input blocks
+      const hasTextualInput = inputContentItems.some(item => item.type === 'text');
+      if (!hasTextualInput) {
         updateBlockData(id, { prompt: value });
         promptFromInputRef.current = false;
       }
     },
-    [id, updateBlockData, getInputBlocks]
+    [id, inputContentItems, updateBlockData]
   );
 
   const handleGenerate = useCallback(async () => {

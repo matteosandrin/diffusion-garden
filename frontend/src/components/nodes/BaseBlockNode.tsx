@@ -1,6 +1,6 @@
 import { useCallback, useRef, useEffect, type ReactNode } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Trash2, Play, Loader2 } from 'lucide-react';
+import { Trash2, ArrowUp, Loader2 } from 'lucide-react';
 import type { BlockStatus } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 
@@ -108,7 +108,6 @@ export function BaseBlockNode({
                 minHeight: '40px',
                 maxHeight: '150px',
                 cursor: promptReadonly ? 'default' : 'text',
-                opacity: promptReadonly ? 0.7 : 1,
               }}
             />
           </div>
@@ -130,19 +129,17 @@ export function BaseBlockNode({
               <button
                 onClick={onPlay}
                 disabled={status === 'running' || runButtonDisabled}
-                className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-all disabled:opacity-50"
+                className="flex items-center gap-1 px-1 py-1 rounded-full text-xs transition-all disabled:opacity-30"
                 style={{
-                  background: status === 'running' || runButtonDisabled
-                    ? 'transparent'
-                    : accentColor,
+                  background: accentColor,
                   color: 'black',
                 }}
                 title={runButtonTitle}
               >
                 {status === 'running' ? (
-                  <Loader2 size={14} className="animate-spin" />
+                  <Loader2 size={20} className="animate-spin" />
                 ) : (
-                  <Play size={14} />
+                  <ArrowUp size={20} strokeWidth={3}/>
                 )}
               </button>
             )}
@@ -185,7 +182,7 @@ export function BaseBlockNode({
             }}
             title="Delete this block"
           >
-            <Trash2 size={16} />
+            <Trash2 size={16}/>
           </button>
         </div>
       )}

@@ -39,9 +39,12 @@ interface CanvasStore {
   onEdgesChange: (changes: EdgeChange[]) => void;
   onConnect: (connection: Connection) => void;
   
+  // Position helpers
+  getViewportCenter: () => { x: number; y: number };
+  
   // Block CRUD
-  addTextBlock: (position: { x: number; y: number }, data?: Partial<TextBlockData>) => string;
-  addImageBlock: (position: { x: number; y: number }, data?: Partial<ImageBlockData>) => string;
+  addTextBlock: (position?: { x: number; y: number }, data?: Partial<TextBlockData>) => string;
+  addImageBlock: (position?: { x: number; y: number }, data?: Partial<ImageBlockData>) => string;
   updateBlockData: (nodeId: string, data: Partial<TextBlockData | ImageBlockData>) => void;
   updateBlockStatus: (nodeId: string, status: BlockStatus, error?: string) => void;
   deleteNode: (nodeId: string) => void;
@@ -133,15 +136,25 @@ export const useCanvasStore = create<CanvasStore>()(
       }));
     },
 
+    // Position helpers
+    getViewportCenter: () => {
+      const { viewport } = get();
+      // Convert screen center to flow coordinates
+      const centerX = (window.innerWidth / 2 - viewport.x) / viewport.zoom;
+      const centerY = (window.innerHeight / 2 - viewport.y) / viewport.zoom;
+      return { x: centerX, y: centerY };
+    },
+
     // Block CRUD
     addTextBlock: (position, data) => {
       const id = generateId();
       const { settings } = get();
-      
+      const blockPosition = position || get().getViewportCenter();
+
       const newNode: AppNode = {
         id,
         type: 'textBlock',
-        position,
+        position: blockPosition,
         data: {
           type: 'text',
           title: data?.title || '',
@@ -162,11 +175,12 @@ export const useCanvasStore = create<CanvasStore>()(
     addImageBlock: (position, data) => {
       const id = generateId();
       const { settings } = get();
+      const blockPosition = position || get().getViewportCenter();
       
       const newNode: AppNode = {
         id,
         type: 'imageBlock',
-        position,
+        position: blockPosition,
         data: {
           type: 'image',
           title: data?.title || '',

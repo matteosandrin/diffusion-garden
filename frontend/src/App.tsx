@@ -107,11 +107,11 @@ function AppContent() {
       switch (e.key.toLowerCase()) {
         case 'n':
           e.preventDefault();
-          addTextBlock({ x: 200 + Math.random() * 100, y: 200 + Math.random() * 100 });
+          addTextBlock();
           break;
         case 'i':
           e.preventDefault();
-          addImageBlock({ x: 200 + Math.random() * 100, y: 200 + Math.random() * 100 });
+          addImageBlock();
           break;
         case 'delete':
         case 'backspace':

@@ -3,6 +3,7 @@ import { type NodeProps } from '@xyflow/react';
 import {
   Image,
   ListChevronsUpDown,
+  SeparatorHorizontal,
 } from 'lucide-react';
 import type { TextBlockData, TextModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
@@ -10,6 +11,7 @@ import { toolsApi } from '../../api/client';
 import { BaseBlockNode } from './BaseBlockNode';
 import { BlockToolbarButton } from '../ui/BlockToolbarButton';
 import { AutoResizeTextarea } from '../ui/AutoResizeTextarea';
+import { splitContent } from '../../utils/splitContent';
 
 function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as TextBlockData;
@@ -117,6 +119,38 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     });
   }, [id, blockData.content, addImageBlock]);
 
+  const handleSplit = useCallback(() => {
+    const items = splitContent(blockData.content);
+    if (items.length < 2) return;
+
+    // Get current node position
+    const store = useCanvasStore.getState();
+    const currentNode = store.nodes.find((n) => n.id === id);
+    if (!currentNode) return;
+
+    // Create new text blocks for each item, positioned vertically
+    items.forEach((item, index) => {
+      const newBlockId = addTextBlock(
+        {
+          x: currentNode.position.x + 360,
+          y: currentNode.position.y + index * 260,
+        },
+        {
+          content: item,
+          sourceBlockId: id,
+        }
+      );
+
+      // Connect source block to new block
+      store.onConnect({
+        source: id,
+        target: newBlockId,
+        sourceHandle: null,
+        targetHandle: null,
+      });
+    });
+  }, [id, blockData.content, addTextBlock]);
+
   return (
     <BaseBlockNode
       id={id}
@@ -133,6 +167,13 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
             title="Expand"
           >
             <ListChevronsUpDown size={16} />
+          </BlockToolbarButton>
+          <BlockToolbarButton
+            onClick={handleSplit}
+            disabled={blockData.status === 'running' || splitContent(blockData.content).length < 2}
+            title="Split"
+          >
+            <SeparatorHorizontal size={16} />
           </BlockToolbarButton>
           <BlockToolbarButton
             onClick={handleGenerateImage}

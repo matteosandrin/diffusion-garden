@@ -229,7 +229,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       promptPlaceholder="Enter your prompt here..."
     >
       {/* Content section */}
-      <div className="nowheel p-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+      <div className={`p-3 border-b ${selected ? 'nowheel' : ''}`} style={{ borderColor: 'var(--border-subtle)' }}>
         <textarea
           ref={contentTextareaRef}
           value={blockData.content}

@@ -100,7 +100,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     // Create new text block with prompt
     const newBlockId = addTextBlock(
       {
-        x: currentNode.position.x + 350,
+        x: currentNode.position.x + 360,
         y: currentNode.position.y,
       },
       {

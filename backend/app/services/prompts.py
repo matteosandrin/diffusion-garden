@@ -13,5 +13,9 @@ prompts = {
         "Take the following idea and expand it into a more detailed, richer version. " +
         "Maintain the same style, tone, and intent as the original. Add depth, examples, " +
         "or elaboration where appropriate, but don't change the core meaning.",
+    "twist":
+        "Take the following idea and add an unexpected twist or surprising new angle to it. " +
+        "Keep the core concept recognizable, but subvert expectations, flip a key assumption, " +
+        "or introduce an ironic, humorous, or thought-provoking element that transforms the original.",
     "describe": describe_prompt,
 }

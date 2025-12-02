@@ -4,6 +4,7 @@ import {
   Image,
   ListChevronsUpDown,
   SeparatorHorizontal,
+  Shuffle,
 } from 'lucide-react';
 import type { TextBlockData, TextModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
@@ -49,11 +50,41 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     // Create new text block with prompt
     const newBlockId = addTextBlock(
       {
-        x: currentNode.position.x + 350,
+        x: currentNode.position.x + 360,
         y: currentNode.position.y,
       },
       {
         prompt: store.prompts.expand,
+        sourceBlockId: id,
+      }
+    );
+
+    // Connect current text block to new text block
+    store.onConnect({
+      source: id,
+      target: newBlockId,
+      sourceHandle: null,
+      targetHandle: null,
+    });
+   
+  }, [id, blockData.content, addTextBlock]);
+
+  const handleTwist = useCallback(async () => {
+    if (!blockData.content.trim()) return;
+
+    // Get current node position
+    const store = useCanvasStore.getState();
+    const currentNode = store.nodes.find((n) => n.id === id);
+    if (!currentNode) return;
+
+    // Create new text block with twist prompt
+    const newBlockId = addTextBlock(
+      {
+        x: currentNode.position.x + 360,
+        y: currentNode.position.y,
+      },
+      {
+        prompt: store.prompts.twist,
         sourceBlockId: id,
       }
     );
@@ -99,11 +130,11 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     // Create new image block with prompt
     const newBlockId = addImageBlock(
       {
-        x: currentNode.position.x + 350,
+        x: currentNode.position.x + 360,
         y: currentNode.position.y,
       },
       {
-        prompt: blockData.content,
+        prompt: store.prompts.twist,
         source: 'generated',
         status: 'idle',
         sourceBlockId: id,
@@ -168,6 +199,13 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
             title="Expand"
           >
             <ListChevronsUpDown size={16} />
+          </BlockToolbarButton>
+          <BlockToolbarButton
+            onClick={handleTwist}
+            disabled={blockData.status === 'running' || !blockData.content.trim()}
+            title="Twist"
+          >
+            <Shuffle size={16} />
           </BlockToolbarButton>
           <BlockToolbarButton
             onClick={handleSplit}

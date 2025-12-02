@@ -35,17 +35,6 @@ class GenerateTextResponse(BaseModel):
     """Response from prompt execution."""
     result: str
 
-
-class DescribeRequest(BaseModel):
-    """Request for image description."""
-    image_base64: str
-
-
-class DescribeResponse(BaseModel):
-    """Response from image description."""
-    description: str
-
-
 class GenerateImageRequest(BaseModel):
     """Request for image generation."""
     prompt: str
@@ -73,21 +62,6 @@ async def execute_prompt(request: GenerateTextRequest, ai_service: AIService = D
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to execute prompt: {str(e)}")
-
-
-@router.post("/describe", response_model=DescribeResponse)
-async def describe_image(request: DescribeRequest, ai_service: AIService = Depends(get_ai_service)):
-    """
-    Generate a detailed description of an image.
-    Uses OpenAI GPT-4o Vision.
-    """
-    try:
-        description = await ai_service.describe_image(request.image_base64)
-        return DescribeResponse(description=description)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to describe image: {str(e)}")
 
 
 @router.post("/generate-image", response_model=GenerateImageResponse)

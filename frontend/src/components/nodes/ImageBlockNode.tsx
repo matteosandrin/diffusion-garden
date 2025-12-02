@@ -86,54 +86,32 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const handleDescribe = useCallback(async () => {
     if (!blockData.imageUrl) return;
 
-    updateBlockStatus(id, 'running');
+    // Get current node position
+    const store = useCanvasStore.getState();
+    const currentNode = store.nodes.find((n) => n.id === id);
+    if (!currentNode) return;
 
-    try {
-      // Fetch image and convert to base64
-      let imageBase64 = blockData.imageUrl;
-      
-      if (!imageBase64.startsWith('data:')) {
-        const response = await fetch(blockData.imageUrl);
-        const blob = await response.blob();
-        imageBase64 = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
-        });
+    // Create new text block with prompt
+    const newBlockId = addTextBlock(
+      {
+        x: currentNode.position.x + 350,
+        y: currentNode.position.y,
+      },
+      {
+        prompt: store.prompts.describe,
+        sourceBlockId: id,
       }
+    );
 
-      const result = await toolsApi.describe(imageBase64);
-
-      // Create new text block with description
-      const store = useCanvasStore.getState();
-      const currentNode = store.nodes.find((n) => n.id === id);
-      if (!currentNode) return;
-
-      const newBlockId = addTextBlock(
-        {
-          x: currentNode.position.x + 350,
-          y: currentNode.position.y,
-        },
-        {
-          content: result.description,
-          generatedBy: 'describe',
-          sourceBlockId: id,
-        }
-      );
-
-      // Add edge
-      store.onConnect({
-        source: id,
-        target: newBlockId,
-        sourceHandle: null,
-        targetHandle: null,
-      });
-
-      updateBlockStatus(id, 'success');
-    } catch (error) {
-      updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Failed to describe');
-    }
-  }, [id, blockData, updateBlockStatus, addTextBlock]);
+    // Connect current text block to new text block
+    store.onConnect({
+      source: id,
+      target: newBlockId,
+      sourceHandle: null,
+      targetHandle: null,
+    });
+   
+  }, [id, blockData.content, addTextBlock]);
 
   const handleFileUpload = useCallback(
     async (file: File) => {

@@ -1,14 +1,11 @@
 import { memo, useCallback, useState, useRef, useEffect } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import {
-  Type,
   Sparkles,
-  Image,
   Loader2,
-  CheckCircle,
-  AlertCircle,
   ChevronDown,
   Trash2,
+  Play,
 } from 'lucide-react';
 import type { TextBlockData, TextModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
@@ -21,21 +18,37 @@ const TEXT_MODELS: { value: TextModel; label: string }[] = [
 
 function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as TextBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock, addImageBlock, deleteNode } = useCanvasStore();
+  const { updateBlockData, updateBlockStatus, addTextBlock, deleteNode } = useCanvasStore();
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize textarea
+  // Auto-resize content textarea
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    if (contentTextareaRef.current) {
+      contentTextareaRef.current.style.height = 'auto';
+      contentTextareaRef.current.style.height = `${contentTextareaRef.current.scrollHeight}px`;
     }
   }, [blockData.content]);
+
+  // Auto-resize prompt textarea
+  useEffect(() => {
+    if (promptTextareaRef.current) {
+      promptTextareaRef.current.style.height = 'auto';
+      promptTextareaRef.current.style.height = `${promptTextareaRef.current.scrollHeight}px`;
+    }
+  }, [blockData.prompt]);
 
   const handleContentChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       updateBlockData(id, { content: e.target.value });
+    },
+    [id, updateBlockData]
+  );
+
+  const handlePromptChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      updateBlockData(id, { prompt: e.target.value });
     },
     [id, updateBlockData]
   );
@@ -88,57 +101,26 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     }
   }, [id, blockData, updateBlockStatus, addTextBlock]);
 
-  const handleGenerateImage = useCallback(async () => {
-    if (!blockData.content.trim()) return;
+  const handleExecute = useCallback(async () => {
+    const promptToExecute = blockData.prompt?.trim() || blockData.content.trim();
+    if (!promptToExecute) return;
 
     updateBlockStatus(id, 'running');
 
     try {
-      const response = await toolsApi.generate(blockData.content);
+      const response = await toolsApi.expand(promptToExecute, blockData.model);
       
-      // Create new image block
-      const store = useCanvasStore.getState();
-      const currentNode = store.nodes.find((n) => n.id === id);
-      if (!currentNode) return;
-
-      const newBlockId = addImageBlock(
-        {
-          x: currentNode.position.x + 350,
-          y: currentNode.position.y,
-        },
-        {
-          imageUrl: response.imageUrl,
-          imageId: response.imageId,
-          source: 'generated',
-          prompt: blockData.content,
-          sourceBlockId: id,
-        }
-      );
-
-      // Add edge
-      store.onConnect({
-        source: id,
-        target: newBlockId,
-        sourceHandle: null,
-        targetHandle: null,
-      });
-
+      // Update content with the result
+      updateBlockData(id, { content: response.result });
       updateBlockStatus(id, 'success');
     } catch (error) {
-      updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Failed to generate');
+      updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Failed to execute');
     }
-  }, [id, blockData, updateBlockStatus, addImageBlock]);
+  }, [id, blockData, updateBlockStatus, updateBlockData]);
 
   const handleDelete = useCallback(() => {
     deleteNode(id);
   }, [id, deleteNode]);
-
-  const statusIcon = {
-    idle: null,
-    running: <Loader2 size={14} className="animate-spin" style={{ color: 'var(--accent-primary)' }} />,
-    success: <CheckCircle size={14} style={{ color: 'var(--accent-success)' }} />,
-    error: <AlertCircle size={14} style={{ color: 'var(--accent-error)' }} />,
-  }[blockData.status];
 
   return (
     <div
@@ -160,15 +142,13 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         }}
       />
 
-      
-
-      {/* Content */}
-      <div className="p-3">
+      {/* Content section (top half) */}
+      <div className="p-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
         <textarea
-          ref={textareaRef}
+          ref={contentTextareaRef}
           value={blockData.content}
           onChange={handleContentChange}
-          placeholder="Start writing your idea..."
+          placeholder="Result will appear here..."
           rows={3}
           className="w-full bg-transparent text-sm resize-none outline-none"
           style={{
@@ -179,7 +159,24 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         />
       </div>
 
-      {/* Footer with model selector */}
+      {/* Prompt section (bottom half) */}
+      <div className="p-3">
+        <textarea
+          ref={promptTextareaRef}
+          value={blockData.prompt || ''}
+          onChange={handlePromptChange}
+          placeholder="Enter your prompt here..."
+          rows={2}
+          className="w-full bg-transparent text-sm resize-none outline-none"
+          style={{
+            color: 'var(--text-secondary)',
+            minHeight: '40px',
+            maxHeight: '150px',
+          }}
+        />
+      </div>
+
+      {/* Footer with model selector and play button */}
       <div
         className="flex items-center justify-between px-3 py-2 border-t"
         style={{ borderColor: 'var(--border-subtle)' }}
@@ -223,6 +220,26 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
             </div>
           )}
         </div>
+
+        {/* Play button */}
+        <button
+          onClick={handleExecute}
+          disabled={blockData.status === 'running' || (!blockData.prompt?.trim() && !blockData.content.trim())}
+          className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-all disabled:opacity-50"
+          style={{
+            background: blockData.status === 'running' || (!blockData.prompt?.trim() && !blockData.content.trim()) 
+              ? 'transparent' 
+              : 'var(--accent-primary)',
+            color: 'white',
+          }}
+          title="Execute prompt"
+        >
+          {blockData.status === 'running' ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Play size={14} />
+          )}
+        </button>
       </div>
 
       {/* Toolbar - shown when selected */}

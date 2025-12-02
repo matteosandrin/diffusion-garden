@@ -12,6 +12,7 @@ export interface TextBlockData {
   type: 'text';
   title: string;
   content: string;
+  prompt?: string; // Optional prompt for execution
   model: TextModel;
   status: BlockStatus;
   error?: string;

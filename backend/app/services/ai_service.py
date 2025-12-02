@@ -86,7 +86,7 @@ class AIService:
         
         return response.choices[0].message.content or ""
     
-    async def generate_image(self, prompt: str, input: str | None = None, image_urls: list[str] | None = None, model: str = "gemini-2.0-flash-preview-image-generation") -> tuple[Image.Image, str]:
+    async def generate_image(self, prompt: str, input: str | None = None, image_urls: list[str] | None = None, model: str = "gemini-3-pro-image-preview") -> tuple[Image.Image, str]:
         """
         Generate an image from a text prompt with optional input text and/or images.
         Images can be provided as input to guide the generation.

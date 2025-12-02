@@ -5,7 +5,7 @@ export type BlockStatus = 'idle' | 'running' | 'success' | 'error';
 
 // Model configurations
 export type TextModel = 'gpt-4o' | 'gpt-4o-mini' | 'gpt-5.1';
-export type ImageModel = 'gemini-pro';
+export type ImageModel = 'gemini-3-pro-image-preview';
 
 // Text block data
 export interface TextBlockData {

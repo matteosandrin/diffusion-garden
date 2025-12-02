@@ -10,8 +10,8 @@ settings = get_settings()
 
 class SettingsResponse(BaseModel):
     """Current settings response."""
-    defaultTextModel: str = "gpt-5.1"
-    defaultImageModel: str = "gemini-pro"
+    defaultTextModel: str
+    defaultImageModel: str
     apiKeyStatus: dict[str, bool]
 
 
@@ -25,8 +25,6 @@ class ApiKeyStatus(BaseModel):
 async def get_app_settings():
     """Get current application settings."""
     return SettingsResponse(
-        defaultTextModel="gpt-5.1",
-        defaultImageModel="gemini-pro",
         apiKeyStatus={
             "openai": bool(settings.openai_api_key),
             "google": bool(settings.google_api_key),

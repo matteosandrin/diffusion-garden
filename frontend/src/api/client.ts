@@ -4,6 +4,7 @@ import type {
   GenerateImageResponse,
   AppSettings,
   TextModel,
+  ImageModel,
   Prompts,
   InputContentItem,
 } from '../types';
@@ -59,11 +60,11 @@ export const toolsApi = {
     });
   },
 
-  generateImage: async (prompt: string, input: InputContentItem[] | undefined) => {
+  generateImage: async (prompt: string, input: InputContentItem[] | undefined, model: ImageModel) => {
     const imageUrls = input?.filter(item => item.type === 'image').map(item => item.url);
     return await apiFetch<GenerateImageResponse>('/tools/generate-image', {
       method: 'POST',
-      body: JSON.stringify({ prompt, image_urls: imageUrls }),
+      body: JSON.stringify({ prompt, image_urls: imageUrls, model }),
     });
   },
 };

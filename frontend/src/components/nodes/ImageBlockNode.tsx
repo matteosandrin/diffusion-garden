@@ -190,7 +190,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         status={blockData.status}
         error={blockData.error}
         accentColor="var(--accent-secondary)"
-        glowShadow="var(--shadow-glow)"
         blockType="image"
         toolbarButtons={
           blockData.imageUrl ? (

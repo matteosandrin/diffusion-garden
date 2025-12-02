@@ -228,7 +228,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
               <img
                 src={blockData.imageUrl}
                 alt={blockData.title || 'Block image'}
-                className="w-full rounded-t-xl cursor-pointer"
+                className="w-full cursor-pointer"
               />
             </div>
           ) : (

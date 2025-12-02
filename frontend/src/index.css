@@ -108,7 +108,6 @@ body {
 .react-flow__handle:hover {
   background: var(--accent-primary) !important;
   border-color: var(--accent-primary) !important;
-  transform: scale(1.2);
 }
 
 /* Custom scrollbar */

@@ -147,6 +147,8 @@ export function Canvas() {
         panOnScroll={true} // Enable two-finger trackpad panning
         selectionMode={SelectionMode.Partial}
         proOptions={{ hideAttribution: true }}
+        snapToGrid={true}
+        snapGrid={[20, 20]}
       >
         <Background
           variant={BackgroundVariant.Dots}

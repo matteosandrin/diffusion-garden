@@ -1,6 +1,8 @@
+from typing import Dict
 from fastapi import APIRouter
 from pydantic import BaseModel
 from ..config import get_settings
+from ..services import prompts
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 settings = get_settings()
@@ -40,3 +42,10 @@ async def check_api_keys():
         google=bool(settings.google_api_key),
     )
 
+
+@router.get("/prompts", response_model=Dict[str, str])
+async def get_prompts():
+    """
+    Get a list of available prompts.
+    """
+    return prompts

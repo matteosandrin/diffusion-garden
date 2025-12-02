@@ -56,42 +56,32 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const handleExpand = useCallback(async () => {
     if (!blockData.content.trim()) return;
 
-    updateBlockStatus(id, 'running');
+    // Get current node position
+    const store = useCanvasStore.getState();
+    const currentNode = store.nodes.find((n) => n.id === id);
+    if (!currentNode) return;
 
-    try {
-      const response = await toolsApi.expand(blockData.content, blockData.model);
-      
-      // Create new block with expanded text
-      const store = useCanvasStore.getState();
-      const currentNode = store.nodes.find((n) => n.id === id);
-      if (!currentNode) return;
+    // Create new text block with prompt
+    const newBlockId = addTextBlock(
+      {
+        x: currentNode.position.x + 350,
+        y: currentNode.position.y,
+      },
+      {
+        prompt: store.prompts.expand,
+        sourceBlockId: id,
+      }
+    );
 
-      const newBlockId = addTextBlock(
-        {
-          x: currentNode.position.x + 350,
-          y: currentNode.position.y,
-        },
-        {
-          content: response.result,
-          generatedBy: 'expand',
-          sourceBlockId: id,
-          model: blockData.model,
-        }
-      );
-
-      // Add edge from this block to new block
-      store.onConnect({
-        source: id,
-        target: newBlockId,
-        sourceHandle: null,
-        targetHandle: null,
-      });
-
-      updateBlockStatus(id, 'success');
-    } catch (error) {
-      updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Failed to expand');
-    }
-  }, [id, blockData, updateBlockStatus, addTextBlock]);
+    // Connect current text block to new text block
+    store.onConnect({
+      source: id,
+      target: newBlockId,
+      sourceHandle: null,
+      targetHandle: null,
+    });
+   
+  }, [id, blockData.content, addTextBlock]);
 
   const handleExecute = useCallback(async () => {
     const promptToExecute = blockData.prompt?.trim();

@@ -4,7 +4,7 @@ import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/ui/Toolbar';
 import { EmptyState } from './components/EmptyState';
 import { useCanvasStore } from './store/canvasStore';
-import { canvasApi } from './api/client';
+import { canvasApi, settingsApi } from './api/client';
 import { useDebouncedCallback } from './hooks/useDebouncedCallback';
 
 function AppContent() {
@@ -21,6 +21,7 @@ function AppContent() {
     selectedNodeIds,
     setSaving,
     setLastSaved,
+    setPrompts,
   } = useCanvasStore();
 
   // Auto-save with debounce
@@ -52,6 +53,20 @@ function AppContent() {
       saveCanvas();
     }
   }, [nodes, edges, viewport, canvasId, saveCanvas]);
+
+  // Fetch prompts at session start
+  useEffect(() => {
+    const fetchPrompts = async () => {
+      try {
+        const prompts = await settingsApi.getPrompts();
+        setPrompts(prompts);
+      } catch (error) {
+        console.error('Failed to fetch prompts:', error);
+      }
+    };
+
+    fetchPrompts();
+  }, [setPrompts]);
 
   // Initialize or load canvas
   useEffect(() => {

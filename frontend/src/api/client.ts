@@ -6,6 +6,7 @@ import type {
   GenerateImageResponse,
   AppSettings,
   TextModel,
+  Prompts,
 } from '../types';
 
 const API_BASE = '/api';
@@ -49,6 +50,7 @@ export const canvasApi = {
 
 // AI Tools API
 export const toolsApi = {
+
   expand: (text: string, model: TextModel) =>
     apiFetch<ExpandResponse>('/tools/expand', {
       method: 'POST',
@@ -108,5 +110,7 @@ export const settingsApi = {
     
   checkApiKeys: () =>
     apiFetch<{ openai: boolean; google: boolean }>('/settings/api-keys/status'),
+
+  getPrompts: () => apiFetch<Prompts>('/settings/prompts'),
 };
 

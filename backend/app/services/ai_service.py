@@ -71,27 +71,23 @@ Expanded version:"""
         if not self.openai_client:
             raise ValueError("OpenAI API key not configured")
         
-        # Combine prompt and input in a natural way, if input is provided
-        if input_text:
-            combined_prompt = f"""{prompt}
 
-Input:
-{input_text}"""
-        else:
-            combined_prompt = prompt
+        messages = [
+            {
+                "role": "system",
+                "content": prompt
+            }
+        ]
+
+        if input_text:
+            messages.append({
+                "role": "user",
+                "content": input_text
+            })
 
         response = await self.openai_client.chat.completions.create(
             model=model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant that follows instructions precisely."
-                },
-                {
-                    "role": "user",
-                    "content": combined_prompt
-                }
-            ]
+            messages=messages
         )
         
         return response.choices[0].message.content or ""

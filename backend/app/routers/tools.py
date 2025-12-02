@@ -24,14 +24,14 @@ class ExpandResponse(BaseModel):
     result: str
 
 
-class ExecuteRequest(BaseModel):
+class GenerateTextRequest(BaseModel):
     """Request for prompt execution with optional input."""
     prompt: str
     input: str | None = None
     model: str = "gpt-5.1"
 
 
-class ExecuteResponse(BaseModel):
+class GenerateTextResponse(BaseModel):
     """Response from prompt execution."""
     result: str
 
@@ -46,12 +46,12 @@ class DescribeResponse(BaseModel):
     description: str
 
 
-class GenerateRequest(BaseModel):
+class GenerateImageRequest(BaseModel):
     """Request for image generation."""
     prompt: str
 
 
-class GenerateResponse(BaseModel):
+class GenerateImageResponse(BaseModel):
     """Response from image generation."""
     imageId: str
     imageUrl: str
@@ -72,8 +72,8 @@ async def expand_text(request: ExpandRequest, ai_service: AIService = Depends(ge
         raise HTTPException(status_code=500, detail=f"Failed to expand text: {str(e)}")
 
 
-@router.post("/execute", response_model=ExecuteResponse)
-async def execute_prompt(request: ExecuteRequest, ai_service: AIService = Depends(get_ai_service)):
+@router.post("/generate-text", response_model=GenerateTextResponse)
+async def execute_prompt(request: GenerateTextRequest, ai_service: AIService = Depends(get_ai_service)):
     """
     Execute a prompt with input text integrated into it.
     The input is combined with the prompt on the backend.
@@ -81,7 +81,7 @@ async def execute_prompt(request: ExecuteRequest, ai_service: AIService = Depend
     """
     try:
         result = await ai_service.execute_prompt(request.prompt, request.input, request.model)
-        return ExecuteResponse(result=result)
+        return GenerateTextResponse(result=result)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -103,9 +103,9 @@ async def describe_image(request: DescribeRequest, ai_service: AIService = Depen
         raise HTTPException(status_code=500, detail=f"Failed to describe image: {str(e)}")
 
 
-@router.post("/generate", response_model=GenerateResponse)
+@router.post("/generate-image", response_model=GenerateImageResponse)
 async def generate_image(
-    request: GenerateRequest,
+    request: GenerateImageRequest,
     ai_service: AIService = Depends(get_ai_service),
     db: Session = Depends(get_db)
 ):
@@ -151,7 +151,7 @@ async def generate_image(
         db.add(image_record)
         db.commit()
         
-        return GenerateResponse(
+        return GenerateImageResponse(
             imageId=image_id,
             imageUrl=f"/api/images/{image_id}",
         )

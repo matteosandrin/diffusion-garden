@@ -1,7 +1,7 @@
 import type {
   CanvasState,
   ExpandResponse,
-  ExecuteResponse,
+  GenerateTextResponse,
   DescribeResponse,
   GenerateImageResponse,
   AppSettings,
@@ -55,8 +55,8 @@ export const toolsApi = {
       body: JSON.stringify({ text, model }),
     }),
 
-  execute: (prompt: string, input: string | undefined, model: TextModel) =>
-    apiFetch<ExecuteResponse>('/tools/execute', {
+  generateText: (prompt: string, input: string | undefined, model: TextModel) =>
+    apiFetch<GenerateTextResponse>('/tools/generate-text', {
       method: 'POST',
       body: JSON.stringify({ prompt, input: input || undefined, model }),
     }),
@@ -67,8 +67,8 @@ export const toolsApi = {
       body: JSON.stringify({ image_base64: imageBase64 }),
     }),
 
-  generate: (prompt: string) =>
-    apiFetch<GenerateImageResponse>('/tools/generate', {
+  generateImage: (prompt: string) =>
+    apiFetch<GenerateImageResponse>('/tools/generate-image', {
       method: 'POST',
       body: JSON.stringify({ prompt }),
     }),

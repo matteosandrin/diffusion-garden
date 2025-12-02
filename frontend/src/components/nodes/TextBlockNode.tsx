@@ -103,7 +103,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       const inputContent = getInputBlockContent(id);
       const inputToUse = inputContent || undefined;
       
-      const response = await toolsApi.execute(promptToExecute, inputToUse, blockData.model);
+      const response = await toolsApi.generateText(promptToExecute, inputToUse, blockData.model);
       
       // Update content with the result
       updateBlockData(id, { content: response.result });

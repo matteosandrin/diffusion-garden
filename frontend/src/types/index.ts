@@ -65,7 +65,7 @@ export interface ExpandResponse {
   result: string;
 }
 
-export interface ExecuteResponse {
+export interface GenerateTextResponse {
   result: string;
 }
 

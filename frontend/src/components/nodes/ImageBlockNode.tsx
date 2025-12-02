@@ -63,7 +63,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     updateBlockStatus(id, 'running');
     
     try {
-      const response = await toolsApi.generate(blockData.prompt);
+      const response = await toolsApi.generateImage(blockData.prompt);
       updateBlockData(id, {
         imageUrl: response.imageUrl,
         imageId: response.imageId,

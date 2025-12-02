@@ -20,10 +20,7 @@ class AIService:
         
         # Initialize Gemini client
         self.gemini_client = genai.Client(api_key=settings.google_api_key) if settings.google_api_key else None
-        
-        # Initialize HTTP client for fetching images
-        self.http_client = httpx.AsyncClient(timeout=30.0)
-    
+
     async def execute_prompt(self, prompt: str, input_text: str | None = None, image_urls: list[str] | None = None, model: str = "gpt-5.1") -> str:
         """
         Execute a prompt with optional input text and/or images integrated into it.
@@ -137,12 +134,15 @@ Be vivid and specific, as if helping someone recreate or understand this image w
         
         return response.choices[0].message.content or ""
     
-    async def generate_image(self, prompt: str) -> tuple[Image.Image, str]:
+    async def generate_image(self, prompt: str, input: str | None = None, image_urls: list[str] | None = None) -> tuple[Image.Image, str]:
         """
-        Generate an image from a text prompt using Gemini.
+        Generate an image from a text prompt with optional input text and/or images.
+        Images can be provided as input to guide the generation.
         
         Args:
             prompt: Text description of the image to generate
+            input: Optional input text to integrate into the prompt
+            image_urls: Optional list of image URLs (will be fetched and converted to base64)
             
         Returns:
             Tuple of (PIL Image object, mime_type)
@@ -150,9 +150,28 @@ Be vivid and specific, as if helping someone recreate or understand this image w
         if not self.gemini_client:
             raise ValueError("Google API key not configured")
         
+        # Build contents array with text and optional images
+        contents = []
+        
+        # Add text prompt and input if provided
+        if prompt:
+            contents.append(genai.types.Part.from_text(text=prompt))
+        if input:
+            contents.append(genai.types.Part.from_text(text=input))
+        
+        # Add images if provided
+        if image_urls:
+            for image_url in image_urls:
+                # Load image as base64 data URL
+                image_bytes, content_type = await self._load_image_as_bytes(image_url)
+                contents.append(genai.types.Part.from_bytes(
+                    data=image_bytes,
+                    mime_type=content_type,
+                ))
+        
         response = await self.gemini_client.aio.models.generate_content(
             model="gemini-3-pro-image-preview",
-            contents=prompt,
+            contents=contents,
             config=genai.types.GenerateContentConfig(
                 response_modalities=["IMAGE"],
             ),
@@ -183,10 +202,20 @@ Be vivid and specific, as if helping someone recreate or understand this image w
         Returns:
             Base64 encoded image in data URL format (e.g., "data:image/jpeg;base64,...")
         """
-        # If already a data URL, return as-is
-        if image_url.startswith("data:"):
-            return image_url
+        image_bytes, content_type = await self._load_image_as_bytes(image_url)
+        image_base64 = base64.b64encode(image_bytes).decode("utf-8") 
+        return f"data:{content_type};base64,{image_base64}"
+
+    async def _load_image_as_bytes(self, image_url: str) -> tuple[bytes, str]:
+        """
+        Fetch an image from disk and convert it to bytes.
         
+        Args:
+            image_url: Path or URL of the image to fetch (can be a data URL, file path, or API URL)
+            
+        Returns:
+            Bytes of the image
+        """ 
         try:
             # Determine the file path
             filepath = None
@@ -244,10 +273,7 @@ Be vivid and specific, as if helping someone recreate or understand this image w
                 except Exception:
                     content_type = "image/jpeg"
             
-            # Convert to base64
-            image_base64 = base64.b64encode(image_bytes).decode("utf-8")
-            
-            return f"data:{content_type};base64,{image_base64}"
+            return image_bytes, content_type
         except FileNotFoundError as e:
             raise ValueError(f"Image file not found: {str(e)}")
         except Exception as e:

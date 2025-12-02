@@ -145,7 +145,6 @@ export const useCanvasStore = create<CanvasStore>()(
       return { x: centerX, y: centerY };
     },
 
-    // Block CRUD
     addTextBlock: (position, data) => {
       const id = generateId();
       const { settings } = get();
@@ -155,6 +154,7 @@ export const useCanvasStore = create<CanvasStore>()(
         id,
         type: 'textBlock',
         position: blockPosition,
+        selected: true,
         data: {
           type: 'text',
           title: data?.title || '',
@@ -166,7 +166,8 @@ export const useCanvasStore = create<CanvasStore>()(
       };
 
       set((state) => ({
-        nodes: [...state.nodes, newNode],
+        nodes: [...state.nodes.map(n => ({ ...n, selected: false })), newNode],
+        selectedNodeIds: [id],
       }));
 
       return id;
@@ -181,6 +182,7 @@ export const useCanvasStore = create<CanvasStore>()(
         id,
         type: 'imageBlock',
         position: blockPosition,
+        selected: true,
         data: {
           type: 'image',
           title: data?.title || '',
@@ -193,7 +195,8 @@ export const useCanvasStore = create<CanvasStore>()(
       };
 
       set((state) => ({
-        nodes: [...state.nodes, newNode],
+        nodes: [...state.nodes.map(n => ({ ...n, selected: false })), newNode],
+        selectedNodeIds: [id],
       }));
 
       return id;

@@ -1,10 +1,15 @@
-import { useCallback, type ReactNode } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Trash2, ArrowUp, Loader2 } from 'lucide-react';
+import { Trash2, ArrowUp, Loader2, ChevronDown } from 'lucide-react';
 import type { BlockStatus } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 import { BlockToolbarButton } from '../ui/BlockToolbarButton';
 import { AutoResizeTextarea } from '../ui/AutoResizeTextarea';
+
+export interface ModelOption {
+  value: string;
+  label: string;
+}
 
 interface BaseBlockNodeProps {
   id: string;
@@ -23,6 +28,10 @@ interface BaseBlockNodeProps {
   promptReadonly?: boolean;
   accentColor?: string;
   blockType?: 'text' | 'image';
+  // Model dropdown props
+  models?: ModelOption[];
+  selectedModel?: string;
+  onModelChange?: (model: string) => void;
 }
 
 export function BaseBlockNode({
@@ -42,12 +51,21 @@ export function BaseBlockNode({
   promptReadonly = false,
   accentColor = 'var(--accent-primary)',
   blockType,
+  models,
+  selectedModel,
+  onModelChange,
 }: BaseBlockNodeProps) {
   const { deleteNode } = useCanvasStore();
+  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
 
   const handleDelete = useCallback(() => {
     deleteNode(id);
   }, [id, deleteNode]);
+
+  const handleModelSelect = useCallback((model: string) => {
+    onModelChange?.(model);
+    setIsModelDropdownOpen(false);
+  }, [onModelChange]);
 
   // Determine box shadow based on status and selection
   const getBoxShadow = () => {
@@ -105,14 +123,55 @@ export function BaseBlockNode({
         )}
 
         {/* Footer with play button */}
-        {(onPlay || footerLeftContent) && (
+        {(onPlay || footerLeftContent || models) && (
           <div
             className="flex items-center justify-between px-3 py-2 border-t"
             style={{ borderColor: 'var(--border-subtle)' }}
           >
-            {/* Left content (e.g., model selector) */}
+            {/* Left content - model selector or custom content */}
             <div>
-              {footerLeftContent || null}
+              {models && models.length > 0 ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                    className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors"
+                    style={{
+                      background: 'var(--bg-elevated)',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    {models.find((m) => m.value === selectedModel)?.label || selectedModel}
+                    <ChevronDown size={12} />
+                  </button>
+
+                  {isModelDropdownOpen && (
+                    <div
+                      className="absolute bottom-full left-0 mb-1 py-1 rounded-lg z-10 min-w-[120px]"
+                      style={{
+                        background: 'var(--bg-card)',
+                        border: '1px solid var(--border-subtle)',
+                        boxShadow: 'var(--shadow-card)',
+                      }}
+                    >
+                      {models.map((model) => (
+                        <button
+                          key={model.value}
+                          onClick={() => handleModelSelect(model.value)}
+                          className="w-full px-3 py-1.5 text-left text-xs transition-colors"
+                          style={{
+                            color: selectedModel === model.value ? accentColor : 'var(--text-secondary)',
+                            background: selectedModel === model.value ? 'var(--bg-card-hover)' : 'transparent',
+                          }}
+                        >
+                          {model.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                footerLeftContent || null
+              )}
             </div>
 
             {/* Play button */}

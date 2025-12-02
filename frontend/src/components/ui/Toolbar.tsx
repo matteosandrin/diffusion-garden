@@ -27,21 +27,13 @@ export function Toolbar() {
   return (
     <>
       <div
-        className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-4 py-2 rounded-full"
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-4 py-2 rounded-full"
         style={{
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
           boxShadow: 'var(--shadow-card)',
         }}
       >
-        {/* Logo / Title */}
-        <div className="flex items-center gap-2 pr-3 border-r" style={{ borderColor: 'var(--border-subtle)' }}>
-          <Sparkles size={20} style={{ color: 'var(--accent-primary)' }} />
-          <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
-            AI Canvas
-          </span>
-        </div>
-
         {/* Add blocks */}
         <button
           onClick={handleAddTextBlock}

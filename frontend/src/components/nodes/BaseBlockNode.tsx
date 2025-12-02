@@ -1,6 +1,6 @@
-import { useCallback, type ReactNode } from 'react';
+import { useCallback, useRef, useEffect, type ReactNode } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Play, Loader2 } from 'lucide-react';
 import type { BlockStatus } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 
@@ -11,7 +11,13 @@ interface BaseBlockNodeProps {
   error?: string;
   children: ReactNode;
   toolbarButtons?: ReactNode;
-  footer?: ReactNode;
+  footerLeftContent?: ReactNode;
+  onPlay?: () => void;
+  runButtonDisabled?: boolean;
+  runButtonTitle?: string;
+  prompt?: string;
+  onPromptChange?: (value: string) => void;
+  promptPlaceholder?: string;
   accentColor?: string;
   glowShadow?: string;
   blockType?: 'text' | 'image';
@@ -24,12 +30,27 @@ export function BaseBlockNode({
   error,
   children,
   toolbarButtons,
-  footer,
+  footerLeftContent,
+  onPlay,
+  runButtonDisabled,
+  runButtonTitle = 'Execute',
+  prompt,
+  onPromptChange,
+  promptPlaceholder = 'Enter your prompt here...',
   accentColor = 'var(--accent-primary)',
   glowShadow = 'var(--shadow-glow)',
   blockType,
 }: BaseBlockNodeProps) {
   const { deleteNode } = useCanvasStore();
+  const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize prompt textarea
+  useEffect(() => {
+    if (promptTextareaRef.current) {
+      promptTextareaRef.current.style.height = 'auto';
+      promptTextareaRef.current.style.height = `${promptTextareaRef.current.scrollHeight}px`;
+    }
+  }, [prompt]);
 
   const handleDelete = useCallback(() => {
     deleteNode(id);
@@ -106,8 +127,57 @@ export function BaseBlockNode({
       {/* Main content */}
       {children}
 
-      {/* Footer */}
-      {footer}
+      {/* Prompt section */}
+      {(prompt !== undefined || onPromptChange) && (
+        <div className="nowheel p-3 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+          <textarea
+            ref={promptTextareaRef}
+            value={prompt || ''}
+            onChange={(e) => onPromptChange?.(e.target.value)}
+            placeholder={promptPlaceholder}
+            rows={2}
+            className="w-full bg-transparent resize-none outline-none"
+            style={{
+              color: 'var(--text-secondary)',
+              minHeight: '40px',
+              maxHeight: '150px',
+            }}
+          />
+        </div>
+      )}
+
+      {/* Footer with play button */}
+      {(onPlay || footerLeftContent) && (
+        <div
+          className="flex items-center justify-between px-3 py-2 border-t"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
+          {/* Left content (e.g., model selector) */}
+          {footerLeftContent || null}
+
+          {/* Play button */}
+          {onPlay && (
+            <button
+              onClick={onPlay}
+              disabled={status === 'running' || runButtonDisabled}
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-all disabled:opacity-50"
+              style={{
+                background: status === 'running' || runButtonDisabled
+                  ? 'transparent'
+                  : accentColor,
+                color: 'white',
+              }}
+              title={runButtonTitle}
+            >
+              {status === 'running' ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Play size={14} />
+              )}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Toolbar - shown when selected */}
       {selected && (

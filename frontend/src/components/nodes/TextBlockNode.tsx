@@ -7,19 +7,13 @@ import {
 import type { TextBlockData, TextModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 import { toolsApi } from '../../api/client';
-import { BaseBlockNode, type ModelOption } from './BaseBlockNode';
+import { BaseBlockNode } from './BaseBlockNode';
 import { BlockToolbarButton } from '../ui/BlockToolbarButton';
 import { AutoResizeTextarea } from '../ui/AutoResizeTextarea';
 
-const TEXT_MODELS: ModelOption[] = [
-  { value: 'gpt-5.1', label: 'GPT-5.1' },
-  { value: 'gpt-4o', label: 'GPT-4o' },
-  { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-];
-
 function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as TextBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock, addImageBlock, getInputBlockContent } = useCanvasStore();
+  const { updateBlockData, updateBlockStatus, addTextBlock, addImageBlock, getInputBlockContent, models } = useCanvasStore();
 
   const handleContentChange = useCallback(
     (value: string) => {
@@ -149,7 +143,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
           </BlockToolbarButton>
         </>
       }
-      models={TEXT_MODELS}
+      models={models.textModels}
       selectedModel={blockData.model}
       onModelChange={handleModelChange}
       onPlay={handleExecute}

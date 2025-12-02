@@ -7,7 +7,7 @@ import { BlockToolbarButton } from '../ui/BlockToolbarButton';
 import { AutoResizeTextarea } from '../ui/AutoResizeTextarea';
 
 export interface ModelOption {
-  value: string;
+  id: string;
   label: string;
 }
 
@@ -140,7 +140,7 @@ export function BaseBlockNode({
                       color: 'var(--text-secondary)',
                     }}
                   >
-                    {models.find((m) => m.value === selectedModel)?.label || selectedModel}
+                    {models.find((m) => m.id === selectedModel)?.label || selectedModel}
                     <ChevronDown size={12} />
                   </button>
 
@@ -155,12 +155,12 @@ export function BaseBlockNode({
                     >
                       {models.map((model) => (
                         <button
-                          key={model.value}
-                          onClick={() => handleModelSelect(model.value)}
+                          key={model.id}
+                          onClick={() => handleModelSelect(model.id)}
                           className="w-full px-3 py-1.5 text-left text-xs transition-colors"
                           style={{
-                            color: selectedModel === model.value ? accentColor : 'var(--text-secondary)',
-                            background: selectedModel === model.value ? 'var(--bg-card-hover)' : 'transparent',
+                            color: selectedModel === model.id ? accentColor : 'var(--text-secondary)',
+                            background: selectedModel === model.id ? 'var(--bg-card-hover)' : 'transparent',
                           }}
                         >
                           {model.label}

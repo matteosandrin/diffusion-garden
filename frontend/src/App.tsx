@@ -22,6 +22,7 @@ function AppContent() {
     setSaving,
     setLastSaved,
     setPrompts,
+    setModels,
   } = useCanvasStore();
 
   // Auto-save with debounce
@@ -54,7 +55,7 @@ function AppContent() {
     }
   }, [nodes, edges, viewport, canvasId, saveCanvas]);
 
-  // Fetch prompts at session start
+  // Fetch prompts and models at session start
   useEffect(() => {
     const fetchPrompts = async () => {
       try {
@@ -65,8 +66,18 @@ function AppContent() {
       }
     };
 
+    const fetchModels = async () => {
+      try {
+        const models = await settingsApi.getModels();
+        setModels(models);
+      } catch (error) {
+        console.error('Failed to fetch models:', error);
+      }
+    };
+
     fetchPrompts();
-  }, [setPrompts]);
+    fetchModels();
+  }, [setPrompts, setModels]);
 
   // Initialize or load canvas
   useEffect(() => {

@@ -3,9 +3,23 @@ import type { Node, Edge } from '@xyflow/react';
 // Block status for AI operations
 export type BlockStatus = 'idle' | 'running' | 'success' | 'error';
 
-// Model configurations
-export type TextModel = 'gpt-4o' | 'gpt-4o-mini' | 'gpt-5.1';
-export type ImageModel = 'gemini-3-pro-image-preview';
+// Model configurations - now strings, actual values come from backend
+export type TextModel = string;
+export type ImageModel = string;
+
+// Model option for dropdowns
+export interface ModelOption {
+  id: string;
+  label: string;
+}
+
+// Models configuration from backend
+export interface ModelsConfig {
+  textModels: ModelOption[];
+  imageModels: ModelOption[];
+  defaultTextModel: string;
+  defaultImageModel: string;
+}
 
 // Text block data
 export interface TextBlockData {
@@ -76,8 +90,8 @@ export interface GenerateImageResponse {
 
 // Settings
 export interface AppSettings {
-  defaultTextModel: TextModel;
-  defaultImageModel: ImageModel;
+  defaultTextModel: string;
+  defaultImageModel: string;
   apiKeyStatus: {
     openai: boolean;
     google: boolean;

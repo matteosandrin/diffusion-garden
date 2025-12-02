@@ -7,16 +7,12 @@ import {
 import type { ImageBlockData, ImageModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 import { toolsApi, imageApi } from '../../api/client';
-import { BaseBlockNode, type ModelOption } from './BaseBlockNode';
+import { BaseBlockNode } from './BaseBlockNode';
 import { BlockToolbarButton } from '../ui/BlockToolbarButton';
-
-const IMAGE_MODELS: ModelOption[] = [
-  { value: 'gemini-3-pro-image-preview', label: 'Nanobanana Pro' },
-];
 
 function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as ImageBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock, getInputBlockContent } = useCanvasStore();
+  const { updateBlockData, updateBlockStatus, addTextBlock, getInputBlockContent, models } = useCanvasStore();
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const promptFromInputRef = useRef(false);
@@ -204,8 +200,8 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         onPromptChange={handlePromptChange}
         promptPlaceholder="Enter image generation prompt here..."
         promptReadonly={promptFromInput}
-        models={IMAGE_MODELS}
-        selectedModel={blockData.model || 'gemini-pro'}
+        models={models.imageModels}
+        selectedModel={blockData.model || models.defaultImageModel}
         onModelChange={handleModelChange}
       >
         {/* Image content */}

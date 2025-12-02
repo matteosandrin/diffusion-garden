@@ -1,4 +1,4 @@
-import { memo, useCallback, useState, useRef } from 'react';
+import { memo, useCallback, useState, useRef, useEffect } from 'react';
 import { type NodeProps } from '@xyflow/react';
 import {
   FileText,
@@ -12,16 +12,50 @@ import { BaseBlockNode } from './BaseBlockNode';
 
 function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as ImageBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock } = useCanvasStore();
+  const { updateBlockData, updateBlockStatus, addTextBlock, getInputBlocks, getInputBlockContent } = useCanvasStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const promptFromInputRef = useRef(false);
+  const lastInputContentRef = useRef<string>('');
+
+  // Get input blocks and their content
+  const inputBlocks = getInputBlocks(id);
+  const inputContent = inputBlocks.length > 0 ? getInputBlockContent(id).trim() : '';
+  const hasInputBlocks = inputBlocks.length > 0;
+
+  // Monitor input blocks and update prompt accordingly
+  useEffect(() => {
+    if (hasInputBlocks) {
+      // Only update if the input content actually changed
+      if (inputContent !== lastInputContentRef.current) {
+        updateBlockData(id, { prompt: inputContent });
+        lastInputContentRef.current = inputContent;
+        promptFromInputRef.current = true;
+      }
+    } else {
+      // No input blocks - clear prompt if it was from input
+      if (promptFromInputRef.current) {
+        updateBlockData(id, { prompt: '' });
+        promptFromInputRef.current = false;
+        lastInputContentRef.current = '';
+      }
+    }
+  }, [id, hasInputBlocks, inputContent, updateBlockData]);
+
+  // Determine if prompt is from input blocks
+  const promptFromInput = getInputBlocks(id).length > 0;
 
   const handlePromptChange = useCallback(
     (value: string) => {
-      updateBlockData(id, { prompt: value });
+      // Only allow manual changes if prompt is not from input blocks
+      const hasInputBlocks = getInputBlocks(id).length > 0;
+      if (!hasInputBlocks) {
+        updateBlockData(id, { prompt: value });
+        promptFromInputRef.current = false;
+      }
     },
-    [id, updateBlockData]
+    [id, updateBlockData, getInputBlocks]
   );
 
   const handleGenerate = useCallback(async () => {
@@ -177,11 +211,12 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           ) : null
         }
         onPlay={handleGenerate}
-        runButtonDisabled={!blockData.prompt?.trim() || !!blockData.imageUrl}
+        runButtonDisabled={!blockData.prompt?.trim()}
         runButtonTitle="Generate image"
         prompt={blockData.prompt}
         onPromptChange={handlePromptChange}
         promptPlaceholder="Enter image generation prompt here..."
+        promptReadonly={promptFromInput}
       >
         {/* Image content */}
         <div

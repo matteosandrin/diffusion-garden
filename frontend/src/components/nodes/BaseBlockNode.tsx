@@ -18,6 +18,7 @@ interface BaseBlockNodeProps {
   prompt?: string;
   onPromptChange?: (value: string) => void;
   promptPlaceholder?: string;
+  promptReadonly?: boolean;
   accentColor?: string;
   glowShadow?: string;
   blockType?: 'text' | 'image';
@@ -37,6 +38,7 @@ export function BaseBlockNode({
   prompt,
   onPromptChange,
   promptPlaceholder = 'Enter your prompt here...',
+  promptReadonly = false,
   accentColor = 'var(--accent-primary)',
   glowShadow = 'var(--shadow-glow)',
   blockType,
@@ -136,11 +138,15 @@ export function BaseBlockNode({
             onChange={(e) => onPromptChange?.(e.target.value)}
             placeholder={promptPlaceholder}
             rows={2}
+            readOnly={promptReadonly}
+            disabled={promptReadonly}
             className="w-full bg-transparent resize-none outline-none"
             style={{
-              color: 'var(--text-secondary)',
+              color: promptReadonly ? 'var(--text-muted)' : 'var(--text-secondary)',
               minHeight: '40px',
               maxHeight: '150px',
+              cursor: promptReadonly ? 'default' : 'text',
+              opacity: promptReadonly ? 0.7 : 1,
             }}
           />
         </div>

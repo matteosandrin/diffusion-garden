@@ -1,6 +1,5 @@
 import type {
   CanvasState,
-  ExpandResponse,
   GenerateTextResponse,
   DescribeResponse,
   GenerateImageResponse,
@@ -50,12 +49,6 @@ export const canvasApi = {
 
 // AI Tools API
 export const toolsApi = {
-
-  expand: (text: string, model: TextModel) =>
-    apiFetch<ExpandResponse>('/tools/expand', {
-      method: 'POST',
-      body: JSON.stringify({ text, model }),
-    }),
 
   generateText: (prompt: string, input: string | undefined, model: TextModel) =>
     apiFetch<GenerateTextResponse>('/tools/generate-text', {

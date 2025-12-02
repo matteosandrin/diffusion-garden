@@ -55,20 +55,6 @@ class GenerateImageResponse(BaseModel):
     imageId: str
     imageUrl: str
 
-@router.post("/expand", response_model=ExpandResponse)
-async def expand_text(request: ExpandRequest, ai_service: AIService = Depends(get_ai_service)):
-    """
-    Expand a text idea into a more detailed version.
-    Uses OpenAI GPT-4o or GPT-4o-mini.
-    """
-    try:
-        result = await ai_service.expand_text(request.text, request.model)
-        return ExpandResponse(result=result)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to expand text: {str(e)}")
-
 
 @router.post("/generate-text", response_model=GenerateTextResponse)
 async def execute_prompt(request: GenerateTextRequest, ai_service: AIService = Depends(get_ai_service)):

@@ -17,45 +17,6 @@ class AIService:
         # Initialize Gemini client
         self.gemini_client = genai.Client(api_key=settings.google_api_key) if settings.google_api_key else None
     
-    async def expand_text(self, text: str, model: str = "gpt-5.1") -> str:
-        """
-        Expand a text idea into a more detailed version.
-        
-        Args:
-            text: The input text to expand
-            model: The OpenAI model to use (gpt-5.1, gpt-4o, or gpt-4o-mini)
-            
-        Returns:
-            Expanded text
-        """
-        if not self.openai_client:
-            raise ValueError("OpenAI API key not configured")
-        
-        prompt = f"""Take the following idea and expand it into a more detailed, richer version. 
-Maintain the same style, tone, and intent as the original. Add depth, examples, 
-or elaboration where appropriate, but don't change the core meaning.
-
-Original idea:
-{text}
-
-Expanded version:"""
-
-        response = await self.openai_client.chat.completions.create(
-            model=model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a creative writing assistant that helps expand and develop ideas while preserving their original voice and intent."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
-        )
-        
-        return response.choices[0].message.content or ""
-    
     async def execute_prompt(self, prompt: str, input_text: str | None = None, model: str = "gpt-5.1") -> str:
         """
         Execute a prompt with optional input text integrated into it.

@@ -73,31 +73,6 @@ export function Toolbar() {
 
         <div className="w-px h-6 mx-1" style={{ background: 'var(--border-subtle)' }} />
 
-        {/* Save status */}
-        <div
-          className="flex items-center gap-1.5 px-2 py-1 text-xs"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          {isSaving ? (
-            <>
-              <Loader2 size={12} className="animate-spin" />
-              Saving...
-            </>
-          ) : lastSaved ? (
-            <>
-              <CheckCircle size={12} style={{ color: 'var(--accent-success)' }} />
-              Saved
-            </>
-          ) : (
-            <>
-              <Save size={12} />
-              Not saved
-            </>
-          )}
-        </div>
-
-        <div className="w-px h-6 mx-1" style={{ background: 'var(--border-subtle)' }} />
-
         {/* Settings */}
         <button
           onClick={() => setIsSettingsOpen(true)}

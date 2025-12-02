@@ -25,10 +25,10 @@ export function EmptyState() {
           className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6"
           style={{
             background: 'var(--gradient-primary)',
-            boxShadow: '0 8px 32px rgba(99, 102, 241, 0.3)',
+            boxShadow: '0 8px 32px rgba(255, 255, 255, 0.2)',
           }}
         >
-          <Sparkles size={32} color="white" />
+          <Sparkles size={32} color="black" />
         </div>
 
         {/* Title */}
@@ -54,11 +54,11 @@ export function EmptyState() {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
             style={{
               background: 'var(--accent-primary)',
-              color: 'white',
+              color: 'black',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(99, 102, 241, 0.4)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(255, 255, 255, 0.3)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
@@ -74,11 +74,11 @@ export function EmptyState() {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
             style={{
               background: 'var(--accent-secondary)',
-              color: 'white',
+              color: 'black',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(236, 72, 153, 0.4)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(255, 255, 255, 0.3)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';

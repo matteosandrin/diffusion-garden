@@ -6,35 +6,35 @@
   --font-sans: system-ui, sans-serif;
   --font-mono: monospace;
   
-  /* Dark theme - cyberpunk-inspired palette */
+  /* Dark theme - minimalist black & white palette */
   --bg-canvas: #000000;
-  --bg-elevated: #12121a;
-  --bg-card: #1a1a24;
-  --bg-card-hover: #22222e;
+  --bg-elevated: #121212;
+  --bg-card: #1a1a1a;
+  --bg-card-hover: #222222;
   
-  --border-subtle: #2a2a3a;
-  --border-default: #3a3a4a;
-  --border-accent: #6366f1;
+  --border-subtle: #2a2a2a;
+  --border-default: #3a3a3a;
+  --border-accent: #ffffff;
   
-  --text-primary: #f0f0f5;
-  --text-secondary: #a0a0b0;
-  --text-muted: #606070;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted: #606060;
   
-  /* Accent colors */
-  --accent-primary: #6366f1;
-  --accent-primary-hover: #818cf8;
-  --accent-secondary: #ec4899;
-  --accent-success: #10b981;
-  --accent-warning: #f59e0b;
-  --accent-error: #ef4444;
+  /* Accent colors - grayscale */
+  --accent-primary: #ffffff;
+  --accent-primary-hover: #e5e5e5;
+  --accent-secondary: #808080;
+  --accent-success: #ffffff;
+  --accent-warning: #808080;
+  --accent-error: #ffffff;
   
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
-  --gradient-card: linear-gradient(180deg, rgba(99, 102, 241, 0.05) 0%, transparent 100%);
+  /* Gradients - grayscale */
+  --gradient-primary: linear-gradient(135deg, #ffffff 0%, #808080 100%);
+  --gradient-card: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
   
   /* Shadows */
   --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.3);
+  --shadow-glow: 0 0 30px rgba(255, 255, 255, 0.2);
 }
 
 * {
@@ -148,11 +148,11 @@ body {
 
 @keyframes glowPulse {
   0%, 100% { 
-    box-shadow: var(--glow-shadow, 0 0 30px rgba(99, 102, 241, 0.3));
+    box-shadow: var(--glow-shadow, 0 0 30px rgba(255, 255, 255, 0.2));
     filter: brightness(1);
   }
   50% { 
-    box-shadow: var(--glow-shadow-pulse, 0 0 50px rgba(99, 102, 241, 0.6));
+    box-shadow: var(--glow-shadow-pulse, 0 0 50px rgba(255, 255, 255, 0.4));
     filter: brightness(1.1);
   }
 }

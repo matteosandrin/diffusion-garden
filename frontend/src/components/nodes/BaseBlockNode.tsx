@@ -172,7 +172,7 @@ export function BaseBlockNode({
                   background: status === 'running' || runButtonDisabled
                     ? 'transparent'
                     : accentColor,
-                  color: 'white',
+                  color: 'black',
                 }}
                 title={runButtonTitle}
               >
@@ -193,7 +193,7 @@ export function BaseBlockNode({
             style={{
               borderColor: 'var(--accent-error)',
               color: 'var(--accent-error)',
-              background: 'rgba(239, 68, 68, 0.1)',
+              background: 'rgba(255, 255, 255, 0.1)',
             }}
           >
             {error}
@@ -218,7 +218,7 @@ export function BaseBlockNode({
             className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
             style={{
               background: status === 'running' ? 'transparent' : 'var(--accent-error)',
-              color: 'white',
+              color: 'black',
             }}
             title="Delete this block"
           >

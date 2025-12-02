@@ -1,18 +1,18 @@
 import { type ReactNode } from 'react';
 
-interface ToolbarButtonProps {
+interface BlockToolbarButtonProps {
   onClick: () => void;
   disabled?: boolean;
   title: string;
   children: ReactNode;
 }
 
-export function ToolbarButton({
+export function BlockToolbarButton({
   onClick,
   disabled = false,
   title,
   children,
-}: ToolbarButtonProps) {
+}: BlockToolbarButtonProps) {
   return (
     <button
       onClick={onClick}

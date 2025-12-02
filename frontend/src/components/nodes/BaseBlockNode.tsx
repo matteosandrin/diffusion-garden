@@ -123,9 +123,6 @@ export function BaseBlockNode({
         </div>
       )}
 
-      {/* Input handle */}
-      <Handle type="target" position={Position.Left} />
-
       {/* Main content */}
       {children}
 
@@ -226,6 +223,9 @@ export function BaseBlockNode({
           {error}
         </div>
       )}
+
+      {/* Input handle */}
+      <Handle type="target" position={Position.Left} />
 
       {/* Output handle */}
       <Handle type="source" position={Position.Right} />

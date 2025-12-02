@@ -86,7 +86,7 @@ class AIService:
         
         return response.choices[0].message.content or ""
     
-    async def generate_image(self, prompt: str, input: str | None = None, image_urls: list[str] | None = None) -> tuple[Image.Image, str]:
+    async def generate_image(self, prompt: str, input: str | None = None, image_urls: list[str] | None = None, model: str = "gemini-2.0-flash-preview-image-generation") -> tuple[Image.Image, str]:
         """
         Generate an image from a text prompt with optional input text and/or images.
         Images can be provided as input to guide the generation.
@@ -95,6 +95,7 @@ class AIService:
             prompt: Text description of the image to generate
             input: Optional input text to integrate into the prompt
             image_urls: Optional list of image URLs (will be fetched and converted to base64)
+            model: The Gemini model to use for image generation
             
         Returns:
             Tuple of (PIL Image object, mime_type)
@@ -122,7 +123,7 @@ class AIService:
                 ))
         
         response = await self.gemini_client.aio.models.generate_content(
-            model="gemini-3-pro-image-preview",
+            model=model,
             contents=contents,
             config=genai.types.GenerateContentConfig(
                 response_modalities=["IMAGE"],

@@ -13,7 +13,6 @@ import { BaseBlockNode } from './BaseBlockNode';
 function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as ImageBlockData;
   const { updateBlockData, updateBlockStatus, addTextBlock, getInputBlocks, getInputBlockContent } = useCanvasStore();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const promptFromInputRef = useRef(false);
@@ -230,7 +229,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
                 src={blockData.imageUrl}
                 alt={blockData.title || 'Block image'}
                 className="w-full rounded-t-xl cursor-pointer"
-                onClick={() => setIsModalOpen(true)}
               />
             </div>
           ) : (
@@ -259,32 +257,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           )}
         </div>
       </BaseBlockNode>
-
-      {/* Image Modal */}
-      {isModalOpen && blockData.imageUrl && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-8"
-          style={{ background: 'rgba(0, 0, 0, 0.9)' }}
-          onClick={() => setIsModalOpen(false)}
-        >
-          <button
-            className="absolute top-4 right-4 p-2 rounded-lg transition-colors"
-            style={{
-              background: 'var(--bg-card)',
-              color: 'var(--text-primary)',
-            }}
-            onClick={() => setIsModalOpen(false)}
-          >
-            <X size={24} />
-          </button>
-          <img
-            src={blockData.imageUrl}
-            alt={blockData.title || 'Full size image'}
-            className="max-w-full max-h-full object-contain rounded-lg"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
     </>
   );
 }

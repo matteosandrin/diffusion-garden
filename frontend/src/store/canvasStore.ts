@@ -16,6 +16,7 @@ import type {
   BlockStatus,
   AppSettings,
   Prompts,
+  InputContentItem,
 } from '../types';
 
 interface CanvasStore {
@@ -82,8 +83,8 @@ interface CanvasStore {
   // Get input blocks (blocks that connect TO this block)
   getInputBlocks: (nodeId: string) => AppNode[];
   
-  // Get concatenated content from all input blocks
-  getInputBlockContent: (nodeId: string) => string;
+  // Get content from all input blocks as typed array
+  getInputBlockContent: (nodeId: string) => InputContentItem[];
 }
 
 // Helper to generate unique IDs
@@ -419,30 +420,37 @@ export const useCanvasStore = create<CanvasStore>()(
       return nodes.filter((node) => inputEdgeSources.includes(node.id));
     },
 
-    // Get concatenated content from all input blocks
+    // Get content from all input blocks as typed array
     getInputBlockContent: (nodeId) => {
       const inputBlocks = get().getInputBlocks(nodeId);
       
       if (inputBlocks.length === 0) {
-        return '';
+        return [];
       }
       
-      const contentParts: string[] = [];
+      const contentItems: InputContentItem[] = [];
       
       for (const block of inputBlocks) {
         if (block.data.type === 'text') {
           const textData = block.data as TextBlockData;
           if (textData.content.trim()) {
-            contentParts.push(textData.content.trim());
+            contentItems.push({
+              type: 'text',
+              content: textData.content.trim(),
+            });
           }
         } else if (block.data.type === 'image') {
           const imageData = block.data as ImageBlockData;
-          // TODO: Implement image block content handling
-          contentParts.push(imageData.imageUrl);
+          if (imageData.imageUrl) {
+            contentItems.push({
+              type: 'image',
+              url: imageData.imageUrl,
+            });
+          }
         }
       }
       
-      return contentParts.join('\n\n');
+      return contentItems;
     },
   }))
 );

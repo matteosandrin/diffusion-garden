@@ -1,4 +1,7 @@
 import base64
+import re
+import asyncio
+from pathlib import Path
 from PIL import Image
 from openai import AsyncOpenAI
 from google import genai
@@ -60,7 +63,7 @@ class AIService:
             
             # Fetch and convert all images to base64
             for image_url in image_urls:
-                image_base64 = await self._fetch_image_as_base64(image_url)
+                image_base64 = await self._load_image_as_base64(image_url)
                 content.append({
                     "type": "image_url",
                     "image_url": {
@@ -170,12 +173,12 @@ Be vivid and specific, as if helping someone recreate or understand this image w
         
         raise ValueError("No image generated in response")
     
-    async def _fetch_image_as_base64(self, image_url: str) -> str:
+    async def _load_image_as_base64(self, image_url: str) -> str:
         """
-        Fetch an image from a URL and convert it to base64 data URL format.
+        Fetch an image from disk and convert it to base64 data URL format.
         
         Args:
-            image_url: URL of the image to fetch (can be a regular URL or already a data URL)
+            image_url: Path or URL of the image to fetch (can be a data URL, file path, or API URL)
             
         Returns:
             Base64 encoded image in data URL format (e.g., "data:image/jpeg;base64,...")
@@ -185,32 +188,70 @@ Be vivid and specific, as if helping someone recreate or understand this image w
             return image_url
         
         try:
-            # Fetch the image
-            response = await self.http_client.get(image_url)
-            response.raise_for_status()
+            # Determine the file path
+            filepath = None
             
-            # Determine content type from response headers or URL
-            content_type = response.headers.get("content-type", "image/jpeg")
-            if not content_type.startswith("image/"):
-                # Try to infer from URL extension
-                if image_url.lower().endswith((".png",)):
-                    content_type = "image/png"
-                elif image_url.lower().endswith((".gif",)):
-                    content_type = "image/gif"
-                elif image_url.lower().endswith((".webp",)):
-                    content_type = "image/webp"
-                else:
+            # Check if it's an API URL (e.g., /api/images/{image_id} or http://.../api/images/{image_id})
+            api_match = re.search(r'/api/images/([^/?]+)', image_url)
+            if api_match:
+                image_id = api_match.group(1)
+                # Try to find the file by image_id (filename is {image_id}.{ext})
+                images_dir = Path(settings.images_dir)
+                # Look for files matching the image_id pattern
+                for ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+                    potential_path = images_dir / f"{image_id}.{ext}"
+                    if potential_path.exists():
+                        filepath = potential_path
+                        break
+                
+                if filepath is None:
+                    # Try without extension (in case filename is just the image_id)
+                    potential_path = images_dir / image_id
+                    if potential_path.exists():
+                        filepath = potential_path
+            else:
+                # Treat as a file path
+                filepath = Path(image_url)
+                # If relative path, resolve relative to images directory
+                if not filepath.is_absolute():
+                    filepath = Path(settings.images_dir) / filepath
+            
+            if filepath is None or not filepath.exists():
+                raise FileNotFoundError(f"Image file not found: {image_url}")
+            
+            # Read the file from disk (using asyncio.to_thread for async file I/O)
+            def read_file():
+                with open(filepath, "rb") as f:
+                    return f.read()
+            
+            image_bytes = await asyncio.to_thread(read_file)
+            
+            # Determine content type from file extension
+            ext = filepath.suffix.lower()
+            if ext in ['.png']:
+                content_type = "image/png"
+            elif ext in ['.gif']:
+                content_type = "image/gif"
+            elif ext in ['.webp']:
+                content_type = "image/webp"
+            elif ext in ['.jpg', '.jpeg']:
+                content_type = "image/jpeg"
+            else:
+                # Try to detect from file content using PIL
+                try:
+                    img = Image.open(filepath)
+                    content_type = f"image/{img.format.lower()}" if img.format else "image/jpeg"
+                except Exception:
                     content_type = "image/jpeg"
             
             # Convert to base64
-            image_bytes = response.content
             image_base64 = base64.b64encode(image_bytes).decode("utf-8")
             
             return f"data:{content_type};base64,{image_base64}"
-        except httpx.HTTPError as e:
-            raise ValueError(f"Failed to fetch image from URL {image_url}: {str(e)}")
+        except FileNotFoundError as e:
+            raise ValueError(f"Image file not found: {str(e)}")
         except Exception as e:
-            raise ValueError(f"Error processing image from URL {image_url}: {str(e)}")
+            raise ValueError(f"Error processing image from {image_url}: {str(e)}")
 
 
 # Singleton instance

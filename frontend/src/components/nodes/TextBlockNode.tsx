@@ -91,10 +91,9 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
 
     try {
       // Get content from connected input blocks
-      const inputContent = getInputBlockContent(id);
-      const inputToUse = inputContent || undefined;
+      const inputContentItems = getInputBlockContent(id);
       
-      const response = await toolsApi.generateText(promptToExecute, inputToUse, blockData.model);
+      const response = await toolsApi.generateText(promptToExecute, inputContentItems, blockData.model);
       
       // Update content with the result
       updateBlockData(id, { content: response.result });

@@ -212,14 +212,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
                 size={24}
                 style={{ color: isDragOver ? 'var(--accent-secondary)' : 'var(--text-muted)' }}
               />
-              <div className="text-center">
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Drop an image or click to upload
-                </p>
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                  PNG, JPG, GIF, WebP
-                </p>
-              </div>
               <input
                 ref={fileInputRef}
                 type="file"

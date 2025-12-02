@@ -135,11 +135,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-3 !h-3"
-        style={{
-          background: 'var(--bg-card)',
-          border: '2px solid var(--border-default)',
-        }}
       />
 
       {/* Content section (top half) */}
@@ -297,11 +292,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       <Handle
         type="source"
         position={Position.Right}
-        className="!w-3 !h-3"
-        style={{
-          background: 'var(--bg-card)',
-          border: '2px solid var(--border-default)',
-        }}
       />
     </div>
   );

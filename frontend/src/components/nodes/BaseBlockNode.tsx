@@ -73,7 +73,7 @@ export function BaseBlockNode({
   };
 
   return (
-    <div>
+    <div className="text-xs">
       {/* Block type label */}
       {blockType && (
         <div
@@ -104,7 +104,7 @@ export function BaseBlockNode({
 
         {/* Prompt section */}
         {(prompt !== undefined || onPromptChange) && (
-          <div className={`p-3 border-t ${selected ? 'nowheel' : ''} h-[90px]`} style={{ borderColor: 'var(--border-subtle)' }}>
+          <div className={`px-3 py-2 border-t ${selected ? 'nowheel' : ''}`} style={{ borderColor: 'var(--border-subtle)' }}>
             <AutoResizeTextarea
               value={prompt || ''}
               onChange={(value) => onPromptChange?.(value)}
@@ -112,7 +112,8 @@ export function BaseBlockNode({
               rows={2}
               readOnly={promptReadonly}
               disabled={promptReadonly}
-              height="100%"
+              minHeight="45px"
+              maxHeight="120px"
               style={{
                 color: promptReadonly ? 'var(--text-muted)' : 'var(--text-secondary)',
                 cursor: promptReadonly ? 'default' : 'text',

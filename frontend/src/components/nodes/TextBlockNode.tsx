@@ -234,12 +234,13 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       promptPlaceholder="Enter your prompt here..."
     >
       {/* Content section */}
-      <div className={`p-3 border-b ${selected ? 'nowheel' : ''}`} style={{ borderColor: 'var(--border-subtle)' }}>
+      <div className={`px-3 py-2 border-b ${selected ? 'nowheel' : ''}`} style={{ borderColor: 'var(--border-subtle)' }}>
         <AutoResizeTextarea
           value={blockData.content}
           onChange={handleContentChange}
           placeholder="Result will appear here..."
           rows={3}
+          minHeight="180px"
           style={{ color: 'var(--text-primary)' }}
         />
       </div>

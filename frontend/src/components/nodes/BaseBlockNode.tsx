@@ -91,7 +91,7 @@ export function BaseBlockNode({
       )}
 
       <div
-        className="relative min-w-[280px] max-w-[400px] rounded-xl transition-all duration-200 overflow-hidden"
+        className="relative w-[280px] rounded-xl transition-all duration-200 overflow-hidden"
         style={{
           background: 'var(--bg-card)',
           border: `2px solid ${selected ? accentColor : 'var(--border-subtle)'}`,
@@ -104,7 +104,7 @@ export function BaseBlockNode({
 
         {/* Prompt section */}
         {(prompt !== undefined || onPromptChange) && (
-          <div className={`p-3 border-t ${selected ? 'nowheel' : ''}`} style={{ borderColor: 'var(--border-subtle)' }}>
+          <div className={`p-3 border-t ${selected ? 'nowheel' : ''} h-[90px]`} style={{ borderColor: 'var(--border-subtle)' }}>
             <AutoResizeTextarea
               value={prompt || ''}
               onChange={(value) => onPromptChange?.(value)}
@@ -112,8 +112,7 @@ export function BaseBlockNode({
               rows={2}
               readOnly={promptReadonly}
               disabled={promptReadonly}
-              minHeight="40px"
-              maxHeight="150px"
+              height="100%"
               style={{
                 color: promptReadonly ? 'var(--text-muted)' : 'var(--text-secondary)',
                 cursor: promptReadonly ? 'default' : 'text',

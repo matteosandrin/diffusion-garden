@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect, useCallback, TextareaHTMLAttributes } from 'react';
+import { useState, useRef, useEffect, useCallback, type TextareaHTMLAttributes } from 'react';
 
 interface AutoResizeTextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
   value: string;
   onChange: (value: string) => void;
   minHeight?: string;
   maxHeight?: string;
+  height?: string;
 }
 
 export function AutoResizeTextarea({
@@ -12,6 +13,7 @@ export function AutoResizeTextarea({
   onChange,
   minHeight = '60px',
   maxHeight = '200px',
+  height,
   className = '',
   style,
   ...props
@@ -28,7 +30,7 @@ export function AutoResizeTextarea({
 
   // Auto-resize textarea
   useEffect(() => {
-    if (textareaRef.current) {
+    if (!height && textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
@@ -48,10 +50,9 @@ export function AutoResizeTextarea({
       ref={textareaRef}
       value={localValue}
       onChange={handleChange}
-      className={`w-full bg-transparent resize-none outline-none ${className}`}
+      className={`w-full bg-transparent resize-none outline-none pr-2 ${className}`}
       style={{
-        minHeight,
-        maxHeight,
+        ...(height ? { height } : { minHeight, maxHeight }),
         ...style,
       }}
       {...props}

@@ -49,6 +49,7 @@ export interface ImageBlockData {
   prompt?: string; // If generated, the prompt used
   sourceBlockId?: string;
   autoRun?: boolean; // If true, generate image immediately after creation
+  variation?: boolean; // If true, generate a variation of the image
   [key: string]: unknown; // Index signature for React Flow compatibility
 }
 

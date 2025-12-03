@@ -134,6 +134,12 @@ class AIService:
             contents=contents,
             config=genai.types.GenerateContentConfig(**config_kwargs),
         )
+        if "candidates" not in response or len(response.candidates) == 0:
+            raise ValueError("No image in response")
+
+        if response.candidates[0].finish_reason != "IMAGE_CREATED":
+            raise ValueError("No image in response")
+
         for part in response.candidates[0].content.parts:
             try:
                 # Check if part has inline_data with mime_type

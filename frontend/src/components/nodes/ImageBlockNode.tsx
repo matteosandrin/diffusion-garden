@@ -3,6 +3,7 @@ import { type NodeProps } from '@xyflow/react';
 import {
   PilcrowRight,
   Upload,
+  LayoutGrid,
 } from 'lucide-react';
 import type { ImageBlockData, ImageModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
@@ -12,7 +13,7 @@ import { BlockToolbarButton } from '../ui/BlockToolbarButton';
 
 function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as ImageBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock, getInputBlockContent, models } = useCanvasStore();
+  const { updateBlockData, updateBlockStatus, addTextBlock, addImageBlock, getInputBlockContent, getInputBlocks, models } = useCanvasStore();
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const promptFromInputRef = useRef(false);
@@ -121,6 +122,61 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
    
   }, [id, blockData.content, addTextBlock]);
 
+  const handleVariations = useCallback(() => {
+    if (!promptFromInput) return;
+
+    // Get current node position and input blocks
+    const store = useCanvasStore.getState();
+    const currentNode = store.nodes.find((n) => n.id === id);
+    if (!currentNode) return;
+
+    // Get input text blocks
+    const inputBlocks = getInputBlocks(id);
+    const inputTextBlocks = inputBlocks.filter(block => block.data.type === 'text');
+    
+    if (inputTextBlocks.length === 0) return;
+
+    const currentNodeWidth = currentNode.width || 280;
+    const currentNodeHeight = currentNode.height || 280;
+    const blockSpacing = 60;
+
+    // Calculate base position (to the right of current block)
+    const baseX = currentNode.position.x + currentNodeWidth + blockSpacing;
+    const baseY = currentNode.position.y;
+
+    // Calculate positions for 2x2 grid
+    const gridPositions = [
+      { x: baseX, y: baseY },
+      { x: baseX + currentNodeWidth + blockSpacing, y: baseY },
+      { x: baseX, y: baseY + currentNodeHeight + blockSpacing },
+      { x: baseX + currentNodeWidth + blockSpacing, y: baseY + currentNodeHeight + blockSpacing },
+    ];
+
+    // Create 4 new image blocks
+    const newBlockIds = gridPositions.map((position) => {
+      return addImageBlock(
+        position,
+        {
+          model: blockData.model || models.defaultImageModel,
+          source: 'generated',
+          status: 'idle',
+        }
+      );
+    });
+
+    // Connect each new image block to all input text blocks
+    newBlockIds.forEach((newBlockId) => {
+      inputTextBlocks.forEach((inputBlock) => {
+        store.onConnect({
+          source: inputBlock.id,
+          target: newBlockId,
+          sourceHandle: null,
+          targetHandle: null,
+        });
+      });
+    });
+  }, [id, promptFromInput, blockData.model, models.defaultImageModel, getInputBlocks, addImageBlock]);
+
   const handleFileUpload = useCallback(
     async (file: File) => {
       if (!file.type.startsWith('image/')) {
@@ -187,13 +243,22 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         accentColor="var(--accent-primary)"
         blockType="image"
         toolbarButtons={
-          <BlockToolbarButton
-            onClick={handleDescribe}
-            disabled={blockData.status === 'running' || !blockData.imageUrl}
-            title="Describe"
-          >
-            <PilcrowRight size={16} />
-          </BlockToolbarButton>
+          <>
+            <BlockToolbarButton
+              onClick={handleVariations}
+              disabled={blockData.status === 'running' || !promptFromInput}
+              title="Variations"
+            >
+              <LayoutGrid size={16} />
+            </BlockToolbarButton>
+            <BlockToolbarButton
+              onClick={handleDescribe}
+              disabled={blockData.status === 'running' || !blockData.imageUrl}
+              title="Describe"
+            >
+              <PilcrowRight size={16} />
+            </BlockToolbarButton>
+          </>
         }
         onPlay={handleGenerate}
         runButtonDisabled={!blockData.prompt?.trim()}

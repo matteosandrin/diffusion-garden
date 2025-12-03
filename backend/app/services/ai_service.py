@@ -84,6 +84,8 @@ class AIService:
             model=model,
             messages=messages
         )
+
+        print(response)
         
         return response.choices[0].message.content or ""
     
@@ -134,10 +136,13 @@ class AIService:
             contents=contents,
             config=genai.types.GenerateContentConfig(**config_kwargs),
         )
-        if "candidates" not in response or len(response.candidates) == 0:
+
+        print(response)
+
+        if len(response.candidates) == 0:
             raise ValueError("No image in response")
 
-        if response.candidates[0].finish_reason != "IMAGE_CREATED":
+        if response.candidates[0].finish_reason == "NO_IMAGE":
             raise ValueError("No image in response")
 
         for part in response.candidates[0].content.parts:

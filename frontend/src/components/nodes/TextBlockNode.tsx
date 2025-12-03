@@ -126,6 +126,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       error={blockData.error}
       accentColor="var(--accent-primary)"
       glowShadow="var(--shadow-glow)"
+      blockType="text"
       toolbarButtons={
         <button
           onClick={handleExpand}

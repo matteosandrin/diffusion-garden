@@ -54,6 +54,8 @@ interface CanvasStore {
   // Block CRUD
   addTextBlock: (position?: { x: number; y: number }, data?: Partial<TextBlockData>) => string;
   addImageBlock: (position?: { x: number; y: number }, data?: Partial<ImageBlockData>) => string;
+  addTextBlockWithEdge: (position: { x: number; y: number }, sourceNodeId: string, data?: Partial<TextBlockData>) => string;
+  addImageBlockWithEdge: (position: { x: number; y: number }, sourceNodeId: string, data?: Partial<ImageBlockData>) => string;
   updateBlockData: (nodeId: string, data: Partial<TextBlockData | ImageBlockData>) => void;
   updateBlockStatus: (nodeId: string, status: BlockStatus, error?: string) => void;
   deleteNode: (nodeId: string) => void;
@@ -218,6 +220,40 @@ export const useCanvasStore = create<CanvasStore>()(
 
       set((state) => ({
         nodes: [...state.nodes.map(n => ({ ...n, selected: false })), newNode],
+        selectedNodeIds: [id],
+      }));
+
+      return id;
+    },
+
+    addTextBlockWithEdge: (position, sourceNodeId, data) => {
+      const id = get().addTextBlock(position, data);
+      const newEdge: AppEdge = {
+        id: `edge-${sourceNodeId}-${id}`,
+        source: sourceNodeId,
+        target: id,
+        type: 'animated',
+      };
+
+      set((state) => ({
+        edges: [...state.edges, newEdge],
+        selectedNodeIds: [id],
+      }));
+
+      return id;
+    },
+
+    addImageBlockWithEdge: (position, sourceNodeId, data) => {
+      const id = get().addImageBlock(position, data);
+      const newEdge: AppEdge = {
+        id: `edge-${sourceNodeId}-${id}`,
+        source: sourceNodeId,
+        target: id,
+        type: 'animated',
+      };
+
+      set((state) => ({
+        edges: [...state.edges, newEdge],
         selectedNodeIds: [id],
       }));
 

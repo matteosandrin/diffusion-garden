@@ -19,8 +19,8 @@ AVAILABLE_IMAGE_MODELS = [
     {"id" : "gemini-2.5-flash-image" , "label" : "Nano Banana"}
 ]
 
-DEFAULT_TEXT_MODEL = AVAILABLE_TEXT_MODELS[0]["id"]
-DEFAULT_IMAGE_MODEL = AVAILABLE_IMAGE_MODELS[0]["id"]
+DEFAULT_TEXT_MODEL = AVAILABLE_TEXT_MODELS[1]["id"]
+DEFAULT_IMAGE_MODEL = AVAILABLE_IMAGE_MODELS[1]["id"]
 
 
 class ModelOption(BaseModel):

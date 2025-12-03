@@ -4,6 +4,7 @@ import { Type, Image, X } from 'lucide-react';
 interface ContextMenuProps {
   x: number;
   y: number;
+  title?: string;
   onAddTextBlock: () => void;
   onAddImageBlock: () => void;
   onClose: () => void;
@@ -12,6 +13,7 @@ interface ContextMenuProps {
 export function ContextMenu({
   x,
   y,
+  title,
   onAddTextBlock,
   onAddImageBlock,
   onClose,
@@ -59,17 +61,19 @@ export function ContextMenu({
           boxShadow: 'var(--shadow-card)',
         }}
       >
-        <div
-          className="px-3 py-2 text-xs font-medium uppercase tracking-wider border-b"
-          style={{
-            color: 'var(--text-muted)',
-            borderColor: 'var(--border-subtle)',
-          }}
-        >
-          Add Block
-        </div>
+        {title && (
+          <div
+            className="px-3 py-2 text-xs font-medium uppercase tracking-wider border-b"
+            style={{
+              color: 'var(--text-muted)',
+              borderColor: 'var(--border-subtle)',
+            }}
+          >
+            {title}
+          </div>
+        )}
 
-        <div className="py-1">
+        <div>
           <button
             onClick={onAddTextBlock}
             className="w-full px-3 py-2 flex items-center gap-3 transition-colors"
@@ -83,7 +87,7 @@ export function ContextMenu({
           >
             <Type size={16} style={{ color: 'var(--accent-primary)' }} />
             <div className="text-left">
-              <div className="text-sm font-medium">Text Block</div>
+              <div className="text-sm font-medium">Text block</div>
               <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 Write or expand ideas
               </div>
@@ -103,36 +107,14 @@ export function ContextMenu({
           >
             <Image size={16} style={{ color: 'var(--accent-secondary)' }} />
             <div className="text-left">
-              <div className="text-sm font-medium">Image Block</div>
+              <div className="text-sm font-medium">Image block</div>
               <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 Upload or generate images
               </div>
             </div>
           </button>
         </div>
-
-        <div
-          className="px-3 py-2 border-t flex justify-end"
-          style={{ borderColor: 'var(--border-subtle)' }}
-        >
-          <button
-            onClick={onClose}
-            className="p-1 rounded transition-colors"
-            style={{ color: 'var(--text-muted)' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-card-hover)';
-              e.currentTarget.style.color = 'var(--text-primary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--text-muted)';
-            }}
-          >
-            <X size={14} />
-          </button>
-        </div>
       </div>
     </div>
   );
 }
-

@@ -288,7 +288,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           ) : (
             <div className="p-3">
               <div
-                className="flex flex-col items-center justify-center gap-2 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors"
+                className="flex flex-col items-center justify-center h-[177px] gap-2 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors"
                 style={{
                   borderColor: isDragOver ? 'var(--accent-secondary)' : 'var(--border-default)',
                   background: isDragOver ? 'rgba(255, 255, 255, 0.1)' : 'var(--bg-elevated)',

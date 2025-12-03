@@ -19,6 +19,7 @@ import { TextBlockNode } from './nodes/TextBlockNode';
 import { ImageBlockNode } from './nodes/ImageBlockNode';
 import { AnimatedEdge } from './edges/AnimatedEdge';
 import { ContextMenu } from './ui/ContextMenu';
+import { PendingEdgeOverlay, type PendingEdge } from './ui/PendingEdgeOverlay';
 
 // Register custom node types
 const nodeTypes = {
@@ -65,6 +66,9 @@ export function Canvas() {
     sourceNodeId: string;
   } | null>(null);
 
+  // Pending edge state (frozen edge shown until user clicks)
+  const [pendingEdge, setPendingEdge] = useState<PendingEdge | null>(null);
+
   // Handle selection changes
   const onSelectionChange = useCallback(
     ({ nodes: selectedNodes }: OnSelectionChangeParams) => {
@@ -96,6 +100,7 @@ export function Canvas() {
   const onPaneClick = useCallback(() => {
     setContextMenu(null);
     setEdgeDropMenu(null);
+    setPendingEdge(null);
   }, []);
 
   // Update viewport in store when user stops moving the canvas
@@ -134,6 +139,25 @@ export function Canvas() {
             y: clientY,
           });
 
+          // Find the source node to get its handle position
+          const sourceNode = nodes.find(n => n.id === connectingNodeId.current);
+          if (sourceNode) {
+            // Calculate source handle position (right side of node)
+            // Node width is 280px, handle is centered vertically
+            const nodeWidth = sourceNode.measured?.width ?? 280;
+            const nodeHeight = sourceNode.measured?.height ?? 150;
+            const sourceX = sourceNode.position.x + nodeWidth;
+            const sourceY = sourceNode.position.y + nodeHeight / 2;
+
+            // Set the pending edge (frozen edge overlay)
+            setPendingEdge({
+              sourceX,
+              sourceY,
+              targetX: flowPosition.x,
+              targetY: flowPosition.y,
+            });
+          }
+
           setEdgeDropMenu({
             x: clientX,
             y: clientY,
@@ -145,7 +169,7 @@ export function Canvas() {
       
       connectingNodeId.current = null;
     },
-    [screenToFlowPosition]
+    [screenToFlowPosition, nodes]
   );
 
   // Handle context menu actions
@@ -168,6 +192,7 @@ export function Canvas() {
     if (edgeDropMenu) {
       addTextBlockWithEdge(edgeDropMenu.flowPosition, edgeDropMenu.sourceNodeId);
       setEdgeDropMenu(null);
+      setPendingEdge(null);
     }
   }, [edgeDropMenu, addTextBlockWithEdge]);
 
@@ -175,6 +200,7 @@ export function Canvas() {
     if (edgeDropMenu) {
       addImageBlockWithEdge(edgeDropMenu.flowPosition, edgeDropMenu.sourceNodeId);
       setEdgeDropMenu(null);
+      setPendingEdge(null);
     }
   }, [edgeDropMenu, addImageBlockWithEdge]);
 
@@ -259,9 +285,15 @@ export function Canvas() {
           y={edgeDropMenu.y}
           onAddTextBlock={handleEdgeDropAddTextBlock}
           onAddImageBlock={handleEdgeDropAddImageBlock}
-          onClose={() => setEdgeDropMenu(null)}
+          onClose={() => {
+            setEdgeDropMenu(null);
+            setPendingEdge(null);
+          }}
         />
       )}
+
+      {/* Pending Edge SVG Overlay - frozen edge until user clicks */}
+      {pendingEdge && <PendingEdgeOverlay pendingEdge={pendingEdge} />}
     </div>
   );
 }

@@ -97,10 +97,12 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     const currentNode = store.nodes.find((n) => n.id === id);
     if (!currentNode) return;
 
+    const currentNodeWidth = currentNode.width || 280;
+
     // Create new text block with prompt
     const newBlockId = addTextBlock(
       {
-        x: currentNode.position.x + 360,
+        x: currentNode.position.x + currentNodeWidth + 60,
         y: currentNode.position.y,
       },
       {

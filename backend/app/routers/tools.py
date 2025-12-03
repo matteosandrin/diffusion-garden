@@ -41,6 +41,7 @@ class GenerateImageRequest(BaseModel):
     input: str | None = None
     image_urls: list[str] | None = None
     model: str = "gemini-3-pro-image-preview"
+    is_variation: bool = False
 
 
 class GenerateImageResponse(BaseModel):
@@ -77,7 +78,7 @@ async def generate_image(
     """
     try:
         # Generate image
-        image, mime_type = await ai_service.generate_image(request.prompt, request.input, request.image_urls, request.model)
+        image, mime_type = await ai_service.generate_image(request.prompt, request.input, request.image_urls, request.model, request.is_variation)
         
         # Map mime_type to file extension and format
         mime_to_extension = {

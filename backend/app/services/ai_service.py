@@ -1,6 +1,7 @@
 import base64
 import re
 import asyncio
+import random
 from pathlib import Path
 from PIL import Image
 from openai import AsyncOpenAI
@@ -86,7 +87,7 @@ class AIService:
         
         return response.choices[0].message.content or ""
     
-    async def generate_image(self, prompt: str, input: str | None = None, image_urls: list[str] | None = None, model: str = "gemini-3-pro-image-preview") -> tuple[Image.Image, str]:
+    async def generate_image(self, prompt: str, input: str | None = None, image_urls: list[str] | None = None, model: str = "gemini-3-pro-image-preview", is_variation: bool = False) -> tuple[Image.Image, str]:
         """
         Generate an image from a text prompt with optional input text and/or images.
         Images can be provided as input to guide the generation.
@@ -96,6 +97,7 @@ class AIService:
             input: Optional input text to integrate into the prompt
             image_urls: Optional list of image URLs (will be fetched and converted to base64)
             model: The Gemini model to use for image generation
+            is_variation: If True, randomize the seed to generate variations
             
         Returns:
             Tuple of (PIL Image object, mime_type)
@@ -122,12 +124,15 @@ class AIService:
                     mime_type=content_type,
                 ))
         
+        # Build config with optional random seed for variations
+        config_kwargs = {"response_modalities": ["IMAGE"]}
+        if is_variation:
+            config_kwargs["seed"] = random.randint(0, 2147483647)
+        
         response = await self.gemini_client.aio.models.generate_content(
             model=model,
             contents=contents,
-            config=genai.types.GenerateContentConfig(
-                response_modalities=["IMAGE"],
-            ),
+            config=genai.types.GenerateContentConfig(**config_kwargs),
         )
         for part in response.candidates[0].content.parts:
             try:

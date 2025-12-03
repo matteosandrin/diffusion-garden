@@ -212,17 +212,19 @@ export function BaseBlockNode({
         )}
       </div>
 
-      {/* Prompt bubble - slides down when selected */}
+      {/* Prompt bubble - slides out from under the block when selected */}
       {(prompt !== undefined || onPromptChange) && (
         <div
-          className="absolute left-0 top-full w-full px-3 py-2 rounded-lg z-10 transition-all duration-300 ease-out"
+          className="nowheel absolute left-0 top-full -mt-8 w-full px-3 pt-8 pb-2 rounded-b-xl transition-all duration-300 ease-out"
           style={{
             background: 'var(--bg-card)',
             border: '1px solid var(--border-subtle)',
+            borderTop: 'none',
             boxShadow: 'var(--shadow-card)',
-            transform: selected ? 'translateY(0.5rem)' : 'translateY(-1rem)',
+            transform: selected ? 'translateY(0.5rem)' : 'translateY(-100%)',
             opacity: selected ? 1 : 0,
             pointerEvents: selected ? 'auto' : 'none',
+            zIndex: -1,
           }}
         >
           <AutoResizeTextarea

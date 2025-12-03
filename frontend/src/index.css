@@ -1,25 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
 /* CSS Variables for theming */
 :root {
   --font-sans: system-ui, sans-serif;
   --font-mono: monospace;
-  
+
   /* Dark theme - minimalist black & white palette */
   --bg-canvas: #000000;
   --bg-elevated: #121212;
   --bg-card: #1a1a1a;
   --bg-card-hover: #222222;
-  
+
   --border-subtle: #2a2a2a;
   --border-default: #3a3a3a;
   --border-accent: #ffffff;
-  
+
   --text-primary: #ffffff;
   --text-secondary: #a0a0a0;
   --text-muted: #606060;
-  
+
   /* Accent colors - grayscale */
   --accent-primary: #ffffff;
   --accent-primary-hover: #e5e5e5;
@@ -27,11 +27,15 @@
   --accent-success: #ffffff;
   --accent-warning: #808080;
   --accent-error: #ffffff;
-  
+
   /* Gradients - grayscale */
   --gradient-primary: linear-gradient(135deg, #ffffff 0%, #808080 100%);
-  --gradient-card: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
-  
+  --gradient-card: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 100%
+  );
+
   /* Shadows */
   --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
   --shadow-glow: 0 0 30px rgba(255, 255, 255, 0.3);
@@ -41,7 +45,9 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -132,18 +138,33 @@ body {
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-fade-in {

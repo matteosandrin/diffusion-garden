@@ -1,5 +1,5 @@
-import { memo } from 'react';
-import { getBezierPath, Position, useViewport } from '@xyflow/react';
+import { memo } from "react";
+import { getBezierPath, Position, useViewport } from "@xyflow/react";
 
 export interface PendingEdge {
   sourceX: number;
@@ -27,16 +27,18 @@ function PendingEdgeOverlayComponent({ pendingEdge }: PendingEdgeOverlayProps) {
   return (
     <svg
       style={{
-        position: 'absolute',
+        position: "absolute",
         top: 0,
         left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        overflow: 'visible',
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        overflow: "visible",
       }}
     >
-      <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`}>
+      <g
+        transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`}
+      >
         <path
           d={edgePath}
           fill="none"
@@ -44,7 +46,7 @@ function PendingEdgeOverlayComponent({ pendingEdge }: PendingEdgeOverlayProps) {
           strokeWidth={2}
           strokeDasharray="5,5"
           style={{
-            animation: 'pendingEdgeDash 0.5s linear infinite',
+            animation: "pendingEdgeDash 0.5s linear infinite",
           }}
         />
       </g>
@@ -60,4 +62,3 @@ function PendingEdgeOverlayComponent({ pendingEdge }: PendingEdgeOverlayProps) {
 }
 
 export const PendingEdgeOverlay = memo(PendingEdgeOverlayComponent);
-

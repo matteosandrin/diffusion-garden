@@ -1,5 +1,5 @@
-import { Sparkles, Type, Image, ArrowRight } from 'lucide-react';
-import { useCanvasStore } from '../store/canvasStore';
+import { Sparkles, Type, Image, ArrowRight } from "lucide-react";
+import { useCanvasStore } from "../store/canvasStore";
 
 export function EmptyState() {
   const { addTextBlock, addImageBlock } = useCanvasStore();
@@ -17,15 +17,16 @@ export function EmptyState() {
       <div
         className="text-center p-8 rounded-2xl max-w-md pointer-events-auto animate-fade-in"
         style={{
-          background: 'linear-gradient(180deg, var(--bg-card) 0%, transparent 100%)',
+          background:
+            "linear-gradient(180deg, var(--bg-card) 0%, transparent 100%)",
         }}
       >
         {/* Icon */}
         <div
           className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6"
           style={{
-            background: 'var(--gradient-primary)',
-            boxShadow: '0 8px 32px rgba(255, 255, 255, 0.2)',
+            background: "var(--gradient-primary)",
+            boxShadow: "0 8px 32px rgba(255, 255, 255, 0.2)",
           }}
         >
           <Sparkles size={32} color="black" />
@@ -34,7 +35,7 @@ export function EmptyState() {
         {/* Title */}
         <h2
           className="text-2xl font-bold mb-2"
-          style={{ color: 'var(--text-primary)' }}
+          style={{ color: "var(--text-primary)" }}
         >
           Start creating
         </h2>
@@ -42,9 +43,10 @@ export function EmptyState() {
         {/* Description */}
         <p
           className="text-sm mb-8 max-w-xs mx-auto"
-          style={{ color: 'var(--text-secondary)' }}
+          style={{ color: "var(--text-secondary)" }}
         >
-          Drop in an idea and start branching. Connect blocks to explore and evolve your thoughts.
+          Drop in an idea and start branching. Connect blocks to explore and
+          evolve your thoughts.
         </p>
 
         {/* Quick actions */}
@@ -53,16 +55,17 @@ export function EmptyState() {
             onClick={handleAddText}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
             style={{
-              background: 'var(--accent-primary)',
-              color: 'black',
+              background: "var(--accent-primary)",
+              color: "black",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(255, 255, 255, 0.3)';
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow =
+                "0 8px 24px rgba(255, 255, 255, 0.3)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "none";
             }}
           >
             <Type size={16} />
@@ -73,16 +76,17 @@ export function EmptyState() {
             onClick={handleAddImage}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
             style={{
-              background: 'var(--accent-secondary)',
-              color: 'black',
+              background: "var(--accent-secondary)",
+              color: "black",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(255, 255, 255, 0.3)';
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow =
+                "0 8px 24px rgba(255, 255, 255, 0.3)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "none";
             }}
           >
             <Image size={16} />
@@ -93,32 +97,35 @@ export function EmptyState() {
         {/* Tips */}
         <div
           className="mt-8 pt-6 border-t"
-          style={{ borderColor: 'var(--border-subtle)' }}
+          style={{ borderColor: "var(--border-subtle)" }}
         >
           <p
             className="text-xs font-medium mb-3"
-            style={{ color: 'var(--text-muted)' }}
+            style={{ color: "var(--text-muted)" }}
           >
             QUICK TIPS
           </p>
-          <div className="space-y-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+          <div
+            className="space-y-2 text-xs"
+            style={{ color: "var(--text-secondary)" }}
+          >
             <div className="flex items-center gap-2 justify-center">
               <kbd
                 className="px-1.5 py-0.5 rounded font-mono"
                 style={{
-                  background: 'var(--bg-elevated)',
-                  border: '1px solid var(--border-subtle)',
+                  background: "var(--bg-elevated)",
+                  border: "1px solid var(--border-subtle)",
                 }}
               >
                 T
               </kbd>
               <span>for new text</span>
-              <ArrowRight size={12} style={{ color: 'var(--text-muted)' }} />
+              <ArrowRight size={12} style={{ color: "var(--text-muted)" }} />
               <kbd
                 className="px-1.5 py-0.5 rounded font-mono"
                 style={{
-                  background: 'var(--bg-elevated)',
-                  border: '1px solid var(--border-subtle)',
+                  background: "var(--bg-elevated)",
+                  border: "1px solid var(--border-subtle)",
                 }}
               >
                 I
@@ -132,4 +139,3 @@ export function EmptyState() {
     </div>
   );
 }
-

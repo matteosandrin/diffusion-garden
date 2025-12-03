@@ -1,6 +1,15 @@
-import { useState, useRef, useEffect, useCallback, type TextareaHTMLAttributes } from 'react';
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  type TextareaHTMLAttributes,
+} from "react";
 
-interface AutoResizeTextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
+interface AutoResizeTextareaProps extends Omit<
+  TextareaHTMLAttributes<HTMLTextAreaElement>,
+  "onChange"
+> {
   value: string;
   onChange: (value: string) => void;
   minHeight?: string;
@@ -11,15 +20,15 @@ interface AutoResizeTextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAr
 export function AutoResizeTextarea({
   value,
   onChange,
-  minHeight = '60px',
-  maxHeight = '200px',
+  minHeight = "60px",
+  maxHeight = "200px",
   height,
-  className = '',
+  className = "",
   style,
   ...props
 }: AutoResizeTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+
   // Local state to prevent cursor reset on typing
   const [localValue, setLocalValue] = useState(value);
 
@@ -31,7 +40,7 @@ export function AutoResizeTextarea({
   // Auto-resize textarea
   useEffect(() => {
     if (!height && textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [localValue, height]);
@@ -39,10 +48,10 @@ export function AutoResizeTextarea({
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
-      setLocalValue(newValue);  // Update local state immediately (no cursor jump)
-      onChange(newValue);       // Notify parent
+      setLocalValue(newValue); // Update local state immediately (no cursor jump)
+      onChange(newValue); // Notify parent
     },
-    [onChange]
+    [onChange],
   );
 
   return (
@@ -59,4 +68,3 @@ export function AutoResizeTextarea({
     />
   );
 }
-

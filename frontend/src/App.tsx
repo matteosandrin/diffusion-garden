@@ -1,11 +1,11 @@
-import { useEffect, useCallback } from 'react';
-import { ReactFlowProvider } from '@xyflow/react';
-import { Canvas } from './components/Canvas';
-import { Toolbar } from './components/ui/Toolbar';
-import { EmptyState } from './components/EmptyState';
-import { useCanvasStore } from './store/canvasStore';
-import { canvasApi, settingsApi } from './api/client';
-import { useDebouncedCallback } from './hooks/useDebouncedCallback';
+import { useEffect, useCallback } from "react";
+import { ReactFlowProvider } from "@xyflow/react";
+import { Canvas } from "./components/Canvas";
+import { Toolbar } from "./components/ui/Toolbar";
+import { EmptyState } from "./components/EmptyState";
+import { useCanvasStore } from "./store/canvasStore";
+import { canvasApi, settingsApi } from "./api/client";
+import { useDebouncedCallback } from "./hooks/useDebouncedCallback";
 
 function AppContent() {
   const {
@@ -29,7 +29,7 @@ function AppContent() {
   const saveCanvas = useDebouncedCallback(
     async () => {
       if (!canvasId) return;
-      
+
       setSaving(true);
       try {
         await canvasApi.save(canvasId, {
@@ -39,13 +39,13 @@ function AppContent() {
         });
         setLastSaved(new Date());
       } catch (error) {
-        console.error('Failed to save canvas:', error);
+        console.error("Failed to save canvas:", error);
       } finally {
         setSaving(false);
       }
     },
     1000, // 1 second debounce
-    [canvasId, nodes, edges, viewport]
+    [canvasId, nodes, edges, viewport],
   );
 
   // Save on changes
@@ -62,7 +62,7 @@ function AppContent() {
         const prompts = await settingsApi.getPrompts();
         setPrompts(prompts);
       } catch (error) {
-        console.error('Failed to fetch prompts:', error);
+        console.error("Failed to fetch prompts:", error);
       }
     };
 
@@ -71,7 +71,7 @@ function AppContent() {
         const models = await settingsApi.getModels();
         setModels(models);
       } catch (error) {
-        console.error('Failed to fetch models:', error);
+        console.error("Failed to fetch models:", error);
       }
     };
 
@@ -84,10 +84,10 @@ function AppContent() {
     const initCanvas = async () => {
       // Check for existing canvas ID in URL or localStorage
       const urlParams = new URLSearchParams(window.location.search);
-      let id = urlParams.get('canvas');
-      
+      let id = urlParams.get("canvas");
+
       if (!id) {
-        id = localStorage.getItem('canvasId');
+        id = localStorage.getItem("canvasId");
       }
 
       if (id) {
@@ -97,7 +97,7 @@ function AppContent() {
           loadCanvas(canvas.nodes as any, canvas.edges as any, canvas.viewport);
           return;
         } catch (error) {
-          console.log('Canvas not found, creating new one');
+          console.log("Canvas not found, creating new one");
         }
       }
 
@@ -105,14 +105,14 @@ function AppContent() {
       try {
         const { id: newId } = await canvasApi.create();
         setCanvasId(newId);
-        localStorage.setItem('canvasId', newId);
-        
+        localStorage.setItem("canvasId", newId);
+
         // Update URL without reload
         const url = new URL(window.location.href);
-        url.searchParams.set('canvas', newId);
-        window.history.replaceState({}, '', url.toString());
+        url.searchParams.set("canvas", newId);
+        window.history.replaceState({}, "", url.toString());
       } catch (error) {
-        console.error('Failed to create canvas:', error);
+        console.error("Failed to create canvas:", error);
       }
     };
 
@@ -131,38 +131,41 @@ function AppContent() {
       }
 
       switch (e.key.toLowerCase()) {
-        case 't':
+        case "t":
           e.preventDefault();
           addTextBlock();
           break;
-        case 'i':
+        case "i":
           e.preventDefault();
           addImageBlock();
           break;
-        case 'delete':
-        case 'backspace':
+        case "delete":
+        case "backspace":
           if (selectedNodeIds.length > 0) {
             e.preventDefault();
             deleteSelectedNodes();
           }
           break;
-        case 'escape':
+        case "escape":
           useCanvasStore.getState().clearSelection();
           break;
       }
     },
-    [addTextBlock, addImageBlock, deleteSelectedNodes, selectedNodeIds]
+    [addTextBlock, addImageBlock, deleteSelectedNodes, selectedNodeIds],
   );
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
   const isEmpty = nodes.length === 0;
 
   return (
-    <div className="w-full h-full relative" style={{ background: 'var(--bg-canvas)' }}>
+    <div
+      className="w-full h-full relative"
+      style={{ background: "var(--bg-canvas)" }}
+    >
       <Toolbar />
       <Canvas />
       {isEmpty && <EmptyState />}

@@ -1,7 +1,7 @@
-import type { Node, Edge } from '@xyflow/react';
+import type { Node, Edge } from "@xyflow/react";
 
 // Block status for AI operations
-export type BlockStatus = 'idle' | 'running' | 'success' | 'error';
+export type BlockStatus = "idle" | "running" | "success" | "error";
 
 // Model configurations - now strings, actual values come from backend
 export type TextModel = string;
@@ -23,7 +23,7 @@ export interface ModelsConfig {
 
 // Text block data
 export interface TextBlockData {
-  type: 'text';
+  type: "text";
   title: string;
   content: string;
   prompt?: string; // Optional prompt for execution
@@ -38,11 +38,11 @@ export interface TextBlockData {
 
 // Image block data
 export interface ImageBlockData {
-  type: 'image';
+  type: "image";
   title: string;
   imageUrl: string; // URL or base64
   imageId?: string; // Backend image ID
-  source: 'upload' | 'generated';
+  source: "upload" | "generated";
   model?: ImageModel;
   status: BlockStatus;
   error?: string;
@@ -55,14 +55,14 @@ export interface ImageBlockData {
 
 // Input content item types
 export type InputContentItem =
-  | { type: 'text'; content: string }
-  | { type: 'image'; url: string };
+  | { type: "text"; content: string }
+  | { type: "image"; url: string };
 
 export type BlockData = TextBlockData | ImageBlockData;
 
 // Node types for React Flow
-export type TextBlockNode = Node<TextBlockData, 'textBlock'>;
-export type ImageBlockNode = Node<ImageBlockData, 'imageBlock'>;
+export type TextBlockNode = Node<TextBlockData, "textBlock">;
+export type ImageBlockNode = Node<ImageBlockData, "imageBlock">;
 export type AppNode = TextBlockNode | ImageBlockNode;
 
 // Edge type

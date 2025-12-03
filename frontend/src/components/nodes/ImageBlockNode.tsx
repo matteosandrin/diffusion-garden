@@ -1,38 +1,45 @@
-import { memo, useCallback, useState, useRef, useEffect } from 'react';
-import { type NodeProps } from '@xyflow/react';
-import {
-  PilcrowRight,
-  Upload,
-  LayoutGrid,
-} from 'lucide-react';
-import type { ImageBlockData, ImageModel } from '../../types';
-import { useCanvasStore } from '../../store/canvasStore';
-import { toolsApi, imageApi } from '../../api/client';
-import { BaseBlockNode } from './BaseBlockNode';
-import { BlockToolbarButton } from '../ui/BlockToolbarButton';
+import { memo, useCallback, useState, useRef, useEffect } from "react";
+import { type NodeProps } from "@xyflow/react";
+import { PilcrowRight, Upload, LayoutGrid } from "lucide-react";
+import type { ImageBlockData, ImageModel } from "../../types";
+import { useCanvasStore } from "../../store/canvasStore";
+import { toolsApi, imageApi } from "../../api/client";
+import { BaseBlockNode } from "./BaseBlockNode";
+import { BlockToolbarButton } from "../ui/BlockToolbarButton";
 
 function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as ImageBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock, addImageBlock, getInputBlockContent, getInputBlocks, models } = useCanvasStore();
+  const {
+    updateBlockData,
+    updateBlockStatus,
+    addTextBlock,
+    addImageBlock,
+    getInputBlockContent,
+    getInputBlocks,
+    models,
+  } = useCanvasStore();
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const promptFromInputRef = useRef(false);
-  const lastInputContentRef = useRef<string>('');
+  const lastInputContentRef = useRef<string>("");
 
   // Get input blocks and their content
   const inputContentItems = getInputBlockContent(id);
   // Convert array to string: extract text content and join with newlines
-  const inputContent = inputContentItems.length > 0
-    ? inputContentItems
-        .filter(item => item.type === 'text')
-        .map(item => item.content)
-        .join('\n\n')
-        .trim()
-    : '';
+  const inputContent =
+    inputContentItems.length > 0
+      ? inputContentItems
+          .filter((item) => item.type === "text")
+          .map((item) => item.content)
+          .join("\n\n")
+          .trim()
+      : "";
 
   // Monitor input blocks and update prompt accordingly
   useEffect(() => {
-    const hasTextualInput = inputContentItems.some(item => item.type === 'text');
+    const hasTextualInput = inputContentItems.some(
+      (item) => item.type === "text",
+    );
     if (hasTextualInput) {
       // Only update if the input content actually changed
       if (inputContent !== lastInputContentRef.current) {
@@ -43,52 +50,71 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     } else {
       // No textual input blocks - clear prompt if it was from input
       if (promptFromInputRef.current) {
-        updateBlockData(id, { prompt: '' });
+        updateBlockData(id, { prompt: "" });
         promptFromInputRef.current = false;
-        lastInputContentRef.current = '';
+        lastInputContentRef.current = "";
       }
     }
   }, [id, inputContentItems, inputContent, updateBlockData]);
 
   // Determine if prompt is from textual input blocks
-  const promptFromInput = inputContentItems.some(item => item.type === 'text');
+  const promptFromInput = inputContentItems.some(
+    (item) => item.type === "text",
+  );
 
   const handlePromptChange = useCallback(
     (value: string) => {
       // Only allow manual changes if prompt is not from textual input blocks
-      const hasTextualInput = inputContentItems.some(item => item.type === 'text');
+      const hasTextualInput = inputContentItems.some(
+        (item) => item.type === "text",
+      );
       if (!hasTextualInput) {
         updateBlockData(id, { prompt: value });
         promptFromInputRef.current = false;
       }
     },
-    [id, inputContentItems, updateBlockData]
+    [id, inputContentItems, updateBlockData],
   );
 
   const handleModelChange = useCallback(
     (model: string) => {
       updateBlockData(id, { model: model as ImageModel });
     },
-    [id, updateBlockData]
+    [id, updateBlockData],
   );
 
   const handleGenerate = useCallback(async () => {
     if (!blockData.prompt?.trim()) return;
 
-    updateBlockStatus(id, 'running');
-    
+    updateBlockStatus(id, "running");
+
     try {
-      const response = await toolsApi.generateImage(blockData.prompt, inputContentItems, blockData.model as ImageModel, blockData.variation || false);
+      const response = await toolsApi.generateImage(
+        blockData.prompt,
+        inputContentItems,
+        blockData.model as ImageModel,
+        blockData.variation || false,
+      );
       updateBlockData(id, {
         imageUrl: response.imageUrl,
         imageId: response.imageId,
-        source: 'generated',
+        source: "generated",
       });
-      updateBlockStatus(id, 'success');
+      updateBlockStatus(id, "success");
     } catch (error) {
-      updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Failed to generate image');
+      updateBlockStatus(
+        id,
+        "error",
+        error instanceof Error ? error.message : "Failed to generate image",
+      );
     }
-  }, [id, blockData.prompt, inputContentItems, updateBlockStatus, updateBlockData]);
+  }, [
+    id,
+    blockData.prompt,
+    inputContentItems,
+    updateBlockStatus,
+    updateBlockData,
+  ]);
 
   const handleDescribe = useCallback(async () => {
     if (!blockData.imageUrl) return;
@@ -110,7 +136,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         prompt: store.prompts.describe,
         sourceBlockId: id,
         autoRun: true,
-      }
+      },
     );
 
     // Connect current text block to new text block
@@ -120,7 +146,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
       sourceHandle: null,
       targetHandle: null,
     });
-   
   }, [id, blockData.imageUrl, addTextBlock]);
 
   const handleVariations = useCallback(() => {
@@ -133,8 +158,10 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
 
     // Get input text blocks
     const inputBlocks = getInputBlocks(id);
-    const inputTextBlocks = inputBlocks.filter(block => block.data.type === 'text');
-    
+    const inputTextBlocks = inputBlocks.filter(
+      (block) => block.data.type === "text",
+    );
+
     if (inputTextBlocks.length === 0) return;
 
     const currentNodeWidth = currentNode.width || 280;
@@ -150,22 +177,22 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
       { x: baseX, y: baseY },
       { x: baseX + currentNodeWidth + blockSpacing, y: baseY },
       { x: baseX, y: baseY + currentNodeHeight + blockSpacing },
-      { x: baseX + currentNodeWidth + blockSpacing, y: baseY + currentNodeHeight + blockSpacing },
+      {
+        x: baseX + currentNodeWidth + blockSpacing,
+        y: baseY + currentNodeHeight + blockSpacing,
+      },
     ];
 
     // Create 4 new image blocks
     const newBlockIds = gridPositions.map((position) => {
-      return addImageBlock(
-        position,
-        {
-          model: blockData.model || models.defaultImageModel,
-          source: 'generated',
-          status: 'idle',
-          autoRun: true,
-          prompt: blockData.prompt, // Pass prompt directly for autoRun to work
-          variation: true,
-        }
-      );
+      return addImageBlock(position, {
+        model: blockData.model || models.defaultImageModel,
+        source: "generated",
+        status: "idle",
+        autoRun: true,
+        prompt: blockData.prompt, // Pass prompt directly for autoRun to work
+        variation: true,
+      });
     });
 
     // Connect each new image block to all input text blocks
@@ -179,30 +206,42 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         });
       });
     });
-  }, [id, promptFromInput, blockData.model, blockData.prompt, models.defaultImageModel, getInputBlocks, addImageBlock]);
+  }, [
+    id,
+    promptFromInput,
+    blockData.model,
+    blockData.prompt,
+    models.defaultImageModel,
+    getInputBlocks,
+    addImageBlock,
+  ]);
 
   const handleFileUpload = useCallback(
     async (file: File) => {
-      if (!file.type.startsWith('image/')) {
-        updateBlockStatus(id, 'error', 'Please upload an image file');
+      if (!file.type.startsWith("image/")) {
+        updateBlockStatus(id, "error", "Please upload an image file");
         return;
       }
 
-      updateBlockStatus(id, 'running');
+      updateBlockStatus(id, "running");
 
       try {
         const result = await imageApi.upload(file);
         updateBlockData(id, {
           imageUrl: result.imageUrl,
           imageId: result.imageId,
-          source: 'upload',
+          source: "upload",
         });
-        updateBlockStatus(id, 'success');
+        updateBlockStatus(id, "success");
       } catch (error) {
-        updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Upload failed');
+        updateBlockStatus(
+          id,
+          "error",
+          error instanceof Error ? error.message : "Upload failed",
+        );
       }
     },
-    [id, updateBlockData, updateBlockStatus]
+    [id, updateBlockData, updateBlockStatus],
   );
 
   const handleDrop = useCallback(
@@ -215,7 +254,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         handleFileUpload(file);
       }
     },
-    [handleFileUpload]
+    [handleFileUpload],
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -234,7 +273,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         handleFileUpload(file);
       }
     },
-    [handleFileUpload]
+    [handleFileUpload],
   );
 
   const handleAutoRunComplete = useCallback(() => {
@@ -254,14 +293,14 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           <>
             <BlockToolbarButton
               onClick={handleVariations}
-              disabled={blockData.status === 'running' || !promptFromInput}
+              disabled={blockData.status === "running" || !promptFromInput}
               title="Variations"
             >
               <LayoutGrid size={16} />
             </BlockToolbarButton>
             <BlockToolbarButton
               onClick={handleDescribe}
-              disabled={blockData.status === 'running' || !blockData.imageUrl}
+              disabled={blockData.status === "running" || !blockData.imageUrl}
               title="Describe"
             >
               <PilcrowRight size={16} />
@@ -291,24 +330,32 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
             <div className="relative group">
               <img
                 src={blockData.imageUrl}
-                alt={blockData.title || 'Block image'}
+                alt={blockData.title || "Block image"}
                 className="w-full cursor-pointer"
               />
             </div>
           ) : (
             <div className="p-3 h-[200px]">
-              {blockData.status !== 'running' && (
+              {blockData.status !== "running" && (
                 <div
                   className="flex flex-col h-full items-center justify-center gap-2 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors"
                   style={{
-                    borderColor: isDragOver ? 'var(--accent-secondary)' : 'var(--border-default)',
-                    background: isDragOver ? 'rgba(255, 255, 255, 0.1)' : 'var(--bg-elevated)',
+                    borderColor: isDragOver
+                      ? "var(--accent-secondary)"
+                      : "var(--border-default)",
+                    background: isDragOver
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "var(--bg-elevated)",
                   }}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Upload
                     size={24}
-                    style={{ color: isDragOver ? 'var(--text-primary)' : 'var(--text-muted)' }}
+                    style={{
+                      color: isDragOver
+                        ? "var(--text-primary)"
+                        : "var(--text-muted)",
+                    }}
                   />
                   <input
                     ref={fileInputRef}
@@ -328,4 +375,3 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
 }
 
 export const ImageBlockNode = memo(ImageBlockNodeComponent);
-

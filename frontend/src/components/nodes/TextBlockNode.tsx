@@ -1,42 +1,49 @@
-import { memo, useCallback } from 'react';
-import { type NodeProps } from '@xyflow/react';
+import { memo, useCallback } from "react";
+import { type NodeProps } from "@xyflow/react";
 import {
   Image,
   ListChevronsUpDown,
   SeparatorHorizontal,
   Shuffle,
-} from 'lucide-react';
-import type { TextBlockData, TextModel } from '../../types';
-import { useCanvasStore } from '../../store/canvasStore';
-import { toolsApi } from '../../api/client';
-import { BaseBlockNode } from './BaseBlockNode';
-import { BlockToolbarButton } from '../ui/BlockToolbarButton';
-import { AutoResizeTextarea } from '../ui/AutoResizeTextarea';
-import { splitContent } from '../../utils/splitContent';
+} from "lucide-react";
+import type { TextBlockData, TextModel } from "../../types";
+import { useCanvasStore } from "../../store/canvasStore";
+import { toolsApi } from "../../api/client";
+import { BaseBlockNode } from "./BaseBlockNode";
+import { BlockToolbarButton } from "../ui/BlockToolbarButton";
+import { AutoResizeTextarea } from "../ui/AutoResizeTextarea";
+import { splitContent } from "../../utils/splitContent";
 
 function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as TextBlockData;
-  const { updateBlockData, updateBlockStatus, addTextBlock, addImageBlock, getInputBlockContent, models } = useCanvasStore();
+  const {
+    updateBlockData,
+    updateBlockStatus,
+    addTextBlock,
+    addImageBlock,
+    getInputBlockContent,
+    models,
+  } = useCanvasStore();
 
   const handleContentChange = useCallback(
     (value: string) => {
       updateBlockData(id, { content: value });
     },
-    [id, updateBlockData]
+    [id, updateBlockData],
   );
 
   const handlePromptChange = useCallback(
     (value: string) => {
       updateBlockData(id, { prompt: value });
     },
-    [id, updateBlockData]
+    [id, updateBlockData],
   );
 
   const handleModelChange = useCallback(
     (model: string) => {
       updateBlockData(id, { model: model as TextModel });
     },
-    [id, updateBlockData]
+    [id, updateBlockData],
   );
 
   const handleExpand = useCallback(async () => {
@@ -59,7 +66,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         prompt: store.prompts.expand,
         sourceBlockId: id,
         autoRun: true,
-      }
+      },
     );
 
     // Connect current text block to new text block
@@ -69,7 +76,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       sourceHandle: null,
       targetHandle: null,
     });
-   
   }, [id, blockData.content, addTextBlock]);
 
   const handleTwist = useCallback(async () => {
@@ -92,7 +98,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         prompt: store.prompts.twist,
         sourceBlockId: id,
         autoRun: true,
-      }
+      },
     );
 
     // Connect current text block to new text block
@@ -102,26 +108,33 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       sourceHandle: null,
       targetHandle: null,
     });
-   
   }, [id, blockData.content, addTextBlock]);
 
   const handleExecute = useCallback(async () => {
     const promptToExecute = blockData.prompt?.trim();
     if (!promptToExecute) return;
 
-    updateBlockStatus(id, 'running');
+    updateBlockStatus(id, "running");
 
     try {
       // Get content from connected input blocks
       const inputContentItems = getInputBlockContent(id);
-      
-      const response = await toolsApi.generateText(promptToExecute, inputContentItems, blockData.model);
-      
+
+      const response = await toolsApi.generateText(
+        promptToExecute,
+        inputContentItems,
+        blockData.model,
+      );
+
       // Update content with the result
       updateBlockData(id, { content: response.result });
-      updateBlockStatus(id, 'success');
+      updateBlockStatus(id, "success");
     } catch (error) {
-      updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Failed to execute');
+      updateBlockStatus(
+        id,
+        "error",
+        error instanceof Error ? error.message : "Failed to execute",
+      );
     }
   }, [id, blockData, updateBlockStatus, updateBlockData, getInputBlockContent]);
 
@@ -143,10 +156,10 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       },
       {
         prompt: store.prompts.twist,
-        source: 'generated',
-        status: 'idle',
+        source: "generated",
+        status: "idle",
         sourceBlockId: id,
-      }
+      },
     );
 
     // Connect text block to image block
@@ -181,7 +194,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         {
           content: item,
           sourceBlockId: id,
-        }
+        },
       );
 
       // Connect source block to new block
@@ -210,28 +223,37 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         <>
           <BlockToolbarButton
             onClick={handleExpand}
-            disabled={blockData.status === 'running' || !blockData.content.trim()}
+            disabled={
+              blockData.status === "running" || !blockData.content.trim()
+            }
             title="Expand"
           >
             <ListChevronsUpDown size={16} />
           </BlockToolbarButton>
           <BlockToolbarButton
             onClick={handleTwist}
-            disabled={blockData.status === 'running' || !blockData.content.trim()}
+            disabled={
+              blockData.status === "running" || !blockData.content.trim()
+            }
             title="Twist"
           >
             <Shuffle size={16} />
           </BlockToolbarButton>
           <BlockToolbarButton
             onClick={handleSplit}
-            disabled={blockData.status === 'running' || splitContent(blockData.content).length < 2}
+            disabled={
+              blockData.status === "running" ||
+              splitContent(blockData.content).length < 2
+            }
             title="Split"
           >
             <SeparatorHorizontal size={16} />
           </BlockToolbarButton>
           <BlockToolbarButton
             onClick={handleGenerateImage}
-            disabled={blockData.status === 'running' || !blockData.content.trim()}
+            disabled={
+              blockData.status === "running" || !blockData.content.trim()
+            }
             title="Generate image"
           >
             <Image size={16} />
@@ -251,13 +273,16 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       onAutoRunComplete={handleAutoRunComplete}
     >
       {/* Content section */}
-      <div className={`px-3 py-2 border-b ${selected ? 'nowheel' : ''}`} style={{ borderColor: 'var(--border-subtle)' }}>
+      <div
+        className={`px-3 py-2 border-b ${selected ? "nowheel" : ""}`}
+        style={{ borderColor: "var(--border-subtle)" }}
+      >
         <AutoResizeTextarea
           value={blockData.content}
           onChange={handleContentChange}
           rows={3}
           minHeight="180px"
-          style={{ color: 'var(--text-primary)' }}
+          style={{ color: "var(--text-primary)" }}
         />
       </div>
     </BaseBlockNode>
@@ -265,4 +290,3 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
 }
 
 export const TextBlockNode = memo(TextBlockNodeComponent);
-

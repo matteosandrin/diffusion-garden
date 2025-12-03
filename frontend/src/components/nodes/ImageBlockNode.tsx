@@ -296,27 +296,29 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
               />
             </div>
           ) : (
-            <div className="p-3">
-              <div
-                className="flex flex-col items-center justify-center h-[177px] gap-2 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors"
-                style={{
-                  borderColor: isDragOver ? 'var(--accent-secondary)' : 'var(--border-default)',
-                  background: isDragOver ? 'rgba(255, 255, 255, 0.1)' : 'var(--bg-elevated)',
-                }}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload
-                  size={24}
-                  style={{ color: isDragOver ? 'var(--text-primary)' : 'var(--text-muted)' }}
-                />
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileInputChange}
-                  className="hidden"
-                />
-              </div>
+            <div className="p-3 h-[200px]">
+              {blockData.status !== 'running' && (
+                <div
+                  className="flex flex-col h-full items-center justify-center gap-2 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors"
+                  style={{
+                    borderColor: isDragOver ? 'var(--accent-secondary)' : 'var(--border-default)',
+                    background: isDragOver ? 'rgba(255, 255, 255, 0.1)' : 'var(--bg-elevated)',
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload
+                    size={24}
+                    style={{ color: isDragOver ? 'var(--text-primary)' : 'var(--text-muted)' }}
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileInputChange}
+                    className="hidden"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

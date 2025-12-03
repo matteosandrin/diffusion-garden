@@ -10,7 +10,8 @@ import type {
   ModelsConfig,
 } from "../types";
 
-const API_BASE = "/api";
+// Use environment variable for API base URL in production, fallback to relative path for dev
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 // Generic fetch wrapper with error handling
 async function apiFetch<T>(

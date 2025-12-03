@@ -1,23 +1,23 @@
+import os
+from pathlib import Path
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
+# Get the directory where this config file lives (backend/app/)
+_THIS_DIR = Path(__file__).resolve().parent
+# .env is in backend/, one level up from backend/app/
+_ENV_FILE = _THIS_DIR.parent / ".env"
+
 
 class Settings(BaseSettings):
-    # API Keys
     openai_api_key: str = ""
     google_api_key: str = ""
-
-    # Database
-    database_url: str = "postgresql://localhost/canvas"
-
-    # Image storage
-    images_dir: str = "./images"
-
-    # Server
+    database_url: str  # Required - will raise if DATABASE_URL not set
+    images_dir: str  # Required - will raise if IMAGES_DIR not set
     debug: bool = True
 
     class Config:
-        env_file = ".env"
+        env_file = _ENV_FILE
         extra = "ignore"
 
 

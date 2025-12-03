@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import uuid
@@ -7,6 +7,7 @@ from ..services import AIService, get_ai_service
 from ..database import get_db
 from ..models import Image
 from ..config import get_settings
+from ..rate_limiter import limiter
 
 router = APIRouter(prefix="/tools", tags=["tools"])
 settings = get_settings()
@@ -58,8 +59,11 @@ class GenerateImageResponse(BaseModel):
 
 
 @router.post("/generate-text", response_model=GenerateTextResponse)
+@limiter.limit("20/minute")
 async def execute_prompt(
-    request: GenerateTextRequest, ai_service: AIService = Depends(get_ai_service)
+    request: Request,
+    body: GenerateTextRequest,
+    ai_service: AIService = Depends(get_ai_service),
 ):
     """
     Execute a prompt with input text and/or images integrated into it.
@@ -68,7 +72,7 @@ async def execute_prompt(
     """
     try:
         result = await ai_service.execute_prompt(
-            request.prompt, request.input, request.image_urls, request.model
+            body.prompt, body.input, body.image_urls, body.model
         )
         return GenerateTextResponse(result=result)
     except ValueError as e:
@@ -80,8 +84,10 @@ async def execute_prompt(
 
 
 @router.post("/generate-image", response_model=GenerateImageResponse)
+@limiter.limit("20/minute")
 async def generate_image(
-    request: GenerateImageRequest,
+    request: Request,
+    body: GenerateImageRequest,
     ai_service: AIService = Depends(get_ai_service),
     db: Session = Depends(get_db),
 ):
@@ -92,11 +98,11 @@ async def generate_image(
     try:
         # Generate image
         image, mime_type = await ai_service.generate_image(
-            request.prompt,
-            request.input,
-            request.image_urls,
-            request.model,
-            request.is_variation,
+            body.prompt,
+            body.input,
+            body.image_urls,
+            body.model,
+            body.is_variation,
         )
 
         # Map mime_type to file extension and format
@@ -128,7 +134,7 @@ async def generate_image(
             filename=filename,
             content_type=mime_type,
             source="generated",
-            prompt=request.prompt,
+            prompt=body.prompt,
         )
         db.add(image_record)
         db.commit()

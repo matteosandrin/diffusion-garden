@@ -15,8 +15,8 @@ AVAILABLE_TEXT_MODELS = [
 ]
 
 AVAILABLE_IMAGE_MODELS = [
-    {"id" : "gemini-3-pro-image-preview", "label": "Nano Banana Pro"},
-    {"id" : "gemini-2.5-flash-image" , "label" : "Nano Banana"}
+    {"id": "gemini-3-pro-image-preview", "label": "Nano Banana Pro"},
+    {"id": "gemini-2.5-flash-image", "label": "Nano Banana"},
 ]
 
 DEFAULT_TEXT_MODEL = AVAILABLE_TEXT_MODELS[1]["id"]
@@ -25,12 +25,14 @@ DEFAULT_IMAGE_MODEL = AVAILABLE_IMAGE_MODELS[1]["id"]
 
 class ModelOption(BaseModel):
     """A single model option."""
+
     id: str
     label: str
 
 
 class ModelsResponse(BaseModel):
     """Available models and defaults response."""
+
     textModels: List[ModelOption]
     imageModels: List[ModelOption]
     defaultTextModel: str
@@ -39,6 +41,7 @@ class ModelsResponse(BaseModel):
 
 class SettingsResponse(BaseModel):
     """Current settings response."""
+
     defaultTextModel: str
     defaultImageModel: str
     apiKeyStatus: dict[str, bool]
@@ -46,6 +49,7 @@ class SettingsResponse(BaseModel):
 
 class ApiKeyStatus(BaseModel):
     """API key status response."""
+
     openai: bool
     google: bool
 
@@ -59,7 +63,7 @@ async def get_app_settings():
         apiKeyStatus={
             "openai": bool(settings.openai_api_key),
             "google": bool(settings.google_api_key),
-        }
+        },
     )
 
 

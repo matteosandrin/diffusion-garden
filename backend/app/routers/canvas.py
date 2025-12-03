@@ -10,11 +10,13 @@ router = APIRouter(prefix="/canvas", tags=["canvas"])
 
 class CanvasCreate(BaseModel):
     """Request body for creating a canvas."""
+
     pass
 
 
 class CanvasUpdate(BaseModel):
     """Request body for updating a canvas."""
+
     nodes: list[dict[str, Any]] | None = None
     edges: list[dict[str, Any]] | None = None
     viewport: dict[str, float] | None = None
@@ -22,6 +24,7 @@ class CanvasUpdate(BaseModel):
 
 class CanvasResponse(BaseModel):
     """Response body for canvas operations."""
+
     id: str
     nodes: list[dict[str, Any]]
     edges: list[dict[str, Any]]
@@ -49,7 +52,7 @@ async def get_canvas(canvas_id: str, db: Session = Depends(get_db)):
     canvas = db.query(Canvas).filter(Canvas.id == canvas_id).first()
     if not canvas:
         raise HTTPException(status_code=404, detail="Canvas not found")
-    
+
     return CanvasResponse(
         id=canvas.id,
         nodes=canvas.nodes or [],
@@ -62,22 +65,20 @@ async def get_canvas(canvas_id: str, db: Session = Depends(get_db)):
 
 @router.put("/{canvas_id}")
 async def update_canvas(
-    canvas_id: str,
-    update: CanvasUpdate,
-    db: Session = Depends(get_db)
+    canvas_id: str, update: CanvasUpdate, db: Session = Depends(get_db)
 ):
     """Update a canvas (nodes, edges, viewport)."""
     canvas = db.query(Canvas).filter(Canvas.id == canvas_id).first()
     if not canvas:
         raise HTTPException(status_code=404, detail="Canvas not found")
-    
+
     if update.nodes is not None:
         canvas.nodes = update.nodes
     if update.edges is not None:
         canvas.edges = update.edges
     if update.viewport is not None:
         canvas.viewport = update.viewport
-    
+
     db.commit()
     return {"success": True}
 
@@ -88,8 +89,7 @@ async def delete_canvas(canvas_id: str, db: Session = Depends(get_db)):
     canvas = db.query(Canvas).filter(Canvas.id == canvas_id).first()
     if not canvas:
         raise HTTPException(status_code=404, detail="Canvas not found")
-    
+
     db.delete(canvas)
     db.commit()
     return {"success": True}
-

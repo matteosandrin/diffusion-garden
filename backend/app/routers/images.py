@@ -16,41 +16,42 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 
 @router.post("/upload")
-async def upload_image(
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db)
-):
+async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """Upload an image file."""
     # Validate content type
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid file type. Allowed types: {', '.join(ALLOWED_TYPES)}"
+            detail=f"Invalid file type. Allowed types: {', '.join(ALLOWED_TYPES)}",
         )
-    
+
     # Read file content
     content = await file.read()
-    
+
     # Validate file size
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=400,
-            detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024*1024)}MB"
+            detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024*1024)}MB",
         )
-    
+
     # Generate unique filename
     image_id = str(uuid.uuid4())
-    ext = file.filename.split(".")[-1] if file.filename and "." in file.filename else "png"
+    ext = (
+        file.filename.split(".")[-1]
+        if file.filename and "." in file.filename
+        else "png"
+    )
     filename = f"{image_id}.{ext}"
     filepath = os.path.join(settings.images_dir, filename)
-    
+
     # Ensure images directory exists
     os.makedirs(settings.images_dir, exist_ok=True)
-    
+
     # Save file
     with open(filepath, "wb") as f:
         f.write(content)
-    
+
     # Create database record
     image_record = Image(
         id=image_id,
@@ -61,7 +62,7 @@ async def upload_image(
     )
     db.add(image_record)
     db.commit()
-    
+
     return {
         "imageId": image_id,
         "imageUrl": f"/api/images/{image_id}",
@@ -74,11 +75,11 @@ async def get_image(image_id: str, db: Session = Depends(get_db)):
     image_record = db.query(Image).filter(Image.id == image_id).first()
     if not image_record:
         raise HTTPException(status_code=404, detail="Image not found")
-    
+
     filepath = os.path.join(settings.images_dir, image_record.filename)
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="Image file not found")
-    
+
     return FileResponse(
         filepath,
         media_type=image_record.content_type or "image/png",
@@ -92,15 +93,14 @@ async def delete_image(image_id: str, db: Session = Depends(get_db)):
     image_record = db.query(Image).filter(Image.id == image_id).first()
     if not image_record:
         raise HTTPException(status_code=404, detail="Image not found")
-    
+
     # Delete file
     filepath = os.path.join(settings.images_dir, image_record.filename)
     if os.path.exists(filepath):
         os.remove(filepath)
-    
+
     # Delete database record
     db.delete(image_record)
     db.commit()
-    
-    return {"success": True}
 
+    return {"success": True}

@@ -32,6 +32,7 @@ export interface TextBlockData {
   error?: string;
   generatedBy?: string; // Tool that generated this block
   sourceBlockId?: string; // Parent block ID
+  autoRun?: boolean; // If true, execute immediately after creation
   [key: string]: unknown; // Index signature for React Flow compatibility
 }
 
@@ -47,6 +48,7 @@ export interface ImageBlockData {
   error?: string;
   prompt?: string; // If generated, the prompt used
   sourceBlockId?: string;
+  autoRun?: boolean; // If true, generate image immediately after creation
   [key: string]: unknown; // Index signature for React Flow compatibility
 }
 

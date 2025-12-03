@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     google_api_key: str = ""
 
     # Database
-    database_url: str = "sqlite:///./canvas.db"
+    database_url: str = "postgresql://localhost/canvas"
 
     # Image storage
     images_dir: str = "./images"

@@ -67,6 +67,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         sourceBlockId: id,
         autoRun: true,
       },
+      true,
     );
 
     // Connect current text block to new text block
@@ -99,6 +100,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         sourceBlockId: id,
         autoRun: true,
       },
+      true,
     );
 
     // Connect current text block to new text block
@@ -160,6 +162,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         status: "idle",
         sourceBlockId: id,
       },
+      true,
     );
 
     // Connect text block to image block
@@ -195,6 +198,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
           content: item,
           sourceBlockId: id,
         },
+        true,
       );
 
       // Connect source block to new block

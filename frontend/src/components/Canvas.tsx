@@ -35,8 +35,6 @@ const edgeTypes = {
   animated: AnimatedEdge,
 };
 
-const BLOCK_HEIGHT = 280;
-
 export function Canvas() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const connectingNodeId = useRef<string | null>(null);
@@ -45,6 +43,7 @@ export function Canvas() {
   const {
     nodes,
     edges,
+    defaultBlockSize,
     onNodesChange,
     onEdgesChange,
     onConnect,
@@ -202,8 +201,8 @@ export function Canvas() {
   const handleEdgeDropAddTextBlock = useCallback(() => {
     if (edgeDropMenu) {
       const centeredPosition = {
-        x: edgeDropMenu.flowPosition.x,
-        y: edgeDropMenu.flowPosition.y - BLOCK_HEIGHT / 2,
+        x: edgeDropMenu.flowPosition.x + defaultBlockSize.width / 2,
+        y: edgeDropMenu.flowPosition.y,
       };
       addTextBlockWithEdge(centeredPosition, edgeDropMenu.sourceNodeId);
       setEdgeDropMenu(null);
@@ -214,8 +213,8 @@ export function Canvas() {
   const handleEdgeDropAddImageBlock = useCallback(() => {
     if (edgeDropMenu) {
       const centeredPosition = {
-        x: edgeDropMenu.flowPosition.x,
-        y: edgeDropMenu.flowPosition.y - BLOCK_HEIGHT / 2,
+        x: edgeDropMenu.flowPosition.x + defaultBlockSize.width / 2,
+        y: edgeDropMenu.flowPosition.y,
       };
       addImageBlockWithEdge(centeredPosition, edgeDropMenu.sourceNodeId);
       setEdgeDropMenu(null);

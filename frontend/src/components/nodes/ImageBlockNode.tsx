@@ -312,7 +312,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         runButtonTitle="Generate image"
         prompt={blockData.prompt}
         onPromptChange={handlePromptChange}
-        promptPlaceholder="Enter image generation prompt here..."
+        promptPlaceholder="Let your prompt imagination run wild..."
         promptReadonly={promptFromInput}
         models={models.imageModels}
         selectedModel={blockData.model || models.defaultImageModel}

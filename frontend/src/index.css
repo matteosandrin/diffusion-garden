@@ -178,3 +178,30 @@ body {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+/* Shimmer animation for placeholder text - left to right sweep */
+@keyframes shimmer-sweep {
+  0% {
+    background-position: 125% center;
+  }
+  100% {
+    background-position: -25% center;
+  }
+}
+
+.shimmer-placeholder-overlay {
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--text-muted) 0%,
+    var(--text-muted) 40%,
+    var(--text-secondary) 50%,
+    var(--text-muted) 60%,
+    var(--text-muted) 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer-sweep 3s ease-in-out infinite;
+}

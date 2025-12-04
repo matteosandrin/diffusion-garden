@@ -309,24 +309,36 @@ export function BaseBlockNode({
             zIndex: -1,
           }}
         >
-          <AutoResizeTextarea
-            ref={promptTextareaRef}
-            value={prompt || ""}
-            onChange={(value) => onPromptChange?.(value)}
-            placeholder={promptPlaceholder}
-            rows={2}
-            readOnly={promptReadonly}
-            disabled={promptReadonly}
-            minHeight="45px"
-            maxHeight="120px"
-            style={{
-              color: promptReadonly
-                ? "var(--text-muted)"
-                : "var(--text-primary)",
-              cursor: promptReadonly ? "default" : "text",
-            }}
-            className="nowheel nodrag"
-          />
+          <div className="relative">
+            <AutoResizeTextarea
+              ref={promptTextareaRef}
+              value={prompt || ""}
+              onChange={(value) => onPromptChange?.(value)}
+              rows={2}
+              readOnly={promptReadonly}
+              disabled={promptReadonly}
+              minHeight="45px"
+              maxHeight="120px"
+              style={{
+                color: promptReadonly
+                  ? "var(--text-muted)"
+                  : "var(--text-primary)",
+                cursor: promptReadonly ? "default" : "text",
+              }}
+              className="nowheel nodrag"
+            />
+            {/* Shimmer placeholder overlay */}
+            {!prompt && !promptReadonly && (
+              <div
+                className="shimmer-placeholder-overlay absolute top-0 left-0 right-0 text-xs pr-1"
+                style={{
+                  lineHeight: "1.5",
+                }}
+              >
+                {promptPlaceholder}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

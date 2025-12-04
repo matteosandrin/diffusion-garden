@@ -9,6 +9,7 @@ import type {
   Prompts,
   InputContentItem,
   ModelsConfig,
+  AppNode,
 } from "../types";
 
 // Use environment variable for API base URL in production, fallback to relative path for dev
@@ -52,11 +53,29 @@ export const canvasApi = {
 
   load: (id: string) => apiFetch<CanvasState>(`/canvas/${id}`),
 
-  save: (id: string, state: Partial<CanvasState>) =>
-    apiFetch<{ success: boolean }>(`/canvas/${id}`, {
+  save: (id: string, state: Partial<CanvasState>) => {
+    const stripApiHost = (url: string): string => {
+      if (API_HOST && url.startsWith(API_HOST)) {
+        return url.slice(API_HOST.length);
+      }
+      return url;
+    };
+    const newState: Partial<CanvasState> = {
+      ...state,
+      nodes: state.nodes?.map((node: AppNode) => {
+        const data = node.data ? { ...node.data } : undefined;
+        if (data && data.type === "image") {
+          data.imageUrl = stripApiHost(data.imageUrl);
+        }
+        return { ...node, data } as AppNode;
+      }),
+    };
+
+    return apiFetch<{ success: boolean }>(`/canvas/${id}`, {
       method: "PUT",
-      body: JSON.stringify(state),
-    }),
+      body: JSON.stringify(newState),
+    });
+  },
 
   delete: (id: string) =>
     apiFetch<{ success: boolean }>(`/canvas/${id}`, { method: "DELETE" }),

@@ -11,7 +11,8 @@ import type {
 } from "../types";
 
 // Use environment variable for API base URL in production, fallback to relative path for dev
-const API_BASE = (import.meta.env.VITE_API_HOST || "") + "/api";
+const API_HOST = import.meta.env.VITE_API_HOST || "";
+const API_BASE = API_HOST + "/api";
 
 // Generic fetch wrapper with error handling
 async function apiFetch<T>(
@@ -95,7 +96,7 @@ export const toolsApi = {
         is_variation: isVariation,
       }),
     });
-    response.imageUrl = `${API_BASE}${response.imageUrl}`;
+    response.imageUrl = `${API_HOST}${response.imageUrl}`;
     return response;
   },
 };

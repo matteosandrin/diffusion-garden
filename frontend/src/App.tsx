@@ -81,6 +81,11 @@ function AppContent() {
 
   // Initialize or load canvas
   useEffect(() => {
+    const setCanvasIdInUrl = (id: string) => {
+      const url = new URL(window.location.href);
+      url.searchParams.set("canvas", id);
+      window.history.replaceState({}, "", url.toString());
+    };
     const initCanvas = async () => {
       // Check for existing canvas ID in URL or localStorage
       const urlParams = new URLSearchParams(window.location.search);
@@ -95,6 +100,7 @@ function AppContent() {
           const canvas = await canvasApi.load(id);
           setCanvasId(id);
           loadCanvas(canvas.nodes as any, canvas.edges as any, canvas.viewport);
+          setCanvasIdInUrl(id);
           return;
         } catch (error) {
           console.log("Canvas not found, creating new one");
@@ -106,11 +112,7 @@ function AppContent() {
         const { id: newId } = await canvasApi.create();
         setCanvasId(newId);
         localStorage.setItem("canvasId", newId);
-
-        // Update URL without reload
-        const url = new URL(window.location.href);
-        url.searchParams.set("canvas", newId);
-        window.history.replaceState({}, "", url.toString());
+        setCanvasIdInUrl(newId);
       } catch (error) {
         console.error("Failed to create canvas:", error);
       }

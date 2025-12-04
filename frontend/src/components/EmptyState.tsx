@@ -1,4 +1,4 @@
-import { Sparkles, Type, Image, ArrowRight } from "lucide-react";
+import { Type, Image, ArrowRight } from "lucide-react";
 import { useCanvasStore } from "../store/canvasStore";
 
 export function EmptyState() {

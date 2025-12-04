@@ -1,19 +1,16 @@
 import { useState } from "react";
-import { Type, Image, Settings } from "lucide-react";
+import { Type, Image, Settings, LayoutGrid } from "lucide-react";
 import { useCanvasStore } from "../../store/canvasStore";
 import { SettingsPanel } from "./SettingsPanel";
+import { ToolbarButton } from "./ToolbarButton";
 
-export function Toolbar() {
+interface ToolbarProps {
+  onBackToGallery?: () => void;
+}
+
+export function Toolbar({ onBackToGallery }: ToolbarProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { addTextBlock, addImageBlock } = useCanvasStore();
-
-  const handleAddTextBlock = () => {
-    addTextBlock();
-  };
-
-  const handleAddImageBlock = () => {
-    addImageBlock();
-  };
 
   return (
     <>
@@ -26,64 +23,38 @@ export function Toolbar() {
         }}
       >
         {/* Add blocks */}
-        <button
-          onClick={handleAddTextBlock}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-          style={{ color: "var(--text-primary)" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--bg-card-hover)";
-            e.currentTarget.style.color = "var(--text-primary)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "var(--text-secondary)";
-          }}
-          title="Add Text Block (N)"
-        >
-          <Type size={16} style={{ color: "var(--accent-primary)" }} />
-          Text
-        </button>
+        <ToolbarButton
+          onClick={addTextBlock}
+          icon={<Type size={16} style={{ color: "var(--accent-primary)" }} />}
+          label="Text"
+        />
 
-        <button
-          onClick={handleAddImageBlock}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-          style={{ color: "var(--text-primary)" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--bg-card-hover)";
-            e.currentTarget.style.color = "var(--text-primary)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "var(--text-secondary)";
-          }}
-          title="Add Image Block (I)"
-        >
-          <Image size={16} style={{ color: "var(--accent-primary)" }} />
-          Image
-        </button>
+        <ToolbarButton
+          onClick={addImageBlock}
+          icon={<Image size={16} style={{ color: "var(--accent-primary)" }} />}
+          label="Image"
+        />
 
         <div
           className="w-px h-6 mx-1"
           style={{ background: "var(--border-subtle)" }}
         />
 
+        {/* Back to gallery */}
+        {onBackToGallery && (
+          <ToolbarButton
+            onClick={onBackToGallery}
+            icon={<LayoutGrid size={18} />}
+            title="Gallery"
+          />
+        )}
+
         {/* Settings */}
-        <button
+        <ToolbarButton
           onClick={() => setIsSettingsOpen(true)}
-          className="p-2 rounded-lg transition-all"
-          style={{ color: "var(--text-secondary)" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--bg-card-hover)";
-            e.currentTarget.style.color = "var(--text-primary)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "var(--text-secondary)";
-          }}
+          icon={<Settings size={18} />}
           title="Settings"
-        >
-          <Settings size={18} />
-        </button>
+        />
       </div>
 
       {/* Settings panel */}

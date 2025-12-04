@@ -228,7 +228,13 @@ function AppContent() {
           break;
       }
     },
-    [viewMode, addTextBlock, addImageBlock, deleteSelectedNodes, selectedNodeIds],
+    [
+      viewMode,
+      addTextBlock,
+      addImageBlock,
+      deleteSelectedNodes,
+      selectedNodeIds,
+    ],
   );
 
   useEffect(() => {
@@ -292,7 +298,12 @@ function AppContent() {
       className="w-full h-full relative"
       style={{ background: "var(--bg-canvas)" }}
     >
-      <Toolbar />
+      <Toolbar
+        onBackToGallery={() => {
+          navigateToGallery();
+          showGallery();
+        }}
+      />
       <Canvas />
       {isEmpty && <EmptyState />}
     </div>

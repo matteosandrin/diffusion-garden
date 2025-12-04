@@ -252,7 +252,7 @@ export function Canvas() {
         fitView
         fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
         minZoom={0.1}
-        maxZoom={2.0}
+        maxZoom={3.0}
         deleteKeyCode={["Backspace", "Delete"]}
         multiSelectionKeyCode={["Shift", "Meta"]}
         selectionOnDrag

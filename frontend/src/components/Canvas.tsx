@@ -126,9 +126,9 @@ export function Canvas() {
         edgeTypes={edgeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
+        fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
         minZoom={0.1}
-        maxZoom={2}
+        maxZoom={2.0}
         deleteKeyCode={['Backspace', 'Delete']}
         multiSelectionKeyCode={['Shift', 'Meta']}
         selectionOnDrag

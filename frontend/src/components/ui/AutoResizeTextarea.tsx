@@ -3,6 +3,8 @@ import {
   useRef,
   useEffect,
   useCallback,
+  useImperativeHandle,
+  forwardRef,
   type TextareaHTMLAttributes,
 } from "react";
 
@@ -17,7 +19,11 @@ interface AutoResizeTextareaProps extends Omit<
   height?: string;
 }
 
-export function AutoResizeTextarea({
+export interface AutoResizeTextareaRef {
+  focus: () => void;
+}
+
+export const AutoResizeTextarea = forwardRef<AutoResizeTextareaRef, AutoResizeTextareaProps>(function AutoResizeTextarea({
   value,
   onChange,
   minHeight = "60px",
@@ -26,8 +32,14 @@ export function AutoResizeTextarea({
   className = "",
   style,
   ...props
-}: AutoResizeTextareaProps) {
+}, ref) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      textareaRef.current?.focus();
+    },
+  }));
 
   // Local state to prevent cursor reset on typing
   const [localValue, setLocalValue] = useState(value);
@@ -67,4 +79,4 @@ export function AutoResizeTextarea({
       {...props}
     />
   );
-}
+});

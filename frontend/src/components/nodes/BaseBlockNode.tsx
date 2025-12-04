@@ -16,7 +16,7 @@ import {
 import type { BlockStatus } from "../../types";
 import { useCanvasStore } from "../../store/canvasStore";
 import { BlockToolbarButton } from "../ui/BlockToolbarButton";
-import { AutoResizeTextarea } from "../ui/AutoResizeTextarea";
+import { AutoResizeTextarea, type AutoResizeTextareaRef } from "../ui/AutoResizeTextarea";
 
 export interface ModelOption {
   id: string;
@@ -75,6 +75,18 @@ export function BaseBlockNode({
   const { deleteNode } = useCanvasStore();
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const hasAutoRunTriggered = useRef(false);
+  const promptTextareaRef = useRef<AutoResizeTextareaRef>(null);
+
+  // Focus prompt textarea when block becomes selected
+  useEffect(() => {
+    if (selected && promptTextareaRef.current) {
+      // Small delay to ensure the prompt bubble animation has started
+      const timeoutId = setTimeout(() => {
+        promptTextareaRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [selected]);
 
   // Auto-run: execute immediately when block is created with autoRun flag
   useEffect(() => {
@@ -298,6 +310,7 @@ export function BaseBlockNode({
           }}
         >
           <AutoResizeTextarea
+            ref={promptTextareaRef}
             value={prompt || ""}
             onChange={(value) => onPromptChange?.(value)}
             placeholder={promptPlaceholder}

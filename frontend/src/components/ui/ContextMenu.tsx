@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Type, Image, X } from "lucide-react";
+import { Type, Image } from "lucide-react";
 
 interface ContextMenuProps {
   x: number;

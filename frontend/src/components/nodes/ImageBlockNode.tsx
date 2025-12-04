@@ -22,6 +22,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const promptFromInputRef = useRef(false);
   const lastInputContentRef = useRef<string>("");
+  const hasContent = !!blockData.imageUrl;
 
   // Get input blocks and their content
   const inputContentItems = getInputBlockContent(id);
@@ -289,6 +290,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         error={blockData.error}
         accentColor="var(--accent-primary)"
         blockType="image"
+        hasContent={hasContent}
         toolbarButtons={
           <>
             <BlockToolbarButton
@@ -325,6 +327,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
+          className="h-full"
         >
           {blockData.imageUrl ? (
             <div className="relative group">
@@ -335,7 +338,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
               />
             </div>
           ) : (
-            <div className="p-3 h-[200px]">
+            <div className="p-3 h-full">
               {blockData.status !== "running" && (
                 <div
                   className="flex flex-col h-full items-center justify-center gap-2 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors"

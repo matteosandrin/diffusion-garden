@@ -55,7 +55,7 @@ async function apiFetch<T>(
 
 // Canvas API
 export const canvasApi = {
-  list: async () => { 
+  list: async () => {
     const response = await apiFetch<CanvasSummary[]>("/canvas");
     return response.map((canvas: CanvasSummary) => ({
       ...canvas,
@@ -71,7 +71,10 @@ export const canvasApi = {
       ...response,
       nodes: response.nodes?.map((node: AppNode) => ({
         ...node,
-        data: { ...node.data, imageUrl: addApiHost(node.data?.imageUrl as string | null) },
+        data: {
+          ...node.data,
+          imageUrl: addApiHost(node.data?.imageUrl as string | null),
+        },
       })),
     } as CanvasState;
   },

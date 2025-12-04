@@ -1,5 +1,6 @@
 import type {
   CanvasState,
+  CanvasSummary,
   GenerateTextResponse,
   GenerateImageResponse,
   AppSettings,
@@ -39,6 +40,14 @@ async function apiFetch<T>(
 
 // Canvas API
 export const canvasApi = {
+  list: async () => { 
+    const response = await apiFetch<CanvasSummary[]>("/canvas");
+    return response.map((canvas: CanvasSummary) => ({
+      ...canvas,
+      thumbnailUrl: canvas.thumbnailUrl ? `${API_HOST}${canvas.thumbnailUrl}` : null,
+    })) as unknown as CanvasSummary[];
+  },
+
   create: () => apiFetch<{ id: string }>("/canvas", { method: "POST" }),
 
   load: (id: string) => apiFetch<CanvasState>(`/canvas/${id}`),

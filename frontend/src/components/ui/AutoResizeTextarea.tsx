@@ -23,16 +23,22 @@ export interface AutoResizeTextareaRef {
   focus: () => void;
 }
 
-export const AutoResizeTextarea = forwardRef<AutoResizeTextareaRef, AutoResizeTextareaProps>(function AutoResizeTextarea({
-  value,
-  onChange,
-  minHeight = "60px",
-  maxHeight = "200px",
-  height,
-  className = "",
-  style,
-  ...props
-}, ref) {
+export const AutoResizeTextarea = forwardRef<
+  AutoResizeTextareaRef,
+  AutoResizeTextareaProps
+>(function AutoResizeTextarea(
+  {
+    value,
+    onChange,
+    minHeight = "60px",
+    maxHeight = "200px",
+    height,
+    className = "",
+    style,
+    ...props
+  },
+  ref,
+) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useImperativeHandle(ref, () => ({

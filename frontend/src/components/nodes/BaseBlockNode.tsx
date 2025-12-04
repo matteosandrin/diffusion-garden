@@ -16,7 +16,10 @@ import {
 import type { BlockStatus } from "../../types";
 import { useCanvasStore } from "../../store/canvasStore";
 import { BlockToolbarButton } from "../ui/BlockToolbarButton";
-import { AutoResizeTextarea, type AutoResizeTextareaRef } from "../ui/AutoResizeTextarea";
+import {
+  AutoResizeTextarea,
+  type AutoResizeTextareaRef,
+} from "../ui/AutoResizeTextarea";
 
 export interface ModelOption {
   id: string;
@@ -196,9 +199,7 @@ export function BaseBlockNode({
         }}
       >
         {/* Main content */}
-        <div className="grow">
-          {children}
-        </div>
+        <div className="grow">{children}</div>
 
         {/* Footer with play button */}
         {(onPlay || footerLeftContent || models) && (

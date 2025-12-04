@@ -52,7 +52,10 @@ interface CanvasStore {
 
   // Position helpers
   getViewportCenter: () => { x: number; y: number };
-  getBlockPosition: (position?: { x: number; y: number }, upperLeftCorner?: boolean) => { x: number; y: number };
+  getBlockPosition: (
+    position?: { x: number; y: number },
+    upperLeftCorner?: boolean,
+  ) => { x: number; y: number };
 
   // Block CRUD
   addTextBlock: (
@@ -203,15 +206,17 @@ export const useCanvasStore = create<CanvasStore>()(
       return { x: centerX, y: centerY };
     },
 
-    getBlockPosition: (position, upperLeftCorner=false) => {
+    getBlockPosition: (position, upperLeftCorner = false) => {
       const referencePosition = position || get().getViewportCenter();
-      return upperLeftCorner ? referencePosition : {
-        x: referencePosition.x - BLOCK_WIDTH / 2,
-        y: referencePosition.y - BLOCK_HEIGHT / 2,
-      };
+      return upperLeftCorner
+        ? referencePosition
+        : {
+            x: referencePosition.x - BLOCK_WIDTH / 2,
+            y: referencePosition.y - BLOCK_HEIGHT / 2,
+          };
     },
 
-    addTextBlock: (position, data, upperLeftCorner=false) => {
+    addTextBlock: (position, data, upperLeftCorner = false) => {
       const id = generateId();
       const { settings, getBlockPosition } = get();
       const blockPosition = getBlockPosition(position, upperLeftCorner);
@@ -242,7 +247,7 @@ export const useCanvasStore = create<CanvasStore>()(
       return id;
     },
 
-    addImageBlock: (position, data, upperLeftCorner=false) => {
+    addImageBlock: (position, data, upperLeftCorner = false) => {
       const id = generateId();
       const { settings, getBlockPosition } = get();
       const blockPosition = getBlockPosition(position, upperLeftCorner);

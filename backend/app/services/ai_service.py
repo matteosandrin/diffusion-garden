@@ -55,6 +55,46 @@ Expanded version:"""
         
         return response.choices[0].message.content or ""
     
+    async def execute_prompt(self, prompt: str, input_text: str | None = None, model: str = "gpt-5.1") -> str:
+        """
+        Execute a prompt with optional input text integrated into it.
+        
+        Args:
+            prompt: The prompt/instruction to execute
+            input_text: Optional input text to integrate into the prompt
+            model: The OpenAI model to use (gpt-5.1, gpt-4o, or gpt-4o-mini)
+            
+        Returns:
+            Result of executing the prompt with the integrated input (if provided)
+        """
+        if not self.openai_client:
+            raise ValueError("OpenAI API key not configured")
+        
+        # Combine prompt and input in a natural way, if input is provided
+        if input_text:
+            combined_prompt = f"""{prompt}
+
+Input:
+{input_text}"""
+        else:
+            combined_prompt = prompt
+
+        response = await self.openai_client.chat.completions.create(
+            model=model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that follows instructions precisely."
+                },
+                {
+                    "role": "user",
+                    "content": combined_prompt
+                }
+            ]
+        )
+        
+        return response.choices[0].message.content or ""
+    
     async def describe_image(self, image_base64: str) -> str:
         """
         Generate a detailed description of an image using GPT-4o Vision.

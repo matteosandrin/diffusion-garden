@@ -1,6 +1,7 @@
 import type {
   CanvasState,
   ExpandResponse,
+  ExecuteResponse,
   DescribeResponse,
   GenerateImageResponse,
   AppSettings,
@@ -52,6 +53,12 @@ export const toolsApi = {
     apiFetch<ExpandResponse>('/tools/expand', {
       method: 'POST',
       body: JSON.stringify({ text, model }),
+    }),
+
+  execute: (prompt: string, input: string | undefined, model: TextModel) =>
+    apiFetch<ExecuteResponse>('/tools/execute', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, input: input || undefined, model }),
     }),
 
   describe: (imageBase64: string) =>

@@ -24,6 +24,18 @@ class ExpandResponse(BaseModel):
     result: str
 
 
+class ExecuteRequest(BaseModel):
+    """Request for prompt execution with optional input."""
+    prompt: str
+    input: str | None = None
+    model: str = "gpt-5.1"
+
+
+class ExecuteResponse(BaseModel):
+    """Response from prompt execution."""
+    result: str
+
+
 class DescribeRequest(BaseModel):
     """Request for image description."""
     image_base64: str
@@ -58,6 +70,22 @@ async def expand_text(request: ExpandRequest, ai_service: AIService = Depends(ge
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to expand text: {str(e)}")
+
+
+@router.post("/execute", response_model=ExecuteResponse)
+async def execute_prompt(request: ExecuteRequest, ai_service: AIService = Depends(get_ai_service)):
+    """
+    Execute a prompt with input text integrated into it.
+    The input is combined with the prompt on the backend.
+    Uses OpenAI GPT models.
+    """
+    try:
+        result = await ai_service.execute_prompt(request.prompt, request.input, request.model)
+        return ExecuteResponse(result=result)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to execute prompt: {str(e)}")
 
 
 @router.post("/describe", response_model=DescribeResponse)

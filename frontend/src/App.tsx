@@ -27,6 +27,8 @@ function AppContent() {
     setLastSaved,
     setPrompts,
     setModels,
+    contextMenu,
+    edgeDropMenu,
   } = useCanvasStore();
 
   const [viewMode, setViewMode] = useState<ViewMode>("loading");
@@ -207,6 +209,11 @@ function AppContent() {
         return;
       }
 
+      // Skip T/I shortcuts when context menu is open (it handles them)
+      if (contextMenu || edgeDropMenu) {
+        return;
+      }
+
       switch (e.key.toLowerCase()) {
         case "t":
           e.preventDefault();
@@ -234,6 +241,8 @@ function AppContent() {
       addImageBlock,
       deleteSelectedNodes,
       selectedNodeIds,
+      contextMenu,
+      edgeDropMenu,
     ],
   );
 

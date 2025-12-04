@@ -20,7 +20,7 @@ export function ContextMenu({
 }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close on click outside
+  // Close on click outside and handle keyboard shortcuts
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -28,20 +28,30 @@ export function ContextMenu({
       }
     };
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key.toLowerCase()) {
+        case "escape":
+          onClose();
+          break;
+        case "t":
+          event.preventDefault();
+          onAddTextBlock();
+          break;
+        case "i":
+          event.preventDefault();
+          onAddImageBlock();
+          break;
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose]);
+  }, [onClose, onAddTextBlock, onAddImageBlock]);
 
   // Adjust position if menu would overflow viewport
   const adjustedX = Math.min(x, window.innerWidth - 200);
@@ -86,12 +96,22 @@ export function ContextMenu({
             }}
           >
             <Type size={16} style={{ color: "var(--accent-primary)" }} />
-            <div className="text-left">
+            <div className="text-left flex-1">
               <div className="text-sm font-medium">Text block</div>
               <div className="text-xs" style={{ color: "var(--text-muted)" }}>
                 Write or expand ideas
               </div>
             </div>
+            <kbd
+              className="px-1.5 py-0.5 text-xs rounded"
+              style={{
+                background: "var(--bg-card-hover)",
+                color: "var(--text-muted)",
+                border: "1px solid var(--border-subtle)",
+              }}
+            >
+              T
+            </kbd>
           </button>
 
           <button
@@ -106,12 +126,22 @@ export function ContextMenu({
             }}
           >
             <Image size={16} style={{ color: "var(--accent-secondary)" }} />
-            <div className="text-left">
+            <div className="text-left flex-1">
               <div className="text-sm font-medium">Image block</div>
               <div className="text-xs" style={{ color: "var(--text-muted)" }}>
                 Upload or generate images
               </div>
             </div>
+            <kbd
+              className="px-1.5 py-0.5 text-xs rounded"
+              style={{
+                background: "var(--bg-card-hover)",
+                color: "var(--text-muted)",
+                border: "1px solid var(--border-subtle)",
+              }}
+            >
+              I
+            </kbd>
           </button>
         </div>
       </div>

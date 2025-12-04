@@ -43,6 +43,19 @@ interface CanvasStore {
   isSaving: boolean;
   lastSaved: Date | null;
 
+  // Context menu state
+  contextMenu: {
+    x: number;
+    y: number;
+    flowPosition: { x: number; y: number };
+  } | null;
+  edgeDropMenu: {
+    x: number;
+    y: number;
+    flowPosition: { x: number; y: number };
+    sourceNodeId: string;
+  } | null;
+
   defaultBlockSize: { width: number; height: number };
 
   // Node actions
@@ -112,6 +125,11 @@ interface CanvasStore {
   setSaving: (isSaving: boolean) => void;
   setLastSaved: (date: Date) => void;
 
+  // Context menu actions
+  setContextMenu: (menu: CanvasStore["contextMenu"]) => void;
+  setEdgeDropMenu: (menu: CanvasStore["edgeDropMenu"]) => void;
+  closeMenus: () => void;
+
   // Helper to check for cycles
   wouldCreateCycle: (source: string, target: string) => boolean;
 
@@ -160,6 +178,8 @@ export const useCanvasStore = create<CanvasStore>()(
     prompts: {},
     isSaving: false,
     lastSaved: null,
+    contextMenu: null,
+    edgeDropMenu: null,
     defaultBlockSize: { width: BLOCK_WIDTH, height: BLOCK_HEIGHT },
 
     // React Flow change handlers
@@ -415,6 +435,18 @@ export const useCanvasStore = create<CanvasStore>()(
 
     setLastSaved: (date) => {
       set({ lastSaved: date });
+    },
+
+    setContextMenu: (menu) => {
+      set({ contextMenu: menu });
+    },
+
+    setEdgeDropMenu: (menu) => {
+      set({ edgeDropMenu: menu });
+    },
+
+    closeMenus: () => {
+      set({ contextMenu: null, edgeDropMenu: null });
     },
 
     // Cycle detection using DFS

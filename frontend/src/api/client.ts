@@ -121,10 +121,10 @@ export const imageApi = {
       throw new Error(error.detail || "Upload failed");
     }
 
-    return response.json();
+    const data = await response.json();
+    data.imageUrl = `${API_HOST}${data.imageUrl}`;
+    return data;
   },
-
-  getUrl: (imageId: string) => `${API_BASE}/images/${imageId}`,
 };
 
 // Settings API

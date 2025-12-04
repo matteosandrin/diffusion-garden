@@ -4,7 +4,7 @@ import type { Node, Edge } from '@xyflow/react';
 export type BlockStatus = 'idle' | 'running' | 'success' | 'error';
 
 // Model configurations
-export type TextModel = 'gpt-4o' | 'gpt-4o-mini';
+export type TextModel = 'gpt-4o' | 'gpt-4o-mini' | 'gpt-5.1';
 export type ImageModel = 'gemini-pro';
 
 // Text block data

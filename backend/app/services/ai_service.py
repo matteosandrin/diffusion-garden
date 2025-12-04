@@ -16,13 +16,13 @@ class AIService:
         # Initialize Gemini client
         self.gemini_client = genai.Client(api_key=settings.google_api_key) if settings.google_api_key else None
     
-    async def expand_text(self, text: str, model: str = "gpt-4o") -> str:
+    async def expand_text(self, text: str, model: str = "gpt-5.1") -> str:
         """
         Expand a text idea into a more detailed version.
         
         Args:
             text: The input text to expand
-            model: The OpenAI model to use (gpt-4o or gpt-4o-mini)
+            model: The OpenAI model to use (gpt-5.1, gpt-4o, or gpt-4o-mini)
             
         Returns:
             Expanded text
@@ -50,9 +50,7 @@ Expanded version:"""
                     "role": "user",
                     "content": prompt
                 }
-            ],
-            max_tokens=2000,
-            temperature=0.7,
+            ]
         )
         
         return response.choices[0].message.content or ""
@@ -100,8 +98,7 @@ Be vivid and specific, as if helping someone recreate or understand this image w
                         }
                     ]
                 }
-            ],
-            max_tokens=1000,
+            ]
         )
         
         return response.choices[0].message.content or ""

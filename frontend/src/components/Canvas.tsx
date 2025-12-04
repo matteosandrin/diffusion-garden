@@ -199,10 +199,13 @@ export function Canvas() {
   // Handle edge drop menu actions
   const handleEdgeDropAddTextBlock = useCallback(() => {
     if (edgeDropMenu) {
-      addTextBlockWithEdge(
-        edgeDropMenu.flowPosition,
-        edgeDropMenu.sourceNodeId,
-      );
+      // Adjust position so the block is vertically centered at the drop point
+      const estimatedHeight = 280;
+      const centeredPosition = {
+        x: edgeDropMenu.flowPosition.x,
+        y: edgeDropMenu.flowPosition.y - estimatedHeight / 2,
+      };
+      addTextBlockWithEdge(centeredPosition, edgeDropMenu.sourceNodeId);
       setEdgeDropMenu(null);
       setPendingEdge(null);
     }

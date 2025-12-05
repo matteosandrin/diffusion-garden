@@ -83,7 +83,7 @@ interface CanvasStore {
     options?: {
       upperLeftCorner?: boolean;
       centerViewportToBlock?: boolean;
-    }
+    },
   ) => string;
   addImageBlock: (
     position?: { x: number; y: number },
@@ -91,7 +91,7 @@ interface CanvasStore {
     options?: {
       upperLeftCorner?: boolean;
       centerViewportToBlock?: boolean;
-    }
+    },
   ) => string;
   addTextBlockWithEdge: (
     position: { x: number; y: number },
@@ -265,7 +265,11 @@ export const useCanvasStore = create<CanvasStore>()(
       return snapToGrid(blockPosition);
     },
 
-    addTextBlock: (position, data, { upperLeftCorner = false, centerViewportToBlock = true } = {}) => {
+    addTextBlock: (
+      position,
+      data,
+      { upperLeftCorner = false, centerViewportToBlock = true } = {},
+    ) => {
       const id = generateId();
       const { settings, getBlockPosition } = get();
       const blockPosition = getBlockPosition(position, upperLeftCorner);
@@ -297,7 +301,11 @@ export const useCanvasStore = create<CanvasStore>()(
       return id;
     },
 
-    addImageBlock: (position, data, { upperLeftCorner = false, centerViewportToBlock = true } = {}) => {
+    addImageBlock: (
+      position,
+      data,
+      { upperLeftCorner = false, centerViewportToBlock = true } = {},
+    ) => {
       const id = generateId();
       const { settings, getBlockPosition } = get();
       const blockPosition = getBlockPosition(position, upperLeftCorner);

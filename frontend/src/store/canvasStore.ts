@@ -59,6 +59,9 @@ interface CanvasStore {
     sourceNodeId: string;
   } | null;
 
+  // Pending center - node to center viewport on after creation
+  pendingCenterNodeId: string | null;
+
   defaultBlockSize: { width: number; height: number };
 
   // Node actions
@@ -77,12 +80,18 @@ interface CanvasStore {
   addTextBlock: (
     position?: { x: number; y: number },
     data?: Partial<TextBlockData>,
-    upperLeftCorner?: boolean,
+    options?: {
+      upperLeftCorner?: boolean;
+      centerViewportToBlock?: boolean;
+    }
   ) => string;
   addImageBlock: (
     position?: { x: number; y: number },
     data?: Partial<ImageBlockData>,
-    upperLeftCorner?: boolean,
+    options?: {
+      upperLeftCorner?: boolean;
+      centerViewportToBlock?: boolean;
+    }
   ) => string;
   addTextBlockWithEdge: (
     position: { x: number; y: number },
@@ -137,6 +146,9 @@ interface CanvasStore {
   setEdgeDropMenu: (menu: CanvasStore["edgeDropMenu"]) => void;
   closeMenus: () => void;
 
+  // Centering
+  setPendingCenterNodeId: (nodeId: string | null) => void;
+
   // Helper to check for cycles
   wouldCreateCycle: (source: string, target: string) => boolean;
 
@@ -188,6 +200,7 @@ export const useCanvasStore = create<CanvasStore>()(
     lastSaved: null,
     contextMenu: null,
     edgeDropMenu: null,
+    pendingCenterNodeId: null,
     defaultBlockSize: { width: BLOCK_WIDTH, height: BLOCK_HEIGHT },
 
     // React Flow change handlers
@@ -244,7 +257,7 @@ export const useCanvasStore = create<CanvasStore>()(
           };
     },
 
-    addTextBlock: (position, data, upperLeftCorner = false) => {
+    addTextBlock: (position, data, { upperLeftCorner = false, centerViewportToBlock = true } = {}) => {
       const id = generateId();
       const { settings, getBlockPosition } = get();
       const blockPosition = getBlockPosition(position, upperLeftCorner);
@@ -270,12 +283,13 @@ export const useCanvasStore = create<CanvasStore>()(
           newNode,
         ],
         selectedNodeIds: [id],
+        pendingCenterNodeId: centerViewportToBlock ? id : null,
       }));
 
       return id;
     },
 
-    addImageBlock: (position, data, upperLeftCorner = false) => {
+    addImageBlock: (position, data, { upperLeftCorner = false, centerViewportToBlock = true } = {}) => {
       const id = generateId();
       const { settings, getBlockPosition } = get();
       const blockPosition = getBlockPosition(position, upperLeftCorner);
@@ -302,6 +316,7 @@ export const useCanvasStore = create<CanvasStore>()(
           newNode,
         ],
         selectedNodeIds: [id],
+        pendingCenterNodeId: centerViewportToBlock ? id : null,
       }));
 
       return id;
@@ -466,6 +481,10 @@ export const useCanvasStore = create<CanvasStore>()(
 
     closeMenus: () => {
       set({ contextMenu: null, edgeDropMenu: null });
+    },
+
+    setPendingCenterNodeId: (nodeId) => {
+      set({ pendingCenterNodeId: nodeId });
     },
 
     // Cycle detection using DFS

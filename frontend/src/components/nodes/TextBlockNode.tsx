@@ -72,7 +72,9 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
                 status: "idle",
                 sourceBlockId: id,
               },
-              true,
+              {
+                upperLeftCorner: true,
+              },
             )
           : addTextBlock(
               newPosition,
@@ -81,7 +83,9 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
                 sourceBlockId: id,
                 autoRun: true,
               },
-              true,
+              {
+                upperLeftCorner: true,
+              },
             );
 
       store.onConnect({
@@ -155,16 +159,20 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     // Create new text blocks for each item, positioned vertically
     items.forEach((item, index) => {
       const i = index - Math.ceil(items.length / 2) + 1;
+      const position = {
+        x: currentNode.position.x + currentNodeWidth + 60,
+        y: currentNode.position.y + i * (currentNodeHeight + 60),
+      };
       const newBlockId = addTextBlock(
-        {
-          x: currentNode.position.x + currentNodeWidth + 60,
-          y: currentNode.position.y + i * (currentNodeHeight + 60),
-        },
+        position,
         {
           content: item,
           sourceBlockId: id,
         },
-        true,
+        {
+          upperLeftCorner: true,
+          centerViewportToBlock: false,
+        },
       );
 
       // Connect source block to new block

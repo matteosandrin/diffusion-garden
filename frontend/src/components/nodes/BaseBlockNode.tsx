@@ -75,7 +75,13 @@ export function BaseBlockNode({
   onAutoRunComplete,
   hasContent = false,
 }: BaseBlockNodeProps) {
-  const { deleteNode } = useCanvasStore();
+  const {
+    deleteNode,
+    selectedNodeIds,
+    nodesToRun,
+    requestRunForNodes,
+    clearNodeFromRunQueue,
+  } = useCanvasStore();
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const hasAutoRunTriggered = useRef(false);
   const promptTextareaRef = useRef<AutoResizeTextareaRef>(null);
@@ -107,6 +113,16 @@ export function BaseBlockNode({
     }
   }, [autoRun, status, onPlay, onAutoRunComplete]);
 
+  // Watch for this node being in the run queue (triggered by multi-select run)
+  useEffect(() => {
+    if (nodesToRun.includes(id) && status !== "running" && onPlay) {
+      // Remove from queue first to prevent re-triggering
+      clearNodeFromRunQueue(id);
+      // Then execute
+      onPlay();
+    }
+  }, [id, nodesToRun, status, onPlay, clearNodeFromRunQueue]);
+
   const handleDelete = useCallback(() => {
     deleteNode(id);
   }, [id, deleteNode]);
@@ -118,6 +134,22 @@ export function BaseBlockNode({
     },
     [onModelChange],
   );
+
+  // Handle play button click - run all selected nodes if multiple are selected
+  const handlePlayClick = useCallback(() => {
+    if (!onPlay) return;
+
+    // Check if this node is part of a multi-selection
+    const isMultiSelect = selectedNodeIds.length > 1 && selectedNodeIds.includes(id);
+
+    if (isMultiSelect) {
+      // Queue all selected nodes for execution
+      requestRunForNodes(selectedNodeIds);
+    } else {
+      // Just run this node
+      onPlay();
+    }
+  }, [id, onPlay, selectedNodeIds, requestRunForNodes]);
 
   // Determine box shadow based on status and selection
   const getBoxShadow = () => {
@@ -263,7 +295,7 @@ export function BaseBlockNode({
             {/* Play button */}
             {onPlay && (
               <button
-                onClick={onPlay}
+                onClick={handlePlayClick}
                 disabled={status === "running" || runButtonDisabled}
                 className="flex items-center gap-1 px-1 py-1 rounded-full text-xs transition-all disabled:opacity-30"
                 style={{

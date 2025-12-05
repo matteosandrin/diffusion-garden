@@ -16,12 +16,11 @@ export function Toolbar() {
   const { addTextBlock, addImageBlock, isSaving, lastSaved } = useCanvasStore();
 
   const handleAddTextBlock = () => {
-    // Add at center of viewport
-    addTextBlock({ x: 100, y: 100 });
+    addTextBlock();
   };
 
   const handleAddImageBlock = () => {
-    addImageBlock({ x: 100, y: 200 });
+    addImageBlock();
   };
 
   return (

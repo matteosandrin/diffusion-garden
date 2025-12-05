@@ -1,4 +1,5 @@
 import base64
+from PIL import Image
 from openai import AsyncOpenAI
 from google import genai
 from ..config import get_settings
@@ -143,7 +144,7 @@ Be vivid and specific, as if helping someone recreate or understand this image w
         
         return response.choices[0].message.content or ""
     
-    async def generate_image(self, prompt: str) -> bytes:
+    async def generate_image(self, prompt: str) -> tuple[Image.Image, str]:
         """
         Generate an image from a text prompt using Gemini.
         
@@ -151,7 +152,7 @@ Be vivid and specific, as if helping someone recreate or understand this image w
             prompt: Text description of the image to generate
             
         Returns:
-            Image bytes (PNG format)
+            Tuple of (PIL Image object, mime_type)
         """
         if not self.gemini_client:
             raise ValueError("Google API key not configured")
@@ -163,15 +164,19 @@ Be vivid and specific, as if helping someone recreate or understand this image w
                 response_modalities=["IMAGE"],
             ),
         )
-
-        print(response)
-        print("--------------------------------")
-        print(response.candidates)
-        print("--------------------------------")
-        # Extract image data from response
         for part in response.candidates[0].content.parts:
-            if part.inline_data is not None:
-                return base64.b64decode(part.inline_data.data)
+            try:
+                # Check if part has inline_data with mime_type
+                mime_type = "image/png"  # Default to PNG
+                if hasattr(part, 'inline_data') and part.inline_data is not None:
+                    if hasattr(part.inline_data, 'mime_type') and part.inline_data.mime_type:
+                        mime_type = part.inline_data.mime_type
+                
+                image = part.as_image()
+                if image is not None:
+                    return image, mime_type
+            except (AttributeError, ValueError):
+                continue
         
         raise ValueError("No image generated in response")
 

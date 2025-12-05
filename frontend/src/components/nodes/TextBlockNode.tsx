@@ -221,7 +221,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
           onChange={handleContentChange}
           placeholder="Result will appear here..."
           rows={3}
-          className="w-full bg-transparent text-sm resize-none outline-none"
+          className="w-full bg-transparent resize-none outline-none"
           style={{
             color: 'var(--text-primary)',
             minHeight: '60px',
@@ -238,7 +238,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
           onChange={handlePromptChange}
           placeholder="Enter your prompt here..."
           rows={2}
-          className="w-full bg-transparent text-sm resize-none outline-none"
+          className="w-full bg-transparent resize-none outline-none"
           style={{
             color: 'var(--text-secondary)',
             minHeight: '40px',

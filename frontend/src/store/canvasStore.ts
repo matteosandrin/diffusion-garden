@@ -167,6 +167,13 @@ interface CanvasStore {
 
 const BLOCK_WIDTH = 280;
 const BLOCK_HEIGHT = 280;
+export const GRID_SIZE = 20;
+
+// Helper to snap a position to the grid
+const snapToGrid = (position: { x: number; y: number }) => ({
+  x: Math.round(position.x / GRID_SIZE) * GRID_SIZE,
+  y: Math.round(position.y / GRID_SIZE) * GRID_SIZE,
+});
 
 // Helper to generate unique IDs
 const generateId = () =>
@@ -249,12 +256,13 @@ export const useCanvasStore = create<CanvasStore>()(
 
     getBlockPosition: (position, upperLeftCorner = false) => {
       const referencePosition = position || get().getViewportCenter();
-      return upperLeftCorner
+      const blockPosition = upperLeftCorner
         ? referencePosition
         : {
             x: referencePosition.x - BLOCK_WIDTH / 2,
             y: referencePosition.y - BLOCK_HEIGHT / 2,
           };
+      return snapToGrid(blockPosition);
     },
 
     addTextBlock: (position, data, { upperLeftCorner = false, centerViewportToBlock = true } = {}) => {

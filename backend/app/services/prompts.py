@@ -38,6 +38,7 @@ logic. The result should feel like a parallel-universe version of the same
 idea—clearly related, but fresh, surprising, and self-contained."""
 
 image_to_json_prompt = _read_prompt_file("image_to_json_prompt.txt")
+text_block_prompt = _read_prompt_file("text_block_prompt.txt")
 
 prompts = {
     "expand": "Take the following idea and expand it into a more detailed, richer version. "
@@ -49,4 +50,5 @@ prompts = {
     "reimagine": reimagine_prompt.replace("\n", " "),
     "describe": describe_prompt,
     "image_to_json": image_to_json_prompt,
+    "text_block": text_block_prompt,
 }

@@ -6,7 +6,7 @@ from pathlib import Path
 from PIL import Image
 from openai import AsyncOpenAI
 from google import genai
-import httpx
+from .prompts import prompts
 from ..config import get_settings
 
 settings = get_settings()
@@ -53,7 +53,10 @@ class AIService:
         if not self.openai_client:
             raise ValueError("OpenAI API key not configured")
 
-        messages = [{"role": "system", "content": prompt}]
+        messages = [
+            {"role": "system", "content": prompts["text_block"]},
+            {"role": "user", "content": prompt}
+        ]
 
         # Build user message content
         if image_urls:

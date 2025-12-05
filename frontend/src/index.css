@@ -146,6 +146,17 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes glowPulse {
+  0%, 100% { 
+    box-shadow: var(--glow-shadow, 0 0 30px rgba(99, 102, 241, 0.3));
+    filter: brightness(1);
+  }
+  50% { 
+    box-shadow: var(--glow-shadow-pulse, 0 0 50px rgba(99, 102, 241, 0.6));
+    filter: brightness(1.1);
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
@@ -156,4 +167,8 @@ body {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
 }

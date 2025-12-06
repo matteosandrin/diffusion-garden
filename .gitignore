@@ -3,5 +3,7 @@ backend/images
 backend/canvas.db
 backend/.env
 *.pyc
+.DS_Store
 frontend/node_modules
 frontend/dist
+video/

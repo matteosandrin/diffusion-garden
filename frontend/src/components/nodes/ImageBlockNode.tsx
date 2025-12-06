@@ -1,6 +1,12 @@
 import { memo, useCallback, useState, useRef, useEffect } from "react";
 import { type NodeProps } from "@xyflow/react";
-import { PilcrowRight, Upload, LayoutGrid, Braces } from "lucide-react";
+import {
+  PilcrowRight,
+  Upload,
+  LayoutGrid,
+  Braces,
+  Loader2,
+} from "lucide-react";
 import type { ImageBlockData, ImageModel } from "../../types";
 import { useCanvasStore } from "../../store/canvasStore";
 import { toolsApi, imageApi } from "../../api/client";
@@ -423,14 +429,24 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
                   }}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Upload
-                    size={24}
-                    style={{
-                      color: isDragOver
-                        ? "var(--text-primary)"
-                        : "var(--text-muted)",
-                    }}
-                  />
+                  {blockData.status === "uploading" ? (
+                    <Loader2
+                      size={24}
+                      className="animate-spin"
+                      style={{
+                        color: "var(--text-primary)",
+                      }}
+                    />
+                  ) : (
+                    <Upload
+                      size={24}
+                      style={{
+                        color: isDragOver
+                          ? "var(--text-primary)"
+                          : "var(--text-muted)",
+                      }}
+                    />
+                  )}
                   <input
                     ref={fileInputRef}
                     type="file"

@@ -94,19 +94,7 @@ export function BaseBlockNode({
   };
 
   return (
-    <div
-      className="relative min-w-[280px] max-w-[400px] rounded-xl transition-all duration-200"
-      style={{
-        background: 'var(--bg-card)',
-        border: `2px solid ${selected ? accentColor : 'var(--border-subtle)'}`,
-        boxShadow: getBoxShadow(),
-        ...(shouldAnimateGlow && {
-          animation: 'glowPulse 2s ease-in-out infinite',
-          '--glow-shadow': glowShadow,
-          '--glow-shadow-pulse': getPulseGlow(),
-        } as React.CSSProperties),
-      }}
-    >
+    <div>
       {/* Block type label */}
       {blockType && (
         <div
@@ -123,66 +111,95 @@ export function BaseBlockNode({
         </div>
       )}
 
-      {/* Main content */}
-      {children}
+      <div
+        className="relative min-w-[280px] max-w-[400px] rounded-xl transition-all duration-200 overflow-hidden"
+        style={{
+          background: 'var(--bg-card)',
+          border: `2px solid ${selected ? accentColor : 'var(--border-subtle)'}`,
+          boxShadow: getBoxShadow(),
+          ...(shouldAnimateGlow && {
+            animation: 'glowPulse 2s ease-in-out infinite',
+            '--glow-shadow': glowShadow,
+            '--glow-shadow-pulse': getPulseGlow(),
+          } as React.CSSProperties),
+        }}
+      >
 
-      {/* Prompt section */}
-      {(prompt !== undefined || onPromptChange) && (
-        <div className="nowheel p-3 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-          <textarea
-            ref={promptTextareaRef}
-            value={prompt || ''}
-            onChange={(e) => onPromptChange?.(e.target.value)}
-            placeholder={promptPlaceholder}
-            rows={2}
-            readOnly={promptReadonly}
-            disabled={promptReadonly}
-            className="w-full bg-transparent resize-none outline-none"
-            style={{
-              color: promptReadonly ? 'var(--text-muted)' : 'var(--text-secondary)',
-              minHeight: '40px',
-              maxHeight: '150px',
-              cursor: promptReadonly ? 'default' : 'text',
-              opacity: promptReadonly ? 0.7 : 1,
-            }}
-          />
-        </div>
-      )}
+        {/* Main content */}
+        {children}
 
-      {/* Footer with play button */}
-      {(onPlay || footerLeftContent) && (
-        <div
-          className="flex items-center justify-between px-3 py-2 border-t"
-          style={{ borderColor: 'var(--border-subtle)' }}
-        >
-          {/* Left content (e.g., model selector) */}
-          <div>
-            {footerLeftContent || null}
-          </div>
-
-          {/* Play button */}
-          {onPlay && (
-            <button
-              onClick={onPlay}
-              disabled={status === 'running' || runButtonDisabled}
-              className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-all disabled:opacity-50"
+        {/* Prompt section */}
+        {(prompt !== undefined || onPromptChange) && (
+          <div className="nowheel p-3 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+            <textarea
+              ref={promptTextareaRef}
+              value={prompt || ''}
+              onChange={(e) => onPromptChange?.(e.target.value)}
+              placeholder={promptPlaceholder}
+              rows={2}
+              readOnly={promptReadonly}
+              disabled={promptReadonly}
+              className="w-full bg-transparent resize-none outline-none"
               style={{
-                background: status === 'running' || runButtonDisabled
-                  ? 'transparent'
-                  : accentColor,
-                color: 'white',
+                color: promptReadonly ? 'var(--text-muted)' : 'var(--text-secondary)',
+                minHeight: '40px',
+                maxHeight: '150px',
+                cursor: promptReadonly ? 'default' : 'text',
+                opacity: promptReadonly ? 0.7 : 1,
               }}
-              title={runButtonTitle}
-            >
-              {status === 'running' ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <Play size={14} />
-              )}
-            </button>
-          )}
-        </div>
-      )}
+            />
+          </div>
+        )}
+
+        {/* Footer with play button */}
+        {(onPlay || footerLeftContent) && (
+          <div
+            className="flex items-center justify-between px-3 py-2 border-t"
+            style={{ borderColor: 'var(--border-subtle)' }}
+          >
+            {/* Left content (e.g., model selector) */}
+            <div>
+              {footerLeftContent || null}
+            </div>
+
+            {/* Play button */}
+            {onPlay && (
+              <button
+                onClick={onPlay}
+                disabled={status === 'running' || runButtonDisabled}
+                className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-all disabled:opacity-50"
+                style={{
+                  background: status === 'running' || runButtonDisabled
+                    ? 'transparent'
+                    : accentColor,
+                  color: 'white',
+                }}
+                title={runButtonTitle}
+              >
+                {status === 'running' ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Play size={14} />
+                )}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Error message */}
+        {status === 'error' && error && (
+          <div
+            className="px-3 py-2 text-xs border-t"
+            style={{
+              borderColor: 'var(--accent-error)',
+              color: 'var(--accent-error)',
+              background: 'rgba(239, 68, 68, 0.1)',
+            }}
+          >
+            {error}
+          </div>
+        )}
+      </div>
 
       {/* Toolbar - shown when selected */}
       {selected && (
@@ -207,20 +224,6 @@ export function BaseBlockNode({
           >
             <Trash2 size={16} />
           </button>
-        </div>
-      )}
-
-      {/* Error message */}
-      {status === 'error' && error && (
-        <div
-          className="px-3 py-2 text-xs border-t"
-          style={{
-            borderColor: 'var(--accent-error)',
-            color: 'var(--accent-error)',
-            background: 'rgba(239, 68, 68, 0.1)',
-          }}
-        >
-          {error}
         </div>
       )}
 

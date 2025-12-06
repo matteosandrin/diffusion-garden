@@ -24,9 +24,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const lastInputContentRef = useRef<string>("");
   const hasContent = !!blockData.imageUrl;
 
-  // Get input blocks and their content
   const inputContentItems = getInputBlockContent(id);
-  // Convert array to string: extract text content and join with newlines
   const inputContent =
     inputContentItems.length > 0
       ? inputContentItems
@@ -36,20 +34,17 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           .trim()
       : "";
 
-  // Monitor input blocks and update prompt accordingly
   useEffect(() => {
     const hasTextualInput = inputContentItems.some(
       (item) => item.type === "text",
     );
     if (hasTextualInput) {
-      // Only update if the input content actually changed
       if (inputContent !== lastInputContentRef.current) {
         updateBlockData(id, { prompt: inputContent });
         lastInputContentRef.current = inputContent;
         promptFromInputRef.current = true;
       }
     } else {
-      // No textual input blocks - clear prompt if it was from input
       if (promptFromInputRef.current) {
         updateBlockData(id, { prompt: "" });
         promptFromInputRef.current = false;
@@ -58,14 +53,12 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     }
   }, [id, inputContentItems, inputContent, updateBlockData]);
 
-  // Determine if prompt is from textual input blocks
   const promptFromInput = inputContentItems.some(
     (item) => item.type === "text",
   );
 
   const handlePromptChange = useCallback(
     (value: string) => {
-      // Only allow manual changes if prompt is not from textual input blocks
       const hasTextualInput = inputContentItems.some(
         (item) => item.type === "text",
       );
@@ -120,14 +113,12 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const handleDescribe = useCallback(async () => {
     if (!blockData.imageUrl) return;
 
-    // Get current node position
     const store = useCanvasStore.getState();
     const currentNode = store.nodes.find((n) => n.id === id);
     if (!currentNode) return;
 
     const currentNodeWidth = currentNode.width || 280;
 
-    // Create new text block with prompt
     const newBlockId = addTextBlock(
       {
         x: currentNode.position.x + currentNodeWidth + 60,
@@ -143,7 +134,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
       },
     );
 
-    // Connect current text block to new text block
     store.onConnect({
       source: id,
       target: newBlockId,
@@ -155,14 +145,12 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const handleImageToJson = useCallback(async () => {
     if (!blockData.imageUrl) return;
 
-    // Get current node position
     const store = useCanvasStore.getState();
     const currentNode = store.nodes.find((n) => n.id === id);
     if (!currentNode) return;
 
     const currentNodeWidth = currentNode.width || 280;
 
-    // Create new text block with image-to-JSON prompt
     const newBlockId = addTextBlock(
       {
         x: currentNode.position.x + currentNodeWidth + 60,
@@ -179,7 +167,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
       },
     );
 
-    // Connect current image block to new text block
     store.onConnect({
       source: id,
       target: newBlockId,
@@ -191,12 +178,10 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const handleVariations = useCallback(() => {
     if (!promptFromInput) return;
 
-    // Get current node position and input blocks
     const store = useCanvasStore.getState();
     const currentNode = store.nodes.find((n) => n.id === id);
     if (!currentNode) return;
 
-    // Get input text blocks
     const inputBlocks = getInputBlocks(id);
     const inputTextBlocks = inputBlocks.filter(
       (block) => block.data.type === "text",
@@ -208,11 +193,9 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     const currentNodeHeight = Math.max(currentNode.height || 280, 280);
     const blockSpacing = 60;
 
-    // Calculate base position (to the right of current block)
     const baseX = currentNode.position.x + currentNodeWidth + blockSpacing;
     const baseY = currentNode.position.y;
 
-    // Calculate positions for 2x2 grid
     const gridPositions = [
       { x: baseX, y: baseY },
       { x: baseX + currentNodeWidth + blockSpacing, y: baseY },
@@ -223,7 +206,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
       },
     ];
 
-    // Create 4 new image blocks
     const newBlockIds = gridPositions.map((position) => {
       return addImageBlock(
         position,

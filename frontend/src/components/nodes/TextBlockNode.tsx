@@ -148,7 +148,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     const items = splitContent(blockData.content);
     if (items.length < 2) return;
 
-    // Get current node position
     const store = useCanvasStore.getState();
     const currentNode = store.nodes.find((n) => n.id === id);
     if (!currentNode) return;
@@ -156,7 +155,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     const currentNodeWidth = currentNode.width || 280;
     const currentNodeHeight = currentNode.height || 280;
 
-    // Create new text blocks for each item, positioned vertically
     items.forEach((item, index) => {
       const i = index - Math.ceil(items.length / 2) + 1;
       const position = {
@@ -175,7 +173,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         },
       );
 
-      // Connect source block to new block
       store.onConnect({
         source: id,
         target: newBlockId,

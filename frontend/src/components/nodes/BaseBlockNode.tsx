@@ -97,7 +97,6 @@ export function BaseBlockNode({
     }
   }, [selected]);
 
-  // Auto-run: execute immediately when block is created with autoRun flag
   useEffect(() => {
     if (
       autoRun &&
@@ -108,17 +107,13 @@ export function BaseBlockNode({
       hasAutoRunTriggered.current = true;
       // Notify parent to clear the autoRun flag
       onAutoRunComplete?.();
-      // Trigger execution
       onPlay();
     }
   }, [autoRun, status, onPlay, onAutoRunComplete]);
 
-  // Watch for this node being in the run queue (triggered by multi-select run)
   useEffect(() => {
     if (nodesToRun.includes(id) && status !== "running" && onPlay) {
-      // Remove from queue first to prevent re-triggering
       clearNodeFromRunQueue(id);
-      // Then execute
       onPlay();
     }
   }, [id, nodesToRun, status, onPlay, clearNodeFromRunQueue]);
@@ -135,29 +130,23 @@ export function BaseBlockNode({
     [onModelChange],
   );
 
-  // Handle play button click - run all selected nodes if multiple are selected
   const handlePlayClick = useCallback(() => {
     if (!onPlay) return;
 
-    // Check if this node is part of a multi-selection
     const isMultiSelect =
       selectedNodeIds.length > 1 && selectedNodeIds.includes(id);
 
     if (isMultiSelect) {
-      // Queue all selected nodes for execution
       requestRunForNodes(selectedNodeIds);
     } else {
-      // Just run this node
       onPlay();
     }
   }, [id, onPlay, selectedNodeIds, requestRunForNodes]);
 
-  // Determine box shadow based on status and selection
   const getBoxShadow = () => {
     return "var(--shadow-card)";
   };
 
-  // Running state glow animation styles
   const runningGlowStyle =
     status === "running"
       ? {

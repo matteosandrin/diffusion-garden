@@ -7,11 +7,9 @@ from ..services import prompts
 router = APIRouter(prefix="/settings", tags=["settings"])
 settings = get_settings()
 
-# Define model IDs as Literal types for Pydantic validation
 TextModelId = Literal["gpt-5.1", "gpt-4.1", "gpt-4.1-mini", "gpt-4o", "gpt-4o-mini"]
 ImageModelId = Literal["gemini-3-pro-image-preview", "gemini-2.5-flash-image"]
 
-# Model labels for display
 TEXT_MODEL_LABELS = {
     "gpt-5.1": "GPT-5.1",
     "gpt-4.1": "GPT-4.1",
@@ -25,7 +23,6 @@ IMAGE_MODEL_LABELS = {
     "gemini-2.5-flash-image": "Nano Banana",
 }
 
-# Available models configuration derived from Literal types
 AVAILABLE_TEXT_MODELS = [
     {"id": model_id, "label": TEXT_MODEL_LABELS[model_id]}
     for model_id in get_args(TextModelId)
@@ -41,15 +38,11 @@ DEFAULT_IMAGE_MODEL: ImageModelId = "gemini-2.5-flash-image"
 
 
 class ModelOption(BaseModel):
-    """A single model option."""
-
     id: str
     label: str
 
 
 class ModelsResponse(BaseModel):
-    """Available models and defaults response."""
-
     textModels: List[ModelOption]
     imageModels: List[ModelOption]
     defaultTextModel: str
@@ -57,16 +50,12 @@ class ModelsResponse(BaseModel):
 
 
 class SettingsResponse(BaseModel):
-    """Current settings response."""
-
     defaultTextModel: str
     defaultImageModel: str
     apiKeyStatus: dict[str, bool]
 
 
 class ApiKeyStatus(BaseModel):
-    """API key status response."""
-
     openai: bool
     google: bool
 
@@ -95,9 +84,6 @@ async def check_api_keys():
 
 @router.get("/prompts", response_model=Dict[str, str])
 async def get_prompts():
-    """
-    Get a list of available prompts.
-    """
     return prompts
 
 

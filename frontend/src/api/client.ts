@@ -12,7 +12,6 @@ import type {
   AppNode,
 } from "../types";
 
-// Use environment variable for API base URL in production, fallback to relative path for dev
 const API_HOST = import.meta.env.VITE_API_HOST || "";
 const API_BASE = API_HOST + "/api";
 
@@ -53,7 +52,6 @@ async function apiFetch<T>(
   return response.json();
 }
 
-// Canvas API
 export const canvasApi = {
   list: async () => {
     const response = await apiFetch<CanvasSummary[]>("/canvas");
@@ -101,7 +99,6 @@ export const canvasApi = {
     apiFetch<{ success: boolean }>(`/canvas/${id}`, { method: "DELETE" }),
 };
 
-// AI Tools API
 export const toolsApi = {
   generateText: async (
     prompt: string,
@@ -152,7 +149,6 @@ export const toolsApi = {
   },
 };
 
-// Image API
 export const imageApi = {
   upload: async (
     file: File,
@@ -178,7 +174,6 @@ export const imageApi = {
   },
 };
 
-// Settings API
 export const settingsApi = {
   get: () => apiFetch<AppSettings>("/settings"),
 

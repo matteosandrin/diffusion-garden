@@ -309,6 +309,30 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     updateBlockData(id, { autoRun: false });
   }, [id, updateBlockData]);
 
+  // Paste image from clipboard into image block
+  useEffect(() => {
+    if (!selected) return;
+
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            e.preventDefault();
+            handleFileUpload(file);
+            break;
+          }
+        }
+      }
+    };
+
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, [selected, handleFileUpload]);
+
   return (
     <>
       <BaseBlockNode

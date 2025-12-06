@@ -313,49 +313,61 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     <>
       <BaseBlockNode
         id={id}
+        blockType="image"
         selected={selected}
         status={blockData.status}
         error={blockData.error}
-        accentColor="var(--accent-primary)"
-        blockType="image"
         hasContent={hasContent}
-        toolbarButtons={
-          <>
-            <BlockToolbarButton
-              onClick={handleVariations}
-              disabled={blockData.status === "running" || !promptFromInput}
-              title="Variations"
-            >
-              <LayoutGrid size={16} />
-            </BlockToolbarButton>
-            <BlockToolbarButton
-              onClick={handleDescribe}
-              disabled={blockData.status === "running" || !blockData.imageUrl}
-              title="Describe"
-            >
-              <PilcrowRight size={16} />
-            </BlockToolbarButton>
-            <BlockToolbarButton
-              onClick={handleImageToJson}
-              disabled={blockData.status === "running" || !blockData.imageUrl}
-              title="Image to JSON"
-            >
-              <Braces size={16} />
-            </BlockToolbarButton>
-          </>
-        }
-        onPlay={handleGenerate}
-        runButtonDisabled={!blockData.prompt?.trim()}
-        runButtonTitle="Generate image"
-        prompt={blockData.prompt}
-        onPromptChange={handlePromptChange}
-        promptPlaceholder="Let your prompt imagination run wild..."
-        promptReadonly={promptFromInput}
-        models={models.imageModels}
-        selectedModel={blockData.model || models.defaultImageModel}
-        onModelChange={handleModelChange}
-        autoRun={blockData.autoRun}
-        onAutoRunComplete={handleAutoRunComplete}
+        style={{
+          accentColor: "var(--accent-primary)",
+        }}
+        ui={{
+          toolbarButtons: (
+            <>
+              <BlockToolbarButton
+                onClick={handleVariations}
+                disabled={blockData.status === "running" || !promptFromInput}
+                title="Variations"
+              >
+                <LayoutGrid size={16} />
+              </BlockToolbarButton>
+              <BlockToolbarButton
+                onClick={handleDescribe}
+                disabled={blockData.status === "running" || !blockData.imageUrl}
+                title="Describe"
+              >
+                <PilcrowRight size={16} />
+              </BlockToolbarButton>
+              <BlockToolbarButton
+                onClick={handleImageToJson}
+                disabled={blockData.status === "running" || !blockData.imageUrl}
+                title="Image to JSON"
+              >
+                <Braces size={16} />
+              </BlockToolbarButton>
+            </>
+          ),
+        }}
+        run={{
+          disabled: !blockData.prompt?.trim(),
+          title: "Generate image",
+          onPlay: handleGenerate,
+        }}
+        prompt={{
+          value: blockData.prompt,
+          placeholder: "Let your prompt imagination run wild...",
+          readonly: promptFromInput,
+          onChange: handlePromptChange,
+        }}
+        model={{
+          models: models.imageModels,
+          selectedModel: blockData.model || models.defaultImageModel,
+          onModelChange: handleModelChange,
+        }}
+        autoRun={{
+          enabled: blockData.autoRun,
+          onComplete: handleAutoRunComplete,
+        }}
       >
         {/* Image content */}
         <div

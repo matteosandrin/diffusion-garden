@@ -17,41 +17,35 @@ export interface ModelsConfig {
   defaultImageModel: string;
 }
 
-export interface TextBlockData {
-  type: "text";
+export interface BlockData {
   title: string;
-  content: string;
-  prompt?: string;
-  model: TextModel;
   status: BlockStatus;
   error?: string;
-  generatedBy?: string; // Tool that generated this block
+  prompt?: string;
   sourceBlockId?: string;
   autoRun?: boolean; // If true, run immediately after creation
   [key: string]: unknown; // Index signature for React Flow compatibility
 }
 
-export interface ImageBlockData {
+export interface TextBlockData extends BlockData {
+  type: "text";
+  content: string;
+  model: TextModel;
+  generatedBy?: string; // Tool that generated this block
+}
+
+export interface ImageBlockData extends BlockData {
   type: "image";
-  title: string;
   imageUrl: string; // URL or base64
   imageId?: string;
   source: "upload" | "generated";
   model?: ImageModel;
-  status: BlockStatus;
-  error?: string;
-  prompt?: string;
-  sourceBlockId?: string;
-  autoRun?: boolean; // If true, generate image immediately after creation
   variation?: boolean; // If true, generate a variation of the image
-  [key: string]: unknown; // Index signature for React Flow compatibility
 }
 
 export type InputContentItem =
   | { type: "text"; content: string }
   | { type: "image"; url: string };
-
-export type BlockData = TextBlockData | ImageBlockData;
 
 export type TextBlockNode = Node<TextBlockData, "textBlock">;
 export type ImageBlockNode = Node<ImageBlockData, "imageBlock">;

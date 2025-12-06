@@ -53,15 +53,6 @@ function AnimatedEdgeComponent({
         }}
       />
 
-      {/* Animated dot traveling along the edge */}
-      <circle r="4" fill="var(--accent-primary)">
-        <animateMotion
-          dur="3s"
-          repeatCount="indefinite"
-          path={edgePath}
-        />
-      </circle>
-
       {/* Arrow marker */}
       <svg style={{ position: 'absolute', width: 0, height: 0 }}>
         <defs>

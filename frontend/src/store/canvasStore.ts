@@ -109,11 +109,6 @@ interface CanvasStore {
   setEdgeDropMenu: (menu: CanvasStore["edgeDropMenu"]) => void;
   closeMenus: () => void;
   setPendingCenterNodeId: (nodeId: string | null) => void;
-  wouldCreateCycle: (source: string, target: string) => boolean;
-  getLineage: (nodeId: string) => {
-    ancestors: string[];
-    descendants: string[];
-  };
   getInputBlocks: (nodeId: string) => AppNode[];
   getInputBlockContent: (nodeId: string) => InputContentItem[];
 }
@@ -175,11 +170,6 @@ export const useCanvasStore = create<CanvasStore>()(
     onConnect: (connection) => {
       const { source, target } = connection;
       if (!source || !target) return;
-
-      if (get().wouldCreateCycle(source, target)) {
-        console.warn("Connection would create a cycle");
-        return;
-      }
 
       const newEdge: AppEdge = {
         id: `edge-${source}-${target}`,
@@ -441,96 +431,6 @@ export const useCanvasStore = create<CanvasStore>()(
 
     setPendingCenterNodeId: (nodeId) => {
       set({ pendingCenterNodeId: nodeId });
-    },
-
-    wouldCreateCycle: (source, target) => {
-      const { edges } = get();
-      const adjacency = new Map<string, string[]>();
-
-      edges.forEach((edge) => {
-        const sources = adjacency.get(edge.source) || [];
-        sources.push(edge.target);
-        adjacency.set(edge.source, sources);
-      });
-
-      const sources = adjacency.get(source) || [];
-      sources.push(target);
-      adjacency.set(source, sources);
-
-      const visited = new Set<string>();
-      const recursionStack = new Set<string>();
-
-      const hasCycle = (node: string): boolean => {
-        visited.add(node);
-        recursionStack.add(node);
-
-        const neighbors = adjacency.get(node) || [];
-        for (const neighbor of neighbors) {
-          if (!visited.has(neighbor)) {
-            if (hasCycle(neighbor)) return true;
-          } else if (recursionStack.has(neighbor)) {
-            return true;
-          }
-        }
-
-        recursionStack.delete(node);
-        return false;
-      };
-
-      for (const node of adjacency.keys()) {
-        if (!visited.has(node)) {
-          if (hasCycle(node)) return true;
-        }
-      }
-
-      return false;
-    },
-
-    getLineage: (nodeId) => {
-      const { edges } = get();
-      const forward = new Map<string, string[]>();
-      const backward = new Map<string, string[]>();
-
-      edges.forEach((edge) => {
-        const fwd = forward.get(edge.source) || [];
-        fwd.push(edge.target);
-        forward.set(edge.source, fwd);
-
-        const bwd = backward.get(edge.target) || [];
-        bwd.push(edge.source);
-        backward.set(edge.target, bwd);
-      });
-
-      const ancestors = new Set<string>();
-      const ancestorQueue = [nodeId];
-      while (ancestorQueue.length > 0) {
-        const current = ancestorQueue.shift()!;
-        const parents = backward.get(current) || [];
-        for (const parent of parents) {
-          if (!ancestors.has(parent)) {
-            ancestors.add(parent);
-            ancestorQueue.push(parent);
-          }
-        }
-      }
-
-      const descendants = new Set<string>();
-      const descendantQueue = [nodeId];
-      while (descendantQueue.length > 0) {
-        const current = descendantQueue.shift()!;
-        const children = forward.get(current) || [];
-        for (const child of children) {
-          if (!descendants.has(child)) {
-            descendants.add(child);
-            descendantQueue.push(child);
-          }
-        }
-      }
-
-      return {
-        ancestors: Array.from(ancestors),
-        descendants: Array.from(descendants),
-      };
     },
 
     getInputBlocks: (nodeId) => {

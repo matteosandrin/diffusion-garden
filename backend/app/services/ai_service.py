@@ -6,7 +6,7 @@ from pathlib import Path
 from PIL import Image
 from openai import AsyncOpenAI
 from google import genai
-from .prompts import prompts
+from ..prompts import prompts
 from ..config import get_settings
 
 settings = get_settings()

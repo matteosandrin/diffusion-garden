@@ -351,7 +351,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         run={{
           disabled: !blockData.prompt?.trim(),
           title: "Generate image",
-          onPlay: handleGenerate,
+          onRun: handleGenerate,
         }}
         prompt={{
           value: blockData.prompt,

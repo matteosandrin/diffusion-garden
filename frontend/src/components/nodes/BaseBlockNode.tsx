@@ -29,7 +29,7 @@ export interface ModelOption {
 export interface RunConfig {
   disabled?: boolean;
   title?: string;
-  onPlay?: () => void;
+  onRun?: () => void;
 }
 
 export interface PromptConfig {
@@ -91,9 +91,9 @@ export function BaseBlockNode({
   hasContent = false,
 }: BaseBlockNodeProps) {
   const {
-    onPlay,
+    onRun,
     disabled: runButtonDisabled,
-    title: runButtonTitle = "Execute",
+    title: runButtonTitle = "Run",
   } = run || {};
   const {
     value: promptValue,
@@ -133,21 +133,21 @@ export function BaseBlockNode({
       autoRunEnabled &&
       !hasAutoRunTriggered.current &&
       status === "idle" &&
-      onPlay
+      onRun
     ) {
       hasAutoRunTriggered.current = true;
       // Notify parent to clear the autoRun flag
       onAutoRunComplete?.();
-      onPlay();
+      onRun();
     }
-  }, [autoRunEnabled, status, onPlay, onAutoRunComplete]);
+  }, [autoRunEnabled, status, onRun, onAutoRunComplete]);
 
   useEffect(() => {
-    if (nodesToRun.includes(id) && status !== "running" && onPlay) {
+    if (nodesToRun.includes(id) && status !== "running" && onRun) {
       clearNodeFromRunQueue(id);
-      onPlay();
+      onRun();
     }
-  }, [id, nodesToRun, status, onPlay, clearNodeFromRunQueue]);
+  }, [id, nodesToRun, status, onRun, clearNodeFromRunQueue]);
 
   const handleDelete = useCallback(() => {
     deleteNode(id);
@@ -161,8 +161,8 @@ export function BaseBlockNode({
     [onModelChange],
   );
 
-  const handlePlayClick = useCallback(() => {
-    if (!onPlay) return;
+  const handleRunClick = useCallback(() => {
+    if (!onRun) return;
 
     const isMultiSelect =
       selectedNodeIds.length > 1 && selectedNodeIds.includes(id);
@@ -170,9 +170,9 @@ export function BaseBlockNode({
     if (isMultiSelect) {
       requestRunForNodes(selectedNodeIds);
     } else {
-      onPlay();
+      onRun();
     }
-  }, [id, onPlay, selectedNodeIds, requestRunForNodes]);
+  }, [id, onRun, selectedNodeIds, requestRunForNodes]);
 
   const getBoxShadow = () => {
     return "var(--shadow-card)";
@@ -254,8 +254,8 @@ export function BaseBlockNode({
         {/* Main content */}
         <div className="grow">{children}</div>
 
-        {/* Footer with play button */}
-        {(onPlay || footerLeftContent || models) && (
+        {/* Footer with run button */}
+        {(onRun || footerLeftContent || models) && (
           <div
             className="flex items-center justify-between px-3 py-2 border-t h-[45px]"
             style={{ borderColor: "var(--border-subtle)" }}
@@ -313,10 +313,10 @@ export function BaseBlockNode({
               )}
             </div>
 
-            {/* Play button */}
-            {onPlay && (
+            {/* Run button */}
+            {onRun && (
               <button
-                onClick={handlePlayClick}
+                onClick={handleRunClick}
                 disabled={status === "running" || runButtonDisabled}
                 className="flex items-center gap-1 px-1 py-1 rounded-full text-xs transition-all disabled:opacity-30"
                 style={{

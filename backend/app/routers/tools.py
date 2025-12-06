@@ -46,7 +46,7 @@ async def generate_text(
     ai_service: AIService = Depends(get_ai_service),
 ):
     """
-    Execute a prompt with input text and/or images integrated into it.
+    Run a prompt with input text and/or images integrated into it.
     The input is combined with the prompt on the backend.
     Uses OpenAI GPT models (supports vision models when images are provided).
     """
@@ -59,7 +59,7 @@ async def generate_text(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Failed to execute prompt: {str(e)}"
+            status_code=500, detail=f"Failed to run prompt: {str(e)}"
         )
 
 

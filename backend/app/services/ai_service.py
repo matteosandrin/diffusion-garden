@@ -36,11 +36,11 @@ class AIService:
         model: str = "gpt-5.1",
     ) -> str:
         """
-        Execute a prompt with optional input text and/or images integrated into it.
+        Run a prompt with optional input text and/or images integrated into it.
         Images are fetched from URLs and converted to base64 before sending to the API.
 
         Args:
-            prompt: The prompt/instruction to execute
+            prompt: The prompt/instruction to run
             input_text: Optional input text to integrate into the prompt
             image_urls: Optional list of image URLs (will be fetched and converted to base64)
             model: The OpenAI model to use (gpt-5.1, gpt-4o, or gpt-4o-mini)

@@ -151,7 +151,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       status={blockData.status}
       error={blockData.error}
       accentColor="var(--accent-primary)"
-      glowShadow="var(--shadow-glow)"
       blockType="text"
       toolbarButtons={
         <>

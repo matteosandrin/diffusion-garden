@@ -153,7 +153,9 @@ export function BaseBlockNode({
           style={{ borderColor: 'var(--border-subtle)' }}
         >
           {/* Left content (e.g., model selector) */}
-          {footerLeftContent || null}
+          <div>
+            {footerLeftContent || null}
+          </div>
 
           {/* Play button */}
           {onPlay && (

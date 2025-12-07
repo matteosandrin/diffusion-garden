@@ -65,7 +65,11 @@ export interface UIConfig {
 export interface JobRecoveryConfig {
   jobId?: string;
   onChunk?: (text: string) => void;
-  onDone: (result: { text?: string; imageId?: string; imageUrl?: string }) => void;
+  onDone: (result: {
+    text?: string;
+    imageId?: string;
+    imageUrl?: string;
+  }) => void;
   onError: (error: string) => void;
   onCancelled?: () => void;
 }
@@ -157,16 +161,21 @@ export function BaseBlockNode({
 
         // Job is pending or running - subscribe to SSE stream
         if (job.status === "pending" || job.status === "running") {
-          recoveryCleanupRef.current = jobsApi.subscribeToJob(jobRecovery.jobId!, {
-            onChunk: jobRecovery.onChunk,
-            onDone: jobRecovery.onDone,
-            onError: jobRecovery.onError,
-            onCancelled: jobRecovery.onCancelled,
-          });
+          recoveryCleanupRef.current = jobsApi.subscribeToJob(
+            jobRecovery.jobId!,
+            {
+              onChunk: jobRecovery.onChunk,
+              onDone: jobRecovery.onDone,
+              onError: jobRecovery.onError,
+              onCancelled: jobRecovery.onCancelled,
+            },
+          );
         }
       } catch (err) {
         console.error("Failed to recover job:", err);
-        jobRecovery.onError(err instanceof Error ? err.message : "Failed to recover job");
+        jobRecovery.onError(
+          err instanceof Error ? err.message : "Failed to recover job",
+        );
       }
     };
 

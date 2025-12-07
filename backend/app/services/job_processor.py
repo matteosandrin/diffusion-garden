@@ -274,4 +274,3 @@ def get_job_processor() -> JobProcessor:
     if _job_processor is None:
         _job_processor = JobProcessor()
     return _job_processor
-

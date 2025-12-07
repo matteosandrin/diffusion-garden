@@ -15,7 +15,7 @@ import type {
 const API_HOST = import.meta.env.VITE_API_HOST || "";
 const API_BASE = API_HOST + "/api";
 
-function addApiHost(url?: string | null): string | null {
+export function addApiHost(url?: string | null): string | null {
   if (!url) return null;
   if (url && url.startsWith(API_HOST)) {
     return url;

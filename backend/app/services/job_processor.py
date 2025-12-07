@@ -8,9 +8,9 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from ..database import SessionLocal
-from ..models import Job, Image
+from ..models import Job, Image, AnalyticsLog
 from ..config import get_settings
-from .ai_service import AIService, get_ai_service
+from .ai_service import AIService, get_ai_service, TokenUsage
 from ..routers.settings import DEFAULT_TEXT_MODEL, DEFAULT_IMAGE_MODEL
 
 settings = get_settings()
@@ -164,12 +164,19 @@ class JobProcessor:
             full_text = ""
             last_emit_time = 0.0
             pending_emit = False
+            usage = TokenUsage()
+            model = request_data.get("model", DEFAULT_TEXT_MODEL)
             async for chunk in self._ai_service.generate_text(
                 prompt=request_data["prompt"],
                 input_text=request_data.get("input"),
                 image_urls=request_data.get("image_urls"),
-                model=request_data.get("model", DEFAULT_TEXT_MODEL),
+                model=model,
             ):
+                # Check if this is the final TokenUsage object
+                if isinstance(chunk, TokenUsage):
+                    usage = chunk
+                    continue
+
                 if cancel_event.is_set():
                     job.status = "cancelled"
                     db.commit()
@@ -188,6 +195,17 @@ class JobProcessor:
             # Always emit final state if there's pending content
             if pending_emit:
                 self._broadcast(job_id, JobEvent("chunk", {"text": full_text}))
+
+            # Log analytics
+            analytics_log = AnalyticsLog(
+                request_type="text",
+                model=model,
+                input_tokens=usage.input_tokens,
+                output_tokens=usage.output_tokens,
+                total_tokens=usage.total_tokens,
+            )
+            db.add(analytics_log)
+
             job.status = "completed"
             job.result_data = {"text": full_text}
             db.commit()
@@ -214,11 +232,12 @@ class JobProcessor:
                 self._broadcast(job_id, JobEvent("cancelled", {}))
                 return
             request_data = job.request_data
-            image, mime_type = await self._ai_service.generate_image(
+            model = request_data.get("model", DEFAULT_IMAGE_MODEL)
+            image, mime_type, usage = await self._ai_service.generate_image(
                 prompt=request_data["prompt"],
                 input=request_data.get("input"),
                 image_urls=request_data.get("image_urls"),
-                model=request_data.get("model", DEFAULT_IMAGE_MODEL),
+                model=model,
                 is_variation=request_data.get("is_variation", False),
             )
             if cancel_event.is_set():
@@ -249,6 +268,16 @@ class JobProcessor:
                 prompt=request_data["prompt"],
             )
             db.add(image_record)
+
+            # Log analytics
+            analytics_log = AnalyticsLog(
+                request_type="image",
+                model=model,
+                input_tokens=usage.input_tokens,
+                output_tokens=usage.output_tokens,
+                total_tokens=usage.total_tokens,
+            )
+            db.add(analytics_log)
 
             job.status = "completed"
             job.result_data = {

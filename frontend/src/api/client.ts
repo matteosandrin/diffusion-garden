@@ -263,3 +263,20 @@ export const jobsApi = {
   getJobsForBlock: (blockId: string) =>
     apiFetch<Job[]>(`/jobs/block/${blockId}`),
 };
+
+export interface DailyStats {
+  date: string;
+  request_type: string;
+  request_count: number;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+}
+
+export interface DailyStatsResponse {
+  stats: DailyStats[];
+}
+
+export const analyticsApi = {
+  getDaily: () => apiFetch<DailyStatsResponse>("/analytics/daily"),
+};

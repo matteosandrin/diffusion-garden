@@ -2,6 +2,7 @@ import base64
 import re
 import asyncio
 import random
+from dataclasses import dataclass
 from pathlib import Path
 from typing import AsyncIterator
 from PIL import Image
@@ -11,6 +12,15 @@ from ..prompts import prompts
 from ..config import get_settings
 
 settings = get_settings()
+
+
+@dataclass
+class TokenUsage:
+    """Token usage information from an AI request."""
+
+    input_tokens: int = 0
+    output_tokens: int = 0
+    total_tokens: int = 0
 
 
 class AIService:
@@ -35,7 +45,7 @@ class AIService:
         input_text: str | None = None,
         image_urls: list[str] | None = None,
         model: str = "gpt-5.1",
-    ) -> AsyncIterator[str]:
+    ) -> AsyncIterator[str | TokenUsage]:
         """
         Run a prompt with optional input text and/or images integrated into it.
         Streams the response as text chunks.
@@ -48,7 +58,7 @@ class AIService:
             model: The OpenAI model to use (gpt-5.1, gpt-4o, or gpt-4o-mini)
 
         Yields:
-            Text chunks as they are generated
+            Text chunks as they are generated, then TokenUsage at the end
         """
         if not self.openai_client:
             raise ValueError("OpenAI API key not configured")
@@ -75,12 +85,26 @@ class AIService:
             messages.append({"role": "user", "content": input_text})
 
         stream = await self.openai_client.chat.completions.create(
-            model=model, messages=messages, temperature=0.7, stream=True
+            model=model,
+            messages=messages,
+            temperature=0.7,
+            stream=True,
+            stream_options={"include_usage": True},
         )
 
+        usage = TokenUsage()
         async for chunk in stream:
             if chunk.choices and chunk.choices[0].delta.content:
                 yield chunk.choices[0].delta.content
+            # Capture usage from the final chunk
+            if chunk.usage:
+                usage = TokenUsage(
+                    input_tokens=chunk.usage.prompt_tokens or 0,
+                    output_tokens=chunk.usage.completion_tokens or 0,
+                    total_tokens=chunk.usage.total_tokens or 0,
+                )
+
+        yield usage
 
     async def generate_image(
         self,
@@ -89,7 +113,7 @@ class AIService:
         image_urls: list[str] | None = None,
         model: str = "gemini-3-pro-image-preview",
         is_variation: bool = False,
-    ) -> tuple[Image.Image, str]:
+    ) -> tuple[Image.Image, str, TokenUsage]:
         """
         Generate an image from a text prompt with optional input text and/or images.
         Images can be provided as input to guide the generation.
@@ -102,7 +126,7 @@ class AIService:
             is_variation: If True, randomize the seed to generate variations
 
         Returns:
-            Tuple of (PIL Image object, mime_type)
+            Tuple of (PIL Image object, mime_type, TokenUsage)
         """
         if not self.gemini_client:
             raise ValueError("Google API key not configured")
@@ -136,6 +160,20 @@ class AIService:
 
         print(response)
 
+        # Extract token usage from response
+        usage = TokenUsage()
+        if hasattr(response, "usage_metadata") and response.usage_metadata:
+            usage = TokenUsage(
+                input_tokens=getattr(response.usage_metadata, "prompt_token_count", 0)
+                or 0,
+                output_tokens=getattr(
+                    response.usage_metadata, "candidates_token_count", 0
+                )
+                or 0,
+                total_tokens=getattr(response.usage_metadata, "total_token_count", 0)
+                or 0,
+            )
+
         if len(response.candidates) == 0:
             raise ValueError("No image in response")
 
@@ -154,7 +192,7 @@ class AIService:
 
                 image = part.as_image()
                 if image is not None:
-                    return image, mime_type
+                    return image, mime_type, usage
             except (AttributeError, ValueError):
                 continue
 

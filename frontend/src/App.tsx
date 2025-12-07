@@ -4,12 +4,13 @@ import { Canvas } from "./components/Canvas";
 import { Toolbar } from "./components/ui/Toolbar";
 import { EmptyState } from "./components/EmptyState";
 import { CanvasGallery } from "./components/CanvasGallery";
+import { AnalyticsPage } from "./components/AnalyticsPage";
 import { useCanvasStore } from "./store/canvasStore";
 import { canvasApi, settingsApi } from "./api/client";
 import { useDebouncedCallback } from "./hooks/useDebouncedCallback";
 import type { CanvasSummary } from "./types";
 
-type ViewMode = "loading" | "gallery" | "canvas";
+type ViewMode = "loading" | "gallery" | "canvas" | "analytics";
 
 function AppContent() {
   const {
@@ -102,6 +103,20 @@ function AppContent() {
     return match ? match[1] : null;
   }, []);
 
+  // Check if we're on the analytics page
+  const isAnalyticsUrl = useCallback(() => {
+    return window.location.pathname === "/analytics";
+  }, []);
+
+  const navigateToAnalytics = () => {
+    window.history.pushState({}, "", "/analytics");
+  };
+
+  const showAnalytics = () => {
+    navigateToAnalytics();
+    setViewMode("analytics");
+  };
+
   const openCanvas = async (id: string, pushHistory = true) => {
     try {
       const canvas = await canvasApi.load(id);
@@ -157,6 +172,12 @@ function AppContent() {
   // Initialize app - check URL or show gallery
   useEffect(() => {
     const initApp = async () => {
+      // Check if analytics page
+      if (isAnalyticsUrl()) {
+        setViewMode("analytics");
+        return;
+      }
+
       const urlCanvasId = getCanvasIdFromUrl();
 
       // If canvas ID in URL, try to load it directly
@@ -254,6 +275,11 @@ function AppContent() {
   // Handle browser back/forward navigation
   useEffect(() => {
     const handlePopState = async () => {
+      if (isAnalyticsUrl()) {
+        setViewMode("analytics");
+        return;
+      }
+
       const urlCanvasId = getCanvasIdFromUrl();
 
       if (urlCanvasId) {
@@ -267,7 +293,7 @@ function AppContent() {
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [getCanvasIdFromUrl]);
+  }, [getCanvasIdFromUrl, isAnalyticsUrl]);
 
   // Loading state
   if (viewMode === "loading") {
@@ -295,6 +321,18 @@ function AppContent() {
         onSelectCanvas={openCanvas}
         onCreateNew={createNewCanvas}
         onDeleteCanvas={deleteCanvas}
+      />
+    );
+  }
+
+  // Analytics view
+  if (viewMode === "analytics") {
+    return (
+      <AnalyticsPage
+        onBack={() => {
+          navigateToGallery();
+          showGallery();
+        }}
       />
     );
   }

@@ -106,8 +106,7 @@ export const AutoResizeTextarea = forwardRef<
     if (!isAutoScrollingRef.current && textareaRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = textareaRef.current;
       // If user scrolled away from bottom, mark as interacted
-      const isAtBottom =
-        scrollHeight - scrollTop - clientHeight < 10;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 10;
       if (!isAtBottom) {
         userHasInteractedRef.current = true;
       }

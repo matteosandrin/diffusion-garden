@@ -11,13 +11,21 @@ from .routers import (
     jobs_router,
 )
 from .rate_limiter import limiter, rate_limit_exceeded_handler
+from .services import get_job_processor
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     init_db()
+
+    job_processor = get_job_processor()
+    await job_processor.start()
+
     yield
+
+    # Stop the job processor gracefully
+    await job_processor.stop()
 
 
 app = FastAPI(

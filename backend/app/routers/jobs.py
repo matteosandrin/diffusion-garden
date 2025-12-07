@@ -1,30 +1,19 @@
 import asyncio
 import json
 import uuid
-import os
-import time
-from typing import Dict
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from ..database import get_db
-from ..models import Job, Image
-from ..services import AIService, get_ai_service
+from ..models import Job
+from ..services import get_job_processor
 from ..config import get_settings
 from ..rate_limiter import limiter
 from .settings import TextModelId, ImageModelId, DEFAULT_TEXT_MODEL, DEFAULT_IMAGE_MODEL
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 settings = get_settings()
-
-# Throttle interval for SSE events (in seconds)
-SSE_THROTTLE_INTERVAL = 0.150  # 150ms
-
-# In-memory storage for running tasks (for cancellation)
-running_tasks: Dict[str, asyncio.Task] = {}
-# Event to signal cancellation to streaming generators
-cancellation_events: Dict[str, asyncio.Event] = {}
 
 
 class CreateTextJobRequest(BaseModel):
@@ -86,7 +75,8 @@ async def create_text_job(
     )
     db.add(job)
     db.commit()
-
+    job_processor = get_job_processor()
+    job_processor.enqueue_job(job_id)
     return CreateJobResponse(jobId=job_id)
 
 
@@ -115,7 +105,8 @@ async def create_image_job(
     )
     db.add(job)
     db.commit()
-
+    job_processor = get_job_processor()
+    job_processor.enqueue_job(job_id)
     return CreateJobResponse(jobId=job_id)
 
 
@@ -123,9 +114,8 @@ async def create_image_job(
 async def stream_job(
     job_id: str,
     db: Session = Depends(get_db),
-    ai_service: AIService = Depends(get_ai_service),
 ):
-    """Stream job results via Server-Sent Events."""
+    """Stream job results via Server-Sent Events"""
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -163,166 +153,29 @@ async def stream_job(
 
         return make_streaming_response(cancelled_stream())
 
-    # Create cancellation event for this job
-    cancel_event = asyncio.Event()
-    cancellation_events[job_id] = cancel_event
-
-    if job.type == "text":
-        return make_streaming_response(
-            stream_text_generation(job_id, job, db, ai_service, cancel_event)
-        )
-    else:
-        return make_streaming_response(
-            stream_image_generation(job_id, job, db, ai_service, cancel_event)
-        )
+    # Job is pending or running - subscribe to updates from the job processor
+    return make_streaming_response(subscribe_to_job_updates(job_id))
 
 
-async def stream_text_generation(
-    job_id: str,
-    job: Job,
-    db: Session,
-    ai_service: AIService,
-    cancel_event: asyncio.Event,
-):
-    """Stream text generation chunks."""
+async def subscribe_to_job_updates(job_id: str):
+    """Subscribe to job updates from the processor and yield SSE events."""
+    job_processor = get_job_processor()
+    subscriber_queue = job_processor.subscribe(job_id)
+
     try:
-        # Update job status to running
-        job.status = "running"
-        db.commit()
-
-        request_data = job.request_data
-        full_text = ""
-        last_emit_time = 0.0
-        pending_emit = False
-
-        async for chunk in ai_service.generate_text(
-            prompt=request_data["prompt"],
-            input_text=request_data.get("input"),
-            image_urls=request_data.get("image_urls"),
-            model=request_data.get("model", DEFAULT_TEXT_MODEL),
-        ):
-            # Check for cancellation
-            if cancel_event.is_set():
-                job.status = "cancelled"
-                db.commit()
-                yield format_sse("cancelled", {})
-                return
-
-            full_text += chunk
-            current_time = time.monotonic()
-
-            # Throttle: only emit if enough time has passed since last emit
-            if current_time - last_emit_time >= SSE_THROTTLE_INTERVAL:
-                yield format_sse("chunk", {"text": full_text})
-                last_emit_time = current_time
-                pending_emit = False
-            else:
-                pending_emit = True
-
-        # Always emit final state if there's pending content
-        if pending_emit:
-            yield format_sse("chunk", {"text": full_text})
-
-        # Update job with result
-        job.status = "completed"
-        job.result_data = {"text": full_text}
-        db.commit()
-
-        yield format_sse("done", {"result": {"text": full_text}})
-
-    except Exception as e:
-        job.status = "failed"
-        job.error = str(e)
-        db.commit()
-        yield format_sse("error", {"error": str(e)})
-
+        while True:
+            try:
+                # Wait for events with a timeout to allow cleanup
+                event = await asyncio.wait_for(subscriber_queue.get(), timeout=60.0)
+                yield format_sse(event.event_type, event.data)
+                # Stop streaming on terminal events
+                if event.event_type in ["done", "error", "cancelled"]:
+                    break
+            except asyncio.TimeoutError:
+                # Send keepalive comment to prevent connection timeout
+                yield ": keepalive\n\n"
     finally:
-        # Cleanup
-        cancellation_events.pop(job_id, None)
-        running_tasks.pop(job_id, None)
-
-
-async def stream_image_generation(
-    job_id: str,
-    job: Job,
-    db: Session,
-    ai_service: AIService,
-    cancel_event: asyncio.Event,
-):
-    """Stream image generation result."""
-    try:
-        # Update job status to running
-        job.status = "running"
-        db.commit()
-
-        if cancel_event.is_set():
-            job.status = "cancelled"
-            db.commit()
-            yield format_sse("cancelled", {})
-            return
-
-        request_data = job.request_data
-
-        image, mime_type = await ai_service.generate_image(
-            prompt=request_data["prompt"],
-            input=request_data.get("input"),
-            image_urls=request_data.get("image_urls"),
-            model=request_data.get("model", DEFAULT_IMAGE_MODEL),
-            is_variation=request_data.get("is_variation", False),
-        )
-
-        if cancel_event.is_set():
-            job.status = "cancelled"
-            db.commit()
-            yield format_sse("cancelled", {})
-            return
-
-        mime_to_extension = {
-            "image/png": "png",
-            "image/jpeg": "jpg",
-            "image/jpg": "jpg",
-            "image/gif": "gif",
-            "image/webp": "webp",
-            "image/bmp": "bmp",
-            "image/tiff": "tiff",
-        }
-        extension = mime_to_extension.get(mime_type, "png")
-
-        image_id = str(uuid.uuid4())
-        filename = f"{image_id}.{extension}"
-        filepath = os.path.join(settings.images_dir, filename)
-
-        os.makedirs(settings.images_dir, exist_ok=True)
-        image.save(filepath)
-
-        image_record = Image(
-            id=image_id,
-            filename=filename,
-            content_type=mime_type,
-            source="generated",
-            prompt=request_data["prompt"],
-        )
-        db.add(image_record)
-
-        job.status = "completed"
-        job.result_data = {
-            "imageId": image_id,
-            "imageUrl": f"/api/images/{image_id}",
-        }
-        db.commit()
-
-        yield format_sse("done", {"result": job.result_data})
-
-    except Exception as e:
-        job.status = "failed"
-        job.error = str(e)
-        db.commit()
-        yield format_sse("error", {"error": str(e)})
-
-    finally:
-        # Cleanup
-        cancellation_events.pop(job_id, None)
-        running_tasks.pop(job_id, None)
+        job_processor.unsubscribe(job_id, subscriber_queue)
 
 
 @router.post("/{job_id}/cancel")
@@ -340,13 +193,10 @@ async def cancel_job(
             status_code=400,
             detail=f"Cannot cancel job with status: {job.status}",
         )
-
-    if job_id in cancellation_events:
-        cancellation_events[job_id].set()
-
+    job_processor = get_job_processor()
+    job_processor.request_cancellation(job_id)
     job.status = "cancelled"
     db.commit()
-
     return {"success": True}
 
 

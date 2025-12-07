@@ -108,15 +108,6 @@ function AppContent() {
     return window.location.pathname === "/analytics";
   }, []);
 
-  const navigateToAnalytics = () => {
-    window.history.pushState({}, "", "/analytics");
-  };
-
-  const showAnalytics = () => {
-    navigateToAnalytics();
-    setViewMode("analytics");
-  };
-
   const openCanvas = async (id: string, pushHistory = true) => {
     try {
       const canvas = await canvasApi.load(id);

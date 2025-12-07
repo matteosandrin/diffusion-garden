@@ -12,6 +12,7 @@ import {
   Loader2,
   ChevronDown,
   TriangleAlert,
+  X,
 } from "lucide-react";
 import type { BlockStatus } from "../../types";
 import { useCanvasStore } from "../../store/canvasStore";
@@ -30,6 +31,7 @@ export interface RunConfig {
   disabled?: boolean;
   title?: string;
   onRun?: () => void;
+  onCancel?: () => void;
 }
 
 export interface PromptConfig {
@@ -92,6 +94,7 @@ export function BaseBlockNode({
 }: BaseBlockNodeProps) {
   const {
     onRun,
+    onCancel,
     disabled: runButtonDisabled,
     title: runButtonTitle = "Run",
   } = run || {};
@@ -313,24 +316,40 @@ export function BaseBlockNode({
               )}
             </div>
 
-            {/* Run button */}
+            {/* Run/Cancel button */}
             {onRun && (
-              <button
-                onClick={handleRunClick}
-                disabled={status === "running" || runButtonDisabled}
-                className="flex items-center gap-1 px-1 py-1 rounded-full text-xs transition-all disabled:opacity-30"
-                style={{
-                  background: accentColor,
-                  color: "black",
-                }}
-                title={runButtonTitle}
-              >
-                {status === "running" ? (
-                  <Loader2 size={20} className="animate-spin" />
+              <>
+                {status === "running" && onCancel ? (
+                  <button
+                    onClick={onCancel}
+                    className="flex items-center gap-1 px-1 py-1 rounded-full text-xs transition-all"
+                    style={{
+                      background: "var(--accent-error)",
+                      color: "black",
+                    }}
+                    title="Cancel"
+                  >
+                    <X size={20} strokeWidth={3} />
+                  </button>
                 ) : (
-                  <ArrowUp size={20} strokeWidth={3} />
+                  <button
+                    onClick={handleRunClick}
+                    disabled={status === "running" || runButtonDisabled}
+                    className="flex items-center gap-1 px-1 py-1 rounded-full text-xs transition-all disabled:opacity-30"
+                    style={{
+                      background: accentColor,
+                      color: "black",
+                    }}
+                    title={runButtonTitle}
+                  >
+                    {status === "running" ? (
+                      <Loader2 size={20} className="animate-spin" />
+                    ) : (
+                      <ArrowUp size={20} strokeWidth={3} />
+                    )}
+                  </button>
                 )}
-              </button>
+              </>
             )}
           </div>
         )}

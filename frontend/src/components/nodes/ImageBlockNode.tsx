@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { ImageBlockData, ImageModel } from "../../types";
 import { useCanvasStore } from "../../store/canvasStore";
-import { toolsApi, imageApi } from "../../api/client";
+import { jobsApi, imageApi } from "../../api/client";
 import { BaseBlockNode } from "./BaseBlockNode";
 import { BlockToolbarButton } from "../ui/BlockToolbarButton";
 
@@ -29,6 +29,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const promptFromInputRef = useRef(false);
   const lastInputContentRef = useRef<string>("");
+  const streamCleanupFunctionRef = useRef<(() => void) | null>(null);
   const hasContent = !!blockData.imageUrl;
 
   const inputContentItems = getInputBlockContent(id);
@@ -87,22 +88,46 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const handleGenerate = useCallback(async () => {
     if (!blockData.prompt?.trim()) return;
 
+    if (streamCleanupFunctionRef.current) {
+      streamCleanupFunctionRef.current();
+      streamCleanupFunctionRef.current = null;
+    }
+
     updateBlockStatus(id, "running");
 
     try {
-      const response = await toolsApi.generateImage(
+      const { jobId } = await jobsApi.createImageJob(
+        id,
         blockData.prompt,
         inputContentItems,
         blockData.model as ImageModel,
         blockData.variation || false,
       );
-      updateBlockData(id, {
-        imageUrl: response.imageUrl,
-        imageId: response.imageId,
-        source: "generated",
+      updateBlockData(id, { jobId });
+      streamCleanupFunctionRef.current = jobsApi.subscribeToJob(jobId, {
+        onDone: (result) => {
+          updateBlockData(id, {
+            imageUrl: result.imageUrl || "",
+            imageId: result.imageId,
+            source: "generated",
+            jobId: undefined,
+          });
+          updateBlockStatus(id, "success");
+          streamCleanupFunctionRef.current = null;
+        },
+        onError: (error) => {
+          updateBlockData(id, { jobId: undefined });
+          updateBlockStatus(id, "error", error);
+          streamCleanupFunctionRef.current = null;
+        },
+        onCancelled: () => {
+          updateBlockData(id, { jobId: undefined });
+          updateBlockStatus(id, "idle");
+          streamCleanupFunctionRef.current = null;
+        },
       });
-      updateBlockStatus(id, "success");
     } catch (error) {
+      updateBlockData(id, { jobId: undefined });
       updateBlockStatus(
         id,
         "error",
@@ -112,10 +137,29 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   }, [
     id,
     blockData.prompt,
+    blockData.model,
+    blockData.variation,
     inputContentItems,
     updateBlockStatus,
     updateBlockData,
   ]);
+
+  const handleCancel = useCallback(async () => {
+    if (blockData.jobId) {
+      try {
+        await jobsApi.cancelJob(blockData.jobId);
+      } catch (error) {
+        // Canceling is best effort, so we log the error but don't interrupt
+        console.log(error);
+      }
+    }
+    if (streamCleanupFunctionRef.current) {
+      streamCleanupFunctionRef.current();
+      streamCleanupFunctionRef.current = null;
+    }
+    updateBlockData(id, { jobId: undefined });
+    updateBlockStatus(id, "idle");
+  }, [id, blockData.jobId, updateBlockData, updateBlockStatus]);
 
   const handleDescribe = useCallback(async () => {
     if (!blockData.imageUrl) return;
@@ -450,6 +494,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           disabled: !blockData.prompt?.trim(),
           title: "Generate image",
           onRun: handleGenerate,
+          onCancel: handleCancel,
         }}
         prompt={{
           value: blockData.prompt,

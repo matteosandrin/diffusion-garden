@@ -29,6 +29,7 @@ export interface BlockData {
   prompt?: string;
   sourceBlockId?: string;
   autoRun?: boolean; // If true, run immediately after creation
+  jobId?: string; // ID of the active job for this block
   [key: string]: unknown; // Index signature for React Flow compatibility
 }
 
@@ -79,15 +80,6 @@ export interface CanvasSummary {
   updatedAt: string;
 }
 
-export interface GenerateTextResponse {
-  result: string;
-}
-
-export interface GenerateImageResponse {
-  imageId: string;
-  imageUrl: string;
-}
-
 export interface AppSettings {
   defaultTextModel: string;
   defaultImageModel: string;
@@ -98,3 +90,28 @@ export interface AppSettings {
 }
 
 export type Prompts = Record<string, string>;
+
+// Job types for async task processing
+export type JobStatus =
+  | "pending"
+  | "running"
+  | "completed"
+  | "failed"
+  | "cancelled";
+
+export interface Job {
+  jobId: string;
+  blockId: string;
+  type: "text" | "image";
+  status: JobStatus;
+  result?: {
+    text?: string;
+    imageId?: string;
+    imageUrl?: string;
+  };
+  error?: string;
+}
+
+export interface CreateJobResponse {
+  jobId: string;
+}

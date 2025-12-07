@@ -2,9 +2,7 @@ import { memo, useCallback, useState, useRef, useEffect } from 'react';
 import { type NodeProps } from '@xyflow/react';
 import {
   Sparkles,
-  Loader2,
   ChevronDown,
-  Play,
   Image,
 } from 'lucide-react';
 import type { TextBlockData, TextModel } from '../../types';
@@ -23,7 +21,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const { updateBlockData, updateBlockStatus, addTextBlock, addImageBlock, getInputBlockContent } = useCanvasStore();
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize content textarea
   useEffect(() => {
@@ -33,14 +30,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     }
   }, [blockData.content]);
 
-  // Auto-resize prompt textarea
-  useEffect(() => {
-    if (promptTextareaRef.current) {
-      promptTextareaRef.current.style.height = 'auto';
-      promptTextareaRef.current.style.height = `${promptTextareaRef.current.scrollHeight}px`;
-    }
-  }, [blockData.prompt]);
-
   const handleContentChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       updateBlockData(id, { content: e.target.value });
@@ -49,8 +38,8 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   );
 
   const handlePromptChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      updateBlockData(id, { prompt: e.target.value });
+    (value: string) => {
+      updateBlockData(id, { prompt: value });
     },
     [id, updateBlockData]
   );
@@ -132,7 +121,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     const currentNode = store.nodes.find((n) => n.id === id);
     if (!currentNode) return;
 
-    // Create new image block with prompt and running status
+    // Create new image block with prompt
     const newBlockId = addImageBlock(
       {
         x: currentNode.position.x + 350,
@@ -141,7 +130,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       {
         prompt: blockData.content,
         source: 'generated',
-        status: 'running',
+        status: 'idle',
         sourceBlockId: id,
       }
     );
@@ -192,74 +181,54 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
           </button>
         </>
       }
-      footer={
-        <div
-          className="flex items-center justify-between px-3 py-2 border-t"
-          style={{ borderColor: 'var(--border-subtle)' }}
-        >
-          {/* Model selector */}
-          <div className="relative">
-            <button
-              onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors"
+      footerLeftContent={
+        <div className="relative">
+          <button
+            onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors"
+            style={{
+              background: 'var(--bg-elevated)',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            {TEXT_MODELS.find((m) => m.value === blockData.model)?.label || blockData.model}
+            <ChevronDown size={12} />
+          </button>
+
+          {isModelDropdownOpen && (
+            <div
+              className="absolute bottom-full left-0 mb-1 py-1 rounded-lg z-10 min-w-[120px]"
               style={{
-                background: 'var(--bg-elevated)',
-                color: 'var(--text-secondary)',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-subtle)',
+                boxShadow: 'var(--shadow-card)',
               }}
             >
-              {TEXT_MODELS.find((m) => m.value === blockData.model)?.label || blockData.model}
-              <ChevronDown size={12} />
-            </button>
-
-            {isModelDropdownOpen && (
-              <div
-                className="absolute bottom-full left-0 mb-1 py-1 rounded-lg z-10 min-w-[120px]"
-                style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  boxShadow: 'var(--shadow-card)',
-                }}
-              >
-                {TEXT_MODELS.map((model) => (
-                  <button
-                    key={model.value}
-                    onClick={() => handleModelChange(model.value)}
-                    className="w-full px-3 py-1.5 text-left text-xs transition-colors"
-                    style={{
-                      color: blockData.model === model.value ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                      background: blockData.model === model.value ? 'var(--bg-card-hover)' : 'transparent',
-                    }}
-                  >
-                    {model.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Play button */}
-          <button
-            onClick={handleExecute}
-            disabled={blockData.status === 'running' || (!blockData.prompt?.trim() && !blockData.content.trim())}
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-all disabled:opacity-50"
-            style={{
-              background: blockData.status === 'running' || (!blockData.prompt?.trim() && !blockData.content.trim()) 
-                ? 'transparent' 
-                : 'var(--accent-primary)',
-              color: 'white',
-            }}
-            title="Execute prompt"
-          >
-            {blockData.status === 'running' ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Play size={14} />
-            )}
-          </button>
+              {TEXT_MODELS.map((model) => (
+                <button
+                  key={model.value}
+                  onClick={() => handleModelChange(model.value)}
+                  className="w-full px-3 py-1.5 text-left text-xs transition-colors"
+                  style={{
+                    color: blockData.model === model.value ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                    background: blockData.model === model.value ? 'var(--bg-card-hover)' : 'transparent',
+                  }}
+                >
+                  {model.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       }
+      onPlay={handleExecute}
+      runButtonDisabled={!blockData.prompt?.trim() && !blockData.content.trim()}
+      runButtonTitle="Execute prompt"
+      prompt={blockData.prompt}
+      onPromptChange={handlePromptChange}
+      promptPlaceholder="Enter your prompt here..."
     >
-      {/* Content section (top half) */}
+      {/* Content section */}
       <div className="nowheel p-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
         <textarea
           ref={contentTextareaRef}
@@ -272,23 +241,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
             color: 'var(--text-primary)',
             minHeight: '60px',
             maxHeight: '200px',
-          }}
-        />
-      </div>
-
-      {/* Prompt section (bottom half) */}
-      <div className="nowheel p-3">
-        <textarea
-          ref={promptTextareaRef}
-          value={blockData.prompt || ''}
-          onChange={handlePromptChange}
-          placeholder="Enter your prompt here..."
-          rows={2}
-          className="w-full bg-transparent resize-none outline-none"
-          style={{
-            color: 'var(--text-secondary)',
-            minHeight: '40px',
-            maxHeight: '150px',
           }}
         />
       </div>

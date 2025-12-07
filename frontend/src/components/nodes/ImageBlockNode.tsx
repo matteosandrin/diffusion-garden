@@ -1,4 +1,4 @@
-import { memo, useCallback, useState, useRef, useEffect } from 'react';
+import { memo, useCallback, useState, useRef } from 'react';
 import { type NodeProps } from '@xyflow/react';
 import {
   FileText,
@@ -16,33 +16,31 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isGeneratingRef = useRef(false);
 
-  // Auto-generate image when prompt exists but no imageUrl
-  useEffect(() => {
-    if (blockData.prompt && !blockData.imageUrl && (blockData.status === 'running' || blockData.status === 'idle') && !isGeneratingRef.current) {
-      isGeneratingRef.current = true;
-      const generateImage = async () => {
-        updateBlockStatus(id, 'running');
-        
-        try {
-          const response = await toolsApi.generate(blockData.prompt!);
-          updateBlockData(id, {
-            imageUrl: response.imageUrl,
-            imageId: response.imageId,
-            source: 'generated',
-          });
-          updateBlockStatus(id, 'success');
-        } catch (error) {
-          updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Failed to generate image');
-        } finally {
-          isGeneratingRef.current = false;
-        }
-      };
+  const handlePromptChange = useCallback(
+    (value: string) => {
+      updateBlockData(id, { prompt: value });
+    },
+    [id, updateBlockData]
+  );
 
-      generateImage();
+  const handleGenerate = useCallback(async () => {
+    if (!blockData.prompt?.trim()) return;
+
+    updateBlockStatus(id, 'running');
+    
+    try {
+      const response = await toolsApi.generate(blockData.prompt);
+      updateBlockData(id, {
+        imageUrl: response.imageUrl,
+        imageId: response.imageId,
+        source: 'generated',
+      });
+      updateBlockStatus(id, 'success');
+    } catch (error) {
+      updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Failed to generate image');
     }
-  }, [id, blockData.prompt, blockData.imageUrl, blockData.status, updateBlockStatus, updateBlockData]);
+  }, [id, blockData.prompt, updateBlockStatus, updateBlockData]);
 
   const handleDescribe = useCallback(async () => {
     if (!blockData.imageUrl) return;
@@ -178,22 +176,12 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
             </button>
           ) : null
         }
-        footer={
-          blockData.imageUrl && blockData.prompt ? (
-            <div
-              className="px-3 py-2 border-t"
-              style={{ borderColor: 'var(--border-subtle)' }}
-            >
-              <p
-                className="text-xs truncate"
-                style={{ color: 'var(--text-muted)' }}
-                title={blockData.prompt}
-              >
-                {blockData.prompt}
-              </p>
-            </div>
-          ) : null
-        }
+        onPlay={handleGenerate}
+        runButtonDisabled={!blockData.prompt?.trim() || !!blockData.imageUrl}
+        runButtonTitle="Generate image"
+        prompt={blockData.prompt}
+        onPromptChange={handlePromptChange}
+        promptPlaceholder="Enter image generation prompt here..."
       >
         {/* Image content */}
         <div

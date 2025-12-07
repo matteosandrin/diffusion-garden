@@ -359,7 +359,10 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
       }
 
       // Fetch non-data image and download w/ extracted or fallback filename
-      const response = await fetch(blockData.imageUrl);
+      const response = await fetch(blockData.imageUrl, {
+        mode: "cors",
+        credentials: "include",
+      });
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       filename = getFilenameFromUrl(blockData.imageUrl, filename);

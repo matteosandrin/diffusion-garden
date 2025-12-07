@@ -253,8 +253,26 @@ export function Canvas() {
     return "var(--border-default)";
   }, []);
 
+  // Prevent browser back/forward navigation on horizontal trackpad swipes
+  useEffect(() => {
+    const element = reactFlowWrapper.current;
+    if (!element) return;
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        e.preventDefault();
+      }
+    };
+    element.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      element.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
+
   return (
-    <div ref={reactFlowWrapper} className="w-full h-full">
+    <div
+      ref={reactFlowWrapper}
+      className="w-full h-full overscroll-none touch-none"
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}

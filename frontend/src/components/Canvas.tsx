@@ -9,6 +9,7 @@ import {
   SelectionMode,
   type OnSelectionChangeParams,
   type Node,
+  type Viewport,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -40,6 +41,7 @@ export function Canvas() {
     onEdgesChange,
     onConnect,
     setSelectedNodes,
+    setViewport,
     addTextBlock,
     addImageBlock,
   } = useCanvasStore();
@@ -83,6 +85,14 @@ export function Canvas() {
     setContextMenu(null);
   }, []);
 
+  // Update viewport in store when user stops moving the canvas
+  const onMoveEnd = useCallback(
+    (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {
+      setViewport(viewport);
+    },
+    [setViewport]
+  );
+
   // Handle context menu actions
   const handleAddTextBlock = useCallback(() => {
     if (contextMenu) {
@@ -122,6 +132,7 @@ export function Canvas() {
         onSelectionChange={onSelectionChange}
         onContextMenu={onContextMenu}
         onPaneClick={onPaneClick}
+        onMoveEnd={onMoveEnd}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         defaultEdgeOptions={defaultEdgeOptions}

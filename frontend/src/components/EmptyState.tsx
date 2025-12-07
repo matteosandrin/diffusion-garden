@@ -5,11 +5,11 @@ export function EmptyState() {
   const { addTextBlock, addImageBlock } = useCanvasStore();
 
   const handleAddText = () => {
-    addTextBlock({ x: 200, y: 200 });
+    addTextBlock();
   };
 
   const handleAddImage = () => {
-    addImageBlock({ x: 200, y: 200 });
+    addImageBlock();
   };
 
   return (

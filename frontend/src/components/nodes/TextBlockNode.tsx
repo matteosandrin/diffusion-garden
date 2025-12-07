@@ -161,7 +161,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
             className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
             style={{
               background: blockData.status === 'running' || !blockData.content.trim() ? 'transparent' : 'var(--accent-primary)',
-              color: 'white',
+              color: 'black',
             }}
             title="Expand this text"
           >
@@ -173,7 +173,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
             className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
             style={{
               background: blockData.status === 'running' || !blockData.content.trim() ? 'transparent' : 'var(--accent-primary)',
-              color: 'white',
+              color: 'black',
             }}
             title="Generate image from this text"
           >

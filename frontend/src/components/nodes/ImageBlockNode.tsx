@@ -3,7 +3,6 @@ import { type NodeProps } from '@xyflow/react';
 import {
   FileText,
   Upload,
-  X,
 } from 'lucide-react';
 import type { ImageBlockData } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
@@ -191,7 +190,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         status={blockData.status}
         error={blockData.error}
         accentColor="var(--accent-secondary)"
-        glowShadow="0 0 30px rgba(236, 72, 153, 0.3)"
+        glowShadow="var(--shadow-glow)"
         blockType="image"
         toolbarButtons={
           blockData.imageUrl ? (
@@ -201,7 +200,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
               className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
               style={{
                 background: blockData.status === 'running' ? 'transparent' : 'var(--accent-primary)',
-                color: 'white',
+                color: 'black',
               }}
               title="Describe this image"
             >
@@ -237,13 +236,13 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
                 className="flex flex-col items-center justify-center gap-2 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors"
                 style={{
                   borderColor: isDragOver ? 'var(--accent-secondary)' : 'var(--border-default)',
-                  background: isDragOver ? 'rgba(236, 72, 153, 0.1)' : 'var(--bg-elevated)',
+                  background: isDragOver ? 'rgba(255, 255, 255, 0.1)' : 'var(--bg-elevated)',
                 }}
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload
                   size={24}
-                  style={{ color: isDragOver ? 'var(--accent-secondary)' : 'var(--text-muted)' }}
+                  style={{ color: isDragOver ? 'var(--text-primary)' : 'var(--text-muted)' }}
                 />
                 <input
                   ref={fileInputRef}

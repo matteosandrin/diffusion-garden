@@ -220,7 +220,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
       >
         {/* Image content */}
         <div
-          className="p-3"
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -230,30 +229,32 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
               <img
                 src={blockData.imageUrl}
                 alt={blockData.title || 'Block image'}
-                className="w-full rounded-lg cursor-pointer"
+                className="w-full rounded-t-xl cursor-pointer"
                 onClick={() => setIsModalOpen(true)}
               />
             </div>
           ) : (
-            <div
-              className="flex flex-col items-center justify-center gap-2 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors"
-              style={{
-                borderColor: isDragOver ? 'var(--accent-secondary)' : 'var(--border-default)',
-                background: isDragOver ? 'rgba(236, 72, 153, 0.1)' : 'var(--bg-elevated)',
-              }}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Upload
-                size={24}
-                style={{ color: isDragOver ? 'var(--accent-secondary)' : 'var(--text-muted)' }}
-              />
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileInputChange}
-                className="hidden"
-              />
+            <div className="p-3">
+              <div
+                className="flex flex-col items-center justify-center gap-2 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-colors"
+                style={{
+                  borderColor: isDragOver ? 'var(--accent-secondary)' : 'var(--border-default)',
+                  background: isDragOver ? 'rgba(236, 72, 153, 0.1)' : 'var(--bg-elevated)',
+                }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload
+                  size={24}
+                  style={{ color: isDragOver ? 'var(--accent-secondary)' : 'var(--text-muted)' }}
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileInputChange}
+                  className="hidden"
+                />
+              </div>
             </div>
           )}
         </div>

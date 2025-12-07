@@ -17,6 +17,7 @@ interface AutoResizeTextareaProps extends Omit<
   minHeight?: string;
   maxHeight?: string;
   height?: string;
+  autoScrollToBottom?: boolean;
 }
 
 export interface AutoResizeTextareaRef {
@@ -33,6 +34,7 @@ export const AutoResizeTextarea = forwardRef<
     minHeight = "60px",
     maxHeight = "200px",
     height,
+    autoScrollToBottom = false,
     className = "",
     style,
     ...props
@@ -40,6 +42,9 @@ export const AutoResizeTextarea = forwardRef<
   ref,
 ) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const userHasInteractedRef = useRef(false);
+  const isAutoScrollingRef = useRef(false);
+  const previousValueRef = useRef(value);
 
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -52,8 +57,31 @@ export const AutoResizeTextarea = forwardRef<
 
   // Sync from external value to local state (when value changes externally)
   useEffect(() => {
+    const valueChangedExternally = previousValueRef.current !== value;
+    const previousValue = previousValueRef.current;
+    previousValueRef.current = value;
     setLocalValue(value);
-  }, [value]);
+
+    // Reset interaction flag when content is cleared (new run starting)
+    if (valueChangedExternally && previousValue && !value) {
+      userHasInteractedRef.current = false;
+    }
+
+    // Auto-scroll to bottom when value changes externally and feature is enabled
+    if (
+      autoScrollToBottom &&
+      valueChangedExternally &&
+      !userHasInteractedRef.current &&
+      textareaRef.current
+    ) {
+      isAutoScrollingRef.current = true;
+      textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+      // Reset flag after scroll completes
+      requestAnimationFrame(() => {
+        isAutoScrollingRef.current = false;
+      });
+    }
+  }, [value, autoScrollToBottom]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -68,15 +96,37 @@ export const AutoResizeTextarea = forwardRef<
       const newValue = e.target.value;
       setLocalValue(newValue); // Update local state immediately (no cursor jump)
       onChange(newValue); // Notify parent
+      // User typing is considered interaction
+      userHasInteractedRef.current = true;
     },
     [onChange],
   );
+
+  const handleScroll = useCallback(() => {
+    if (!isAutoScrollingRef.current && textareaRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = textareaRef.current;
+      // If user scrolled away from bottom, mark as interacted
+      const isAtBottom =
+        scrollHeight - scrollTop - clientHeight < 10;
+      if (!isAtBottom) {
+        userHasInteractedRef.current = true;
+      }
+    }
+  }, []);
+
+  const handleUserInteraction = useCallback(() => {
+    userHasInteractedRef.current = true;
+  }, []);
 
   return (
     <textarea
       ref={textareaRef}
       value={localValue}
       onChange={handleChange}
+      onScroll={handleScroll}
+      onClick={handleUserInteraction}
+      onFocus={handleUserInteraction}
+      onKeyDown={handleUserInteraction}
       className={`w-full bg-transparent resize-none outline-none pr-1 ${className}`}
       style={{
         ...(height ? { height } : { minHeight, maxHeight }),

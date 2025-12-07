@@ -94,14 +94,12 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
   const chartData = [...aggregatedByDate].reverse().slice(-14); // Last 14 days
 
   if (loading) {
-    return (
-      <div style={{ padding: 20, fontFamily: "monospace" }}>Loading...</div>
-    );
+    return <div className="p-4 font-mono h-full overflow-auto">Loading...</div>;
   }
 
   if (error) {
     return (
-      <div style={{ padding: 20, fontFamily: "monospace" }}>
+      <div className="p-4 font-mono h-full overflow-auto">
         <p>Error: {error}</p>
         <button onClick={onBack}>Back</button>
       </div>
@@ -109,7 +107,7 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div style={{ padding: 20, fontFamily: "monospace" }}>
+    <div className="p-4 font-mono h-full overflow-auto">
       <h1 className="text-2xl font-bold mb-4">Analytics</h1>
 
       {/* Summary */}

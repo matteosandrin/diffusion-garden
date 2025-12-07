@@ -105,7 +105,7 @@ function AppContent() {
       }
 
       switch (e.key.toLowerCase()) {
-        case 'n':
+        case 't':
           e.preventDefault();
           addTextBlock();
           break;

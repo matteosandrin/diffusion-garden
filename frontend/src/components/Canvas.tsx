@@ -88,7 +88,6 @@ export function Canvas() {
 
   // Center viewport on newly created block
   useEffect(() => {
-    console.log("pendingCenterNodeId:", pendingCenterNodeId);
     if (pendingCenterNodeId) {
       const node = nodes.find((n) => n.id === pendingCenterNodeId);
       if (node) {

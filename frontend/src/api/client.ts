@@ -82,7 +82,7 @@ export const canvasApi = {
       ...state,
       nodes: state.nodes?.map((node: AppNode) => {
         const data = node.data ? { ...node.data } : undefined;
-        if (data && data.type === "image") {
+        if (data && data.type === "image" && data.imageUrl) {
           data.imageUrl = stripApiHost(data.imageUrl);
         }
         return { ...node, data } as AppNode;

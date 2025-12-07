@@ -3,6 +3,7 @@ import re
 import asyncio
 import random
 from pathlib import Path
+from typing import AsyncIterator
 from PIL import Image
 from openai import AsyncOpenAI
 from google import genai
@@ -34,9 +35,10 @@ class AIService:
         input_text: str | None = None,
         image_urls: list[str] | None = None,
         model: str = "gpt-5.1",
-    ) -> str:
+    ) -> AsyncIterator[str]:
         """
         Run a prompt with optional input text and/or images integrated into it.
+        Streams the response as text chunks.
         Images are fetched from URLs and converted to base64 before sending to the API.
 
         Args:
@@ -45,8 +47,8 @@ class AIService:
             image_urls: Optional list of image URLs (will be fetched and converted to base64)
             model: The OpenAI model to use (gpt-5.1, gpt-4o, or gpt-4o-mini)
 
-        Returns:
-            Result of executing the prompt with the integrated input (if provided)
+        Yields:
+            Text chunks as they are generated
         """
         if not self.openai_client:
             raise ValueError("OpenAI API key not configured")
@@ -72,13 +74,13 @@ class AIService:
         elif input_text:
             messages.append({"role": "user", "content": input_text})
 
-        response = await self.openai_client.chat.completions.create(
-            model=model, messages=messages, temperature=0.7
+        stream = await self.openai_client.chat.completions.create(
+            model=model, messages=messages, temperature=0.7, stream=True
         )
 
-        print(response)
-
-        return response.choices[0].message.content or ""
+        async for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
 
     async def generate_image(
         self,

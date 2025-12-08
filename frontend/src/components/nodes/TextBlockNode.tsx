@@ -101,9 +101,11 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
           ? addImageBlock(
               newPosition,
               {
+                prompt: blockData.content, // Pass prompt directly for autoRun to work
                 source: "generated",
                 status: "idle",
                 sourceBlockId: id,
+                autoRun: true,
               },
               {
                 upperLeftCorner: true,

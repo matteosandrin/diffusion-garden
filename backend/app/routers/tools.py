@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-import base64
 import uuid
 import os
 from ..services import AIService, get_ai_service
@@ -55,7 +54,6 @@ class GenerateImageResponse(BaseModel):
     """Response from image generation."""
     imageId: str
     imageUrl: str
-
 
 @router.post("/expand", response_model=ExpandResponse)
 async def expand_text(request: ExpandRequest, ai_service: AIService = Depends(get_ai_service)):

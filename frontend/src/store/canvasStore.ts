@@ -15,6 +15,7 @@ import type {
   ImageBlockData,
   BlockStatus,
   AppSettings,
+  Prompts,
 } from '../types';
 
 interface CanvasStore {
@@ -29,6 +30,9 @@ interface CanvasStore {
   
   // Settings
   settings: AppSettings;
+  
+  // Prompts
+  prompts: Prompts;
   
   // UI state
   isSaving: boolean;
@@ -59,6 +63,9 @@ interface CanvasStore {
   
   // Settings
   updateSettings: (settings: Partial<AppSettings>) => void;
+  
+  // Prompts
+  setPrompts: (prompts: Prompts) => void;
   
   // Canvas management
   setCanvasId: (id: string) => void;
@@ -98,6 +105,7 @@ export const useCanvasStore = create<CanvasStore>()(
         google: false,
       },
     },
+    prompts: {},
     isSaving: false,
     lastSaved: null,
 
@@ -266,6 +274,11 @@ export const useCanvasStore = create<CanvasStore>()(
       set((state) => ({
         settings: { ...state.settings, ...newSettings },
       }));
+    },
+
+    // Prompts
+    setPrompts: (prompts) => {
+      set({ prompts });
     },
 
     // Canvas management

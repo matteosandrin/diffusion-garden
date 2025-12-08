@@ -1,7 +1,7 @@
-from typing import List
-from fastapi import APIRouter, Depends
+from typing import List, Optional
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
-from sqlalchemy import func, cast, Date
+from sqlalchemy import func, cast, Date, text
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import AnalyticsLog
@@ -23,25 +23,40 @@ class DailyStatsResponse(BaseModel):
 
 
 @router.get("/daily", response_model=DailyStatsResponse)
-async def get_daily_stats(db: Session = Depends(get_db)):
+async def get_daily_stats(
+    timezone: Optional[str] = Query(
+        None,
+        description="Timezone name (e.g., 'America/New_York', 'Europe/London', 'UTC'). If not provided, uses UTC.",
+    ),
+    db: Session = Depends(get_db),
+):
     """
     Get daily aggregated analytics stats.
     Returns request counts and token usage grouped by date and request type.
+
+    Times are converted to the specified timezone before grouping by date.
+    If no timezone is provided, UTC is used.
     """
+    if timezone:
+        timezone_expr = text("timezone(:tz, analytics_logs.created_at)").bindparams(
+            tz=timezone
+        )
+    else:
+        # No timezone conversion, use UTC as-is
+        timezone_expr = AnalyticsLog.created_at
     results = (
         db.query(
-            cast(AnalyticsLog.created_at, Date).label("date"),
+            cast(timezone_expr, Date).label("date"),
             AnalyticsLog.request_type,
             func.count(AnalyticsLog.id).label("request_count"),
             func.sum(AnalyticsLog.input_tokens).label("input_tokens"),
             func.sum(AnalyticsLog.output_tokens).label("output_tokens"),
             func.sum(AnalyticsLog.total_tokens).label("total_tokens"),
         )
-        .group_by(cast(AnalyticsLog.created_at, Date), AnalyticsLog.request_type)
-        .order_by(cast(AnalyticsLog.created_at, Date).desc())
+        .group_by(cast(timezone_expr, Date), AnalyticsLog.request_type)
+        .order_by(cast(timezone_expr, Date).desc())
         .all()
     )
-
     stats = [
         DailyStats(
             date=str(row.date),
@@ -53,5 +68,4 @@ async def get_daily_stats(db: Session = Depends(get_db)):
         )
         for row in results
     ]
-
     return DailyStatsResponse(stats=stats)

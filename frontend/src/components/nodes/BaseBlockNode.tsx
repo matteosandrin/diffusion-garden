@@ -130,7 +130,7 @@ export function BaseBlockNode({
 
         {/* Prompt section */}
         {(prompt !== undefined || onPromptChange) && (
-          <div className="nowheel p-3 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div className={`p-3 border-t ${selected ? 'nowheel' : ''}`} style={{ borderColor: 'var(--border-subtle)' }}>
             <textarea
               ref={promptTextareaRef}
               value={prompt || ''}

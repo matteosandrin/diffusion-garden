@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, HTTPException, status
 from pydantic import BaseModel
 from ..config import get_settings
+from ..rate_limiter import limiter
 import httpx
 
 
@@ -68,6 +69,7 @@ async def _notify_pushover(ipdata: dict, path: str, referrer: str):
 
 
 @router.post("")
+@limiter.limit("10/minute")
 async def notify(request: Request, body: NotifyRequest):
 
     if not settings.ipdata_api_key:

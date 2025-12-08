@@ -1,8 +1,9 @@
 from typing import Dict, List, Literal, get_args
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel
 from ..config import get_settings
 from ..prompts import get_prompt, available_prompts
+from ..rate_limiter import limiter
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 settings = get_settings()
@@ -61,7 +62,8 @@ class ApiKeyStatus(BaseModel):
 
 
 @router.get("", response_model=SettingsResponse)
-async def get_app_settings():
+@limiter.limit("60/minute")
+async def get_app_settings(request: Request):
     """Get current application settings."""
     return SettingsResponse(
         defaultTextModel=DEFAULT_TEXT_MODEL,
@@ -74,7 +76,8 @@ async def get_app_settings():
 
 
 @router.get("/api-keys/status", response_model=ApiKeyStatus)
-async def check_api_keys():
+@limiter.limit("60/minute")
+async def check_api_keys(request: Request):
     """Check if API keys are configured."""
     return ApiKeyStatus(
         openai=bool(settings.openai_api_key),
@@ -83,12 +86,14 @@ async def check_api_keys():
 
 
 @router.get("/prompts", response_model=Dict[str, str])
-async def get_prompts():
+@limiter.limit("30/minute")
+async def get_prompts(request: Request):
     return {key: get_prompt(key) for key in available_prompts()}
 
 
 @router.get("/models", response_model=ModelsResponse)
-async def get_models():
+@limiter.limit("60/minute")
+async def get_models(request: Request):
     """Get available models and defaults."""
     return ModelsResponse(
         textModels=[ModelOption(**m) for m in AVAILABLE_TEXT_MODELS],

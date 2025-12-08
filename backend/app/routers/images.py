@@ -6,6 +6,7 @@ import os
 from ..database import get_db
 from ..models import Image
 from ..config import get_settings
+from ..rate_limiter import limiter
 
 router = APIRouter(prefix="/images", tags=["images"])
 settings = get_settings()
@@ -15,7 +16,8 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 
 @router.post("/upload")
-async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
+@limiter.limit("30/minute")
+async def upload_image(request: Request, file: UploadFile = File(...), db: Session = Depends(get_db)):
     """Upload an image file."""
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(
@@ -62,9 +64,10 @@ async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_d
 
 
 @router.get("/{image_id}")
+@limiter.limit("200/minute")
 async def get_image(
-    image_id: str,
     request: Request,
+    image_id: str,
     db: Session = Depends(get_db),
 ):
     """Retrieve an image by ID."""
@@ -92,7 +95,8 @@ async def get_image(
 
 
 @router.delete("/{image_id}")
-async def delete_image(image_id: str, db: Session = Depends(get_db)):
+@limiter.limit("30/minute")
+async def delete_image(request: Request, image_id: str, db: Session = Depends(get_db)):
     """Delete an image."""
     image_record = db.query(Image).filter(Image.id == image_id).first()
     if not image_record:

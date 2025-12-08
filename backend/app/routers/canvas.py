@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Any
@@ -6,6 +6,7 @@ import os
 from ..database import get_db
 from ..models import Canvas, Image
 from ..config import get_settings
+from ..rate_limiter import limiter
 
 router = APIRouter(prefix="/canvas", tags=["canvas"])
 
@@ -80,7 +81,8 @@ def extract_thumbnail_url(nodes: list[dict[str, Any]] | None) -> str | None:
 
 
 @router.get("", response_model=list[CanvasSummary])
-async def list_canvases(db: Session = Depends(get_db)):
+@limiter.limit("60/minute")
+async def list_canvases(request: Request, db: Session = Depends(get_db)):
     """List all canvases with thumbnails."""
     canvases = db.query(Canvas).order_by(Canvas.updated_at.desc()).all()
 
@@ -97,7 +99,8 @@ async def list_canvases(db: Session = Depends(get_db)):
 
 
 @router.post("", response_model=dict)
-async def create_canvas(db: Session = Depends(get_db)):
+@limiter.limit("30/minute")
+async def create_canvas(request: Request, db: Session = Depends(get_db)):
     """Create a new empty canvas."""
     canvas = Canvas()
     db.add(canvas)
@@ -107,7 +110,8 @@ async def create_canvas(db: Session = Depends(get_db)):
 
 
 @router.get("/{canvas_id}", response_model=CanvasResponse)
-async def get_canvas(canvas_id: str, db: Session = Depends(get_db)):
+@limiter.limit("120/minute")
+async def get_canvas(request: Request, canvas_id: str, db: Session = Depends(get_db)):
     """Load a canvas by ID."""
     canvas = db.query(Canvas).filter(Canvas.id == canvas_id).first()
     if not canvas:
@@ -124,8 +128,9 @@ async def get_canvas(canvas_id: str, db: Session = Depends(get_db)):
 
 
 @router.put("/{canvas_id}")
+@limiter.limit("120/minute")
 async def update_canvas(
-    canvas_id: str, update: CanvasUpdate, db: Session = Depends(get_db)
+    request: Request, canvas_id: str, update: CanvasUpdate, db: Session = Depends(get_db)
 ):
     """Update a canvas (nodes, edges, viewport)."""
     canvas = db.query(Canvas).filter(Canvas.id == canvas_id).first()
@@ -144,7 +149,8 @@ async def update_canvas(
 
 
 @router.delete("/{canvas_id}")
-async def delete_canvas(canvas_id: str, db: Session = Depends(get_db)):
+@limiter.limit("20/minute")
+async def delete_canvas(request: Request, canvas_id: str, db: Session = Depends(get_db)):
     """Delete a canvas and all associated images."""
     canvas = db.query(Canvas).filter(Canvas.id == canvas_id).first()
     if not canvas:

@@ -33,19 +33,19 @@ async def _get_ipdata(ip_address: str) -> dict:
 async def _notify_pushover(ipdata: dict, path: str, referrer: str):
     message = (
         "Location: "
-        + ipdata.get("emoji_flag", "") or ""
+        + (ipdata.get("emoji_flag", "") or "")
         + " "
-        + ipdata.get("city", "") or ""
+        + (ipdata.get("city", "") or "")
         + ", "
-        + ipdata.get("region", "") or ""
+        + (ipdata.get("region", "") or "")
         + ", "
-        + ipdata.get("country_name", "") or ""
+        + (ipdata.get("country_name", "") or "")
         + "\n"
         + "Path: "
         + path
         + "\n"
         + "ISP: "
-        + (ipdata.get("asn", {}) or {}).get("name", "") or ""
+        + ((ipdata.get("asn", {}) or {}).get("name", "") or "")
         + "\n"
     )
     if referrer:

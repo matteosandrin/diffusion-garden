@@ -308,6 +308,19 @@ function AnalyticsRoute() {
   return <AnalyticsPage onBack={() => navigate("/")} />;
 }
 
+async function getPublicIP(): Promise<string | null> {
+  try {
+    const response = await fetch("https://api.ipify.org?format=json");
+    if (response.ok) {
+      const data = await response.json();
+      return data.ip || null;
+    }
+  } catch (error) {
+    console.error("Failed to fetch public IP:", error);
+  }
+  return null;
+}
+
 function PageVisitTracker() {
   const location = useLocation();
   const getReferrer = () => {
@@ -323,7 +336,8 @@ function PageVisitTracker() {
   useEffect(() => {
     const sendNotification = async () => {
       try {
-        await notifyApi.notify(location.pathname, getReferrer());
+        const ip = await getPublicIP();
+        await notifyApi.notify(location.pathname, getReferrer(), ip);
       } catch (error) {
         // Silently fail - we don't want to interrupt user experience
         console.error("Failed to send page visit notification:", error);

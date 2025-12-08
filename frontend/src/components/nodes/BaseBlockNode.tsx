@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   type ReactNode,
+  useMemo,
 } from "react";
 import { Handle, Position } from "@xyflow/react";
 import {
@@ -136,6 +137,15 @@ export function BaseBlockNode({
   const promptTextareaRef = useRef<AutoResizeTextareaRef>(null);
   const jobRecoveryAttemptedRef = useRef(false);
   const recoveryCleanupRef = useRef<(() => void) | null>(null);
+  const isMultiSelect = useMemo(() => {
+    return selectedNodeIds.length > 1 && selectedNodeIds.includes(id);
+  }, [selectedNodeIds, id]);
+  const shouldShowToolbar = useMemo(() => {
+    return selected && !isMultiSelect;
+  }, [selected, isMultiSelect]);
+  const shouldShowPrompt = useMemo(() => {
+    return (promptValue !== undefined || onPromptChange) && !isMultiSelect;
+  }, [promptValue, onPromptChange, isMultiSelect]);
 
   // Job recovery: check if there's a running job and subscribe to updates
   useEffect(() => {
@@ -246,9 +256,6 @@ export function BaseBlockNode({
   const handleRunClick = useCallback(() => {
     if (!onRun) return;
 
-    const isMultiSelect =
-      selectedNodeIds.length > 1 && selectedNodeIds.includes(id);
-
     if (isMultiSelect) {
       requestRunForNodes(selectedNodeIds);
     } else {
@@ -294,9 +301,11 @@ export function BaseBlockNode({
           background: "var(--bg-card)",
           border: "1px solid var(--border-subtle)",
           boxShadow: "var(--shadow-card)",
-          transform: selected ? "translateY(-0.5rem)" : "translateY(1rem)",
-          opacity: selected ? 1 : 0,
-          pointerEvents: selected ? "auto" : "none",
+          transform: shouldShowToolbar
+            ? "translateY(-0.5rem)"
+            : "translateY(1rem)",
+          opacity: shouldShowToolbar ? 1 : 0,
+          pointerEvents: shouldShowToolbar ? "auto" : "none",
         }}
       >
         {toolbarButtons}
@@ -449,7 +458,7 @@ export function BaseBlockNode({
       </div>
 
       {/* Prompt bubble - slides out from under the block when selected */}
-      {(promptValue !== undefined || onPromptChange) && (
+      {shouldShowPrompt && (
         <div
           className="nowheel nodrag absolute left-0 top-full -mt-8 w-full px-3 pt-8 pb-2 rounded-b-xl transition-all duration-300 ease-out"
           style={{

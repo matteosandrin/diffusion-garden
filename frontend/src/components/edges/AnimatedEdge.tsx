@@ -40,7 +40,7 @@ function AnimatedEdgeComponent({
         path={edgePath}
         markerEnd={markerEnd}
         style={{
-          stroke: selected ? "var(--accent-primary)" : "var(--border-default)",
+          stroke: selected ? "var(--accent-primary)" : "#5a5a5a",
           strokeWidth: 2,
           transition: "stroke 0.2s ease",
           ...style,
@@ -60,7 +60,7 @@ function AnimatedEdgeComponent({
             <path
               d="M2,2 L10,6 L2,10 L4,6 Z"
               fill={
-                selected ? "var(--accent-primary)" : "var(--border-default)"
+                selected ? "var(--accent-primary)" : "#5a5a5a"
               }
               style={{ transition: "fill 0.2s ease" }}
             />

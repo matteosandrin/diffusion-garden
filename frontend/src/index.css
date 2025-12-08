@@ -96,7 +96,7 @@ body {
 }
 
 .react-flow__edge-path {
-  stroke: var(--border-default) !important;
+  stroke: var(--border-default);
   stroke-width: 2 !important;
 }
 

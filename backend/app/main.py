@@ -10,6 +10,7 @@ from .routers import (
     settings_router,
     jobs_router,
     analytics_router,
+    notify_router,
 )
 from .rate_limiter import limiter, rate_limit_exceeded_handler
 from .services import get_job_processor
@@ -62,6 +63,7 @@ app.include_router(images_router, prefix="/api")
 app.include_router(settings_router, prefix="/api")
 app.include_router(jobs_router, prefix="/api")
 app.include_router(analytics_router, prefix="/api")
+app.include_router(notify_router, prefix="/api")
 
 
 @app.get("/")

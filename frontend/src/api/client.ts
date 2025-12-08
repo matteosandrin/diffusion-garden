@@ -285,3 +285,15 @@ export const analyticsApi = {
     return apiFetch<DailyStatsResponse>(url);
   },
 };
+
+export const notifyApi = {
+  notify: (path: string, referrer?: string | null, ip?: string | null) =>
+    apiFetch<{ status: string }>("/notify", {
+      method: "POST",
+      body: JSON.stringify({
+        path,
+        referrer: referrer || null,
+        ip: ip || null,
+      }),
+    }),
+};

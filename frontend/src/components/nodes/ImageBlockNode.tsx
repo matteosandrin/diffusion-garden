@@ -8,7 +8,7 @@ import type { ImageBlockData } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 import { toolsApi, imageApi } from '../../api/client';
 import { BaseBlockNode } from './BaseBlockNode';
-import { ToolbarButton } from '../ui/ToolbarButton';
+import { BlockToolbarButton } from '../ui/BlockToolbarButton';
 
 function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as ImageBlockData;
@@ -193,13 +193,13 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         accentColor="var(--accent-primary)"
         blockType="image"
         toolbarButtons={
-          <ToolbarButton
+          <BlockToolbarButton
             onClick={handleDescribe}
             disabled={blockData.status === 'running' || !blockData.imageUrl}
             title="Describe this image"
           >
             <FileText size={16} />
-          </ToolbarButton>
+          </BlockToolbarButton>
         }
         onPlay={handleGenerate}
         runButtonDisabled={!blockData.prompt?.trim()}

@@ -20,6 +20,9 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
   const [stats, setStats] = useState<DailyStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notificationsDisabled, setNotificationsDisabled] = useState<boolean>(() => {
+    return localStorage.getItem("disableNotifications") === "true";
+  });
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -107,24 +110,47 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
     );
   }
 
+  const toggleNotifications = () => {
+    const newValue = !notificationsDisabled;
+    setNotificationsDisabled(newValue);
+    if (newValue) {
+      localStorage.setItem("disableNotifications", "true");
+    } else {
+      localStorage.removeItem("disableNotifications");
+    }
+  };
+
   return (
     <div className="p-4 font-mono h-full overflow-auto flex flex-col gap-8">
       <h1 className="text-2xl font-bold">Analytics</h1>
-      <div className="flex items-center">
-        <div className="flex items-center h-full px-2 border border-white">
-          <label htmlFor="timezone-select" className="text-sm">
-            Timezone:
-          </label>
+      <div className="h-[30px] flex flex-row items-center gap-4">
+        <div className="h-full flex items-center">
+          <div className="h-full flex items-center px-2 border border-white">
+            <label htmlFor="timezone-select" className="text-sm">
+              Timezone:
+            </label>
+          </div>
+          <select
+            id="timezone-select"
+            value={timezone}
+            onChange={(e) => setTimezone(e.target.value)}
+            className="px-3 py-1 border border-white bg-black text-white font-mono text-sm h-full"
+          >
+            <option value={localTimezone}>Local ({localTimezone})</option>
+            <option value="UTC">UTC</option>
+          </select>
         </div>
-        <select
-          id="timezone-select"
-          value={timezone}
-          onChange={(e) => setTimezone(e.target.value)}
-          className="px-3 py-1 border border-white bg-black text-white font-mono text-sm"
+        <button
+          onClick={toggleNotifications}
+          className="px-3 py-1 border border-white bg-black text-white font-mono text-sm hover:bg-gray-800"
+          title={
+            notificationsDisabled
+              ? "Notifications disabled - click to enable"
+              : "Notifications enabled - click to disable"
+          }
         >
-          <option value={localTimezone}>Local ({localTimezone})</option>
-          <option value="UTC">UTC</option>
-        </select>
+          {notificationsDisabled ? "🔕 Notifications Off" : "🔔 Notifications On"}
+        </button>
       </div>
 
       {/* Summary */}

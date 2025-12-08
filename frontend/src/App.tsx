@@ -335,6 +335,11 @@ function PageVisitTracker() {
   };
   useEffect(() => {
     const sendNotification = async () => {
+      // Check localStorage flag to disable notifications during testing
+      const disableNotifications = localStorage.getItem("disableNotifications");
+      if (disableNotifications === "true") {
+        return;
+      }
       try {
         const ip = await getPublicIP();
         await notifyApi.notify(location.pathname, getReferrer(), ip);

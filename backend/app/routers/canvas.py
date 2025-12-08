@@ -130,7 +130,10 @@ async def get_canvas(request: Request, canvas_id: str, db: Session = Depends(get
 @router.put("/{canvas_id}")
 @limiter.limit("120/minute")
 async def update_canvas(
-    request: Request, canvas_id: str, update: CanvasUpdate, db: Session = Depends(get_db)
+    request: Request,
+    canvas_id: str,
+    update: CanvasUpdate,
+    db: Session = Depends(get_db),
 ):
     """Update a canvas (nodes, edges, viewport)."""
     canvas = db.query(Canvas).filter(Canvas.id == canvas_id).first()
@@ -150,7 +153,9 @@ async def update_canvas(
 
 @router.delete("/{canvas_id}")
 @limiter.limit("20/minute")
-async def delete_canvas(request: Request, canvas_id: str, db: Session = Depends(get_db)):
+async def delete_canvas(
+    request: Request, canvas_id: str, db: Session = Depends(get_db)
+):
     """Delete a canvas and all associated images."""
     canvas = db.query(Canvas).filter(Canvas.id == canvas_id).first()
     if not canvas:

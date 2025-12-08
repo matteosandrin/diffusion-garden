@@ -17,7 +17,9 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 @router.post("/upload")
 @limiter.limit("30/minute")
-async def upload_image(request: Request, file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def upload_image(
+    request: Request, file: UploadFile = File(...), db: Session = Depends(get_db)
+):
     """Upload an image file."""
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(

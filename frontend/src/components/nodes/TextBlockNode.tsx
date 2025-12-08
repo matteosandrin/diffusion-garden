@@ -9,6 +9,7 @@ import type { TextBlockData, TextModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 import { toolsApi } from '../../api/client';
 import { BaseBlockNode } from './BaseBlockNode';
+import { ToolbarButton } from '../ui/ToolbarButton';
 
 const TEXT_MODELS: { value: TextModel; label: string }[] = [
   { value: 'gpt-5.1', label: 'GPT-5.1' },
@@ -154,30 +155,20 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       blockType="text"
       toolbarButtons={
         <>
-          <button
+          <ToolbarButton
             onClick={handleExpand}
             disabled={blockData.status === 'running' || !blockData.content.trim()}
-            className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
-            style={{
-              background: blockData.status === 'running' || !blockData.content.trim() ? 'transparent' : 'var(--accent-primary)',
-              color: 'black',
-            }}
             title="Expand this text"
           >
             <Sparkles size={16} />
-          </button>
-          <button
+          </ToolbarButton>
+          <ToolbarButton
             onClick={handleGenerateImage}
             disabled={blockData.status === 'running' || !blockData.content.trim()}
-            className="p-1.5 rounded transition-all disabled:opacity-50 hover:bg-opacity-80"
-            style={{
-              background: blockData.status === 'running' || !blockData.content.trim() ? 'transparent' : 'var(--accent-primary)',
-              color: 'black',
-            }}
             title="Generate image from this text"
           >
             <Image size={16} />
-          </button>
+          </ToolbarButton>
         </>
       }
       footerLeftContent={

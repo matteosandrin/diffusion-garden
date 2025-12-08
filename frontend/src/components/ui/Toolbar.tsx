@@ -2,18 +2,14 @@ import { useState } from 'react';
 import {
   Type,
   Image,
-  Settings,
-  Save,
-  Loader2,
-  CheckCircle,
-  Sparkles,
+  Settings
 } from 'lucide-react';
 import { useCanvasStore } from '../../store/canvasStore';
 import { SettingsPanel } from './SettingsPanel';
 
 export function Toolbar() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { addTextBlock, addImageBlock, isSaving, lastSaved } = useCanvasStore();
+  const { addTextBlock, addImageBlock } = useCanvasStore();
 
   const handleAddTextBlock = () => {
     addTextBlock();
@@ -37,7 +33,7 @@ export function Toolbar() {
         <button
           onClick={handleAddTextBlock}
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-          style={{ color: 'var(--text-secondary)' }}
+          style={{ color: 'var(--text-primary)' }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'var(--bg-card-hover)';
             e.currentTarget.style.color = 'var(--text-primary)';
@@ -55,7 +51,7 @@ export function Toolbar() {
         <button
           onClick={handleAddImageBlock}
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
-          style={{ color: 'var(--text-secondary)' }}
+          style={{ color: 'var(--text-primary)' }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'var(--bg-card-hover)';
             e.currentTarget.style.color = 'var(--text-primary)';
@@ -66,7 +62,7 @@ export function Toolbar() {
           }}
           title="Add Image Block (I)"
         >
-          <Image size={16} style={{ color: 'var(--accent-secondary)' }} />
+          <Image size={16} style={{ color: 'var(--accent-primary)' }} />
           Image
         </button>
 

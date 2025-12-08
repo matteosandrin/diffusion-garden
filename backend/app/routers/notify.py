@@ -23,26 +23,30 @@ async def _get_ipdata(ip_address: str) -> dict:
         resp = await client.get(ipdata_url)
         if resp.status_code == 200:
             return resp.json()
-        return {"error": f"Failed to fetch ipdata (status {resp.status_code})"}
+        error_message = resp.json().get("message", "Unknown error")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"IPData error: {error_message}",
+        )
 
 
 async def _notify_pushover(ipdata: dict, path: str, referrer: str):
 
     message = (
         "Location: "
-        + ipdata["emoji_flag"]
+        + ipdata.get("emoji_flag", "")
         + " "
-        + ipdata["city"]
+        + ipdata.get("city", "")
         + ", "
-        + ipdata["region"]
+        + ipdata.get("region", "")
         + ", "
-        + ipdata["country_name"]
+        + ipdata.get("country_name", "")
         + "\n"
         + "Path: "
         + path
         + "\n"
         + "ISP: "
-        + ipdata["asn"]["name"]
+        + ipdata.get("asn", {}).get("name", "")
         + "\n"
     )
     if referrer:
@@ -56,6 +60,11 @@ async def _notify_pushover(ipdata: dict, path: str, referrer: str):
                 "message": message,
             },
         )
+        if resp.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Pushover error: {resp.text}",
+            )
         return resp.json()
 
 
@@ -78,15 +87,6 @@ async def notify(request: Request, body: NotifyRequest):
     if not ip_address:
         ip_address = request.client.host
     ipdata = await _get_ipdata(ip_address)
-    if "error" in ipdata:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY, detail=ipdata["error"]
-        )
-
     pushover_resp = await _notify_pushover(ipdata, body.path, body.referrer)
-    if "error" in pushover_resp:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY, detail=pushover_resp["error"]
-        )
 
     return {"status": "ok"}

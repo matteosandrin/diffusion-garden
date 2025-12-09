@@ -69,10 +69,6 @@ export interface GenerateTextResponse {
   result: string;
 }
 
-export interface DescribeResponse {
-  description: string;
-}
-
 export interface GenerateImageResponse {
   imageId: string;
   imageUrl: string;

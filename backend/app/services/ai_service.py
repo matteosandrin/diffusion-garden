@@ -86,54 +86,6 @@ class AIService:
         
         return response.choices[0].message.content or ""
     
-    async def describe_image(self, image_base64: str) -> str:
-        """
-        Generate a detailed description of an image using GPT-4o Vision.
-        
-        Args:
-            image_base64: Base64 encoded image data
-            
-        Returns:
-            Detailed text description of the image
-        """
-        if not self.openai_client:
-            raise ValueError("OpenAI API key not configured")
-        
-        # Ensure proper data URL format
-        if not image_base64.startswith("data:"):
-            image_base64 = f"data:image/jpeg;base64,{image_base64}"
-        
-        response = await self.openai_client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": """Describe this image in rich, detailed prose suitable as a creative prompt or comprehensive alt text. 
-Include:
-- Main subjects and their positioning
-- Colors, lighting, and atmosphere
-- Style and mood
-- Notable details and textures
-- Any text or symbols visible
-
-Be vivid and specific, as if helping someone recreate or understand this image without seeing it."""
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": image_base64
-                            }
-                        }
-                    ]
-                }
-            ]
-        )
-        
-        return response.choices[0].message.content or ""
-    
     async def generate_image(self, prompt: str, input: str | None = None, image_urls: list[str] | None = None) -> tuple[Image.Image, str]:
         """
         Generate an image from a text prompt with optional input text and/or images.

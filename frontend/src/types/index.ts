@@ -36,6 +36,11 @@ export interface ImageBlockData {
   [key: string]: unknown; // Index signature for React Flow compatibility
 }
 
+// Input content item types
+export type InputContentItem =
+  | { type: 'text'; content: string }
+  | { type: 'image'; url: string };
+
 export type BlockData = TextBlockData | ImageBlockData;
 
 // Node types for React Flow

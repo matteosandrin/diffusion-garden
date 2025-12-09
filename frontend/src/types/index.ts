@@ -60,11 +60,6 @@ export interface CanvasState {
   updatedAt: string;
 }
 
-// API response types
-export interface ExpandResponse {
-  result: string;
-}
-
 export interface GenerateTextResponse {
   result: string;
 }

@@ -3,7 +3,7 @@ import { Handle, Position } from '@xyflow/react';
 import { Trash2, ArrowUp, Loader2 } from 'lucide-react';
 import type { BlockStatus } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
-import { ToolbarButton } from '../ui/ToolbarButton';
+import { BlockToolbarButton } from '../ui/BlockToolbarButton';
 
 interface BaseBlockNodeProps {
   id: string;
@@ -173,13 +173,13 @@ export function BaseBlockNode({
           }}
         >
           {toolbarButtons}
-          <ToolbarButton
+          <BlockToolbarButton
               onClick={handleDelete}
               disabled={status === 'running'}
               title="Delete this block"
             >
               <Trash2 size={16}/>
-          </ToolbarButton>
+          </BlockToolbarButton>
         </div>
       )}
 

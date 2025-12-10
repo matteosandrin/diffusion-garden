@@ -9,7 +9,7 @@ import type { TextBlockData, TextModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 import { toolsApi } from '../../api/client';
 import { BaseBlockNode } from './BaseBlockNode';
-import { ToolbarButton } from '../ui/ToolbarButton';
+import { BlockToolbarButton } from '../ui/BlockToolbarButton';
 
 const TEXT_MODELS: { value: TextModel; label: string }[] = [
   { value: 'gpt-5.1', label: 'GPT-5.1' },
@@ -155,20 +155,20 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       blockType="text"
       toolbarButtons={
         <>
-          <ToolbarButton
+          <BlockToolbarButton
             onClick={handleExpand}
             disabled={blockData.status === 'running' || !blockData.content.trim()}
             title="Expand this text"
           >
             <Sparkles size={16} />
-          </ToolbarButton>
-          <ToolbarButton
+          </BlockToolbarButton>
+          <BlockToolbarButton
             onClick={handleGenerateImage}
             disabled={blockData.status === 'running' || !blockData.content.trim()}
             title="Generate image from this text"
           >
             <Image size={16} />
-          </ToolbarButton>
+          </BlockToolbarButton>
         </>
       }
       footerLeftContent={

@@ -61,39 +61,8 @@ async def upload_image(
 
     return {
         "imageId": image_id,
-        "imageUrl": f"/api/images/{image_id}",
+        "imageUrl": f"/images/{filename}",
     }
-
-
-@router.get("/{image_id}")
-@limiter.limit("200/minute")
-async def get_image(
-    request: Request,
-    image_id: str,
-    db: Session = Depends(get_db),
-):
-    """Retrieve an image by ID."""
-    image_record = db.query(Image).filter(Image.id == image_id).first()
-    if not image_record:
-        raise HTTPException(status_code=404, detail="Image not found")
-
-    filepath = os.path.join(settings.images_dir, image_record.filename)
-    if not os.path.exists(filepath):
-        raise HTTPException(status_code=404, detail="Image file not found")
-
-    # Get origin from request for CORS header
-    origin = request.headers.get("origin")
-    headers = {}
-    if origin:
-        headers["Access-Control-Allow-Origin"] = origin
-        headers["Access-Control-Allow-Credentials"] = "true"
-
-    return FileResponse(
-        filepath,
-        media_type=image_record.content_type or "image/png",
-        filename=image_record.original_filename or image_record.filename,
-        headers=headers,
-    )
 
 
 @router.delete("/{image_id}")

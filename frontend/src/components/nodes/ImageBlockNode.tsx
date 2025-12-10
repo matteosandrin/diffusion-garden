@@ -397,7 +397,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           const pathname = urlObj.pathname;
           return pathname.split("/").pop() || fallback;
         } else {
-          // Handle relative URLs or others (e.g., /api/images/123.png)
+          // Handle relative URLs or others (e.g., /images/123.png)
           const pathname = url.split("?")[0]; // Remove query params
           return pathname.split("/").pop() || fallback;
         }

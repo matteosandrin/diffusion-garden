@@ -225,8 +225,8 @@ class AIService:
         try:
             filepath = None
 
-            # Check if it's an API URL (e.g., /api/images/{image_id} or http://.../api/images/{image_id})
-            api_match = re.search(r"/api/images/([^/?]+)", image_url)
+            # Check if it's an API URL (e.g., /images/{image_id} or http://.../images/{image_id})
+            api_match = re.search(r"/images/([^/?]+)\.[^/?]+", image_url)
             if api_match:
                 image_id = api_match.group(1)
                 images_dir = Path(settings.images_dir)

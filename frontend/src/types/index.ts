@@ -87,3 +87,6 @@ export interface AppSettings {
     google: boolean;
   };
 }
+
+// Prompts
+export type Prompts = Record<string, string>;

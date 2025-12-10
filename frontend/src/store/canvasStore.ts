@@ -17,6 +17,7 @@ import type {
   AppSettings,
   Prompts,
   InputContentItem,
+  ModelsConfig,
 } from '../types';
 
 interface CanvasStore {
@@ -31,6 +32,9 @@ interface CanvasStore {
   
   // Settings
   settings: AppSettings;
+  
+  // Models configuration from backend
+  models: ModelsConfig;
   
   // Prompts
   prompts: Prompts;
@@ -64,6 +68,9 @@ interface CanvasStore {
   
   // Settings
   updateSettings: (settings: Partial<AppSettings>) => void;
+  
+  // Models
+  setModels: (models: ModelsConfig) => void;
   
   // Prompts
   setPrompts: (prompts: Prompts) => void;
@@ -99,12 +106,18 @@ export const useCanvasStore = create<CanvasStore>()(
     viewport: { x: 0, y: 0, zoom: 1 },
     selectedNodeIds: [],
     settings: {
-      defaultTextModel: 'gpt-5.1',
-      defaultImageModel: 'gemini-3-pro-image-preview',
+      defaultTextModel: '',
+      defaultImageModel: '',
       apiKeyStatus: {
         openai: false,
         google: false,
       },
+    },
+    models: {
+      textModels: [],
+      imageModels: [],
+      defaultTextModel: '',
+      defaultImageModel: '',
     },
     prompts: {},
     isSaving: false,
@@ -275,6 +288,18 @@ export const useCanvasStore = create<CanvasStore>()(
       set((state) => ({
         settings: { ...state.settings, ...newSettings },
       }));
+    },
+
+    // Models
+    setModels: (models) => {
+      set({
+        models,
+        settings: {
+          ...get().settings,
+          defaultTextModel: models.defaultTextModel,
+          defaultImageModel: models.defaultImageModel,
+        },
+      });
     },
 
     // Prompts

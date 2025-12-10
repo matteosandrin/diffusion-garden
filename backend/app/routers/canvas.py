@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Any
-import os
+from ..utils import bucket
 from ..database import get_db
 from ..models import Canvas, Image
 from ..config import get_settings
@@ -167,10 +167,7 @@ async def delete_canvas(
     for image_id in image_ids:
         image_record = db.query(Image).filter(Image.id == image_id).first()
         if image_record:
-            filepath = os.path.join(settings.images_dir, image_record.filename)
-            if os.path.exists(filepath):
-                os.remove(filepath)
-            db.delete(image_record)
+            bucket.delete_image(image_record.filename, db)
 
     db.delete(canvas)
     db.commit()

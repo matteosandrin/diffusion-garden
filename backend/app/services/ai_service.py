@@ -2,6 +2,7 @@ import base64
 import re
 import asyncio
 import random
+import requests
 from dataclasses import dataclass
 from pathlib import Path
 from typing import AsyncIterator
@@ -62,28 +63,17 @@ class AIService:
         """
         if not self.openai_client:
             raise ValueError("OpenAI API key not configured")
-
         messages = [
             {"role": "system", "content": get_text_system_prompt()},
             {"role": "user", "content": prompt},
         ]
-
+        if input_text:
+            messages.append({"role": "user", "content": input_text})
         if image_urls:
             content = []
-
-            if input_text:
-                content.append({"type": "text", "text": input_text})
-
             for image_url in image_urls:
-                image_base64 = await self._load_image_as_base64(image_url)
-                content.append(
-                    {"type": "image_url", "image_url": {"url": image_base64}}
-                )
-
+                content.append({"type": "image_url", "image_url": {"url": image_url}})
             messages.append({"role": "user", "content": content})
-        elif input_text:
-            messages.append({"role": "user", "content": input_text})
-
         stream = await self.openai_client.chat.completions.create(
             model=model,
             messages=messages,
@@ -91,7 +81,6 @@ class AIService:
             stream=True,
             stream_options={"include_usage": True},
         )
-
         usage = TokenUsage()
         async for chunk in stream:
             if chunk.choices and chunk.choices[0].delta.content:
@@ -103,7 +92,6 @@ class AIService:
                     output_tokens=chunk.usage.completion_tokens or 0,
                     total_tokens=chunk.usage.total_tokens or 0,
                 )
-
         yield usage
 
     async def generate_image(
@@ -113,7 +101,7 @@ class AIService:
         image_urls: list[str] | None = None,
         model: str = "gemini-3-pro-image-preview",
         is_variation: bool = False,
-    ) -> tuple[Image.Image, str, TokenUsage]:
+    ) -> tuple[bytes, str, TokenUsage]:
         """
         Generate an image from a text prompt with optional input text and/or images.
         Images can be provided as input to guide the generation.
@@ -130,36 +118,32 @@ class AIService:
         """
         if not self.gemini_client:
             raise ValueError("Google API key not configured")
-
         contents = []
-
         if prompt:
             contents.append(genai.types.Part.from_text(text=prompt))
         if input:
             contents.append(genai.types.Part.from_text(text=input))
-
         if image_urls:
             for image_url in image_urls:
-                image_bytes, content_type = await self._load_image_as_bytes(image_url)
+                response = requests.get(image_url)
+                response.raise_for_status()
+                img_bytes = response.content
+                mime_type = response.headers.get("Content-Type", "image/png")
                 contents.append(
                     genai.types.Part.from_bytes(
-                        data=image_bytes,
-                        mime_type=content_type,
+                        data=img_bytes,
+                        mime_type=mime_type,
                     )
                 )
-
         config_kwargs = {"response_modalities": ["IMAGE"]}
         if is_variation:
             config_kwargs["seed"] = random.randint(0, 2147483647)
-
         response = await self.gemini_client.aio.models.generate_content(
             model=model,
             contents=contents,
             config=genai.types.GenerateContentConfig(**config_kwargs),
         )
-
         print(response)
-
         # Extract token usage from response
         usage = TokenUsage()
         if hasattr(response, "usage_metadata") and response.usage_metadata:
@@ -173,13 +157,10 @@ class AIService:
                 total_tokens=getattr(response.usage_metadata, "total_token_count", 0)
                 or 0,
             )
-
         if len(response.candidates) == 0:
             raise ValueError("No image in response")
-
         if response.candidates[0].finish_reason == "NO_IMAGE":
             raise ValueError("No image in response")
-
         for part in response.candidates[0].content.parts:
             try:
                 mime_type = "image/png"
@@ -189,13 +170,11 @@ class AIService:
                         and part.inline_data.mime_type
                     ):
                         mime_type = part.inline_data.mime_type
-
-                image = part.as_image()
+                image = part.inline_data.data
                 if image is not None:
                     return image, mime_type, usage
             except (AttributeError, ValueError):
                 continue
-
         raise ValueError("No image generated in response")
 
     async def _load_image_as_base64(self, image_url: str) -> str:

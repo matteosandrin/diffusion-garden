@@ -1,4 +1,5 @@
 import asyncio
+import io
 import os
 import time
 import uuid
@@ -6,6 +7,8 @@ from typing import Dict, Set
 from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
+
+from ..utils import bucket
 
 from ..database import SessionLocal
 from ..models import Job, Image, AnalyticsLog
@@ -233,7 +236,7 @@ class JobProcessor:
                 return
             request_data = job.request_data
             model = request_data.get("model", DEFAULT_IMAGE_MODEL)
-            image, mime_type, usage = await self._ai_service.generate_image(
+            image_bytes, mime_type, usage = await self._ai_service.generate_image(
                 prompt=request_data["prompt"],
                 input=request_data.get("input"),
                 image_urls=request_data.get("image_urls"),
@@ -245,30 +248,10 @@ class JobProcessor:
                 db.commit()
                 self._broadcast(job_id, JobEvent("cancelled", {}))
                 return
-            mime_to_extension = {
-                "image/png": "png",
-                "image/jpeg": "jpg",
-                "image/jpg": "jpg",
-                "image/gif": "gif",
-                "image/webp": "webp",
-                "image/bmp": "bmp",
-                "image/tiff": "tiff",
-            }
-            extension = mime_to_extension.get(mime_type, "png")
-            image_id = str(uuid.uuid4())
-            filename = f"{image_id}.{extension}"
-            filepath = os.path.join(settings.images_dir, filename)
-            os.makedirs(settings.images_dir, exist_ok=True)
-            image.save(filepath)
-            image_record = Image(
-                id=image_id,
-                filename=filename,
-                content_type=mime_type,
-                source="generated",
-                prompt=request_data["prompt"],
+            img_byte_arr = io.BytesIO()
+            image_id, image_url = await bucket.upload_image_and_record(
+                image_bytes, mime_type, db
             )
-            db.add(image_record)
-
             # Log analytics
             analytics_log = AnalyticsLog(
                 request_type="image",
@@ -282,7 +265,7 @@ class JobProcessor:
             job.status = "completed"
             job.result_data = {
                 "imageId": image_id,
-                "imageUrl": f"/images/{filename}",
+                "imageUrl": image_url,
             }
             db.commit()
             self._broadcast(job_id, JobEvent("done", {"result": job.result_data}))

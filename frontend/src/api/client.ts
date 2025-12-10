@@ -15,20 +15,6 @@ import type {
 const API_HOST = import.meta.env.VITE_API_HOST || "";
 const API_BASE = API_HOST + "/api";
 
-export function addApiHost(url?: string | null): string | null {
-  if (!url) return null;
-  if (url && url.startsWith(API_HOST)) {
-    return url;
-  }
-  return `${API_HOST}${url}`;
-}
-const stripApiHost = (url: string): string => {
-  if (API_HOST && url.startsWith(API_HOST)) {
-    return url.slice(API_HOST.length);
-  }
-  return url;
-};
-
 // Generic fetch wrapper with error handling
 async function apiFetch<T>(
   endpoint: string,
@@ -53,47 +39,17 @@ async function apiFetch<T>(
 }
 
 export const canvasApi = {
-  list: async () => {
-    const response = await apiFetch<CanvasSummary[]>("/canvas");
-    return response.map((canvas: CanvasSummary) => ({
-      ...canvas,
-      thumbnailUrl: addApiHost(canvas.thumbnailUrl),
-    })) as unknown as CanvasSummary[];
-  },
+  list: async () => apiFetch<CanvasSummary[]>("/canvas"),
 
   create: () => apiFetch<{ id: string }>("/canvas", { method: "POST" }),
 
-  load: async (id: string) => {
-    const response = await apiFetch<CanvasState>(`/canvas/${id}`);
-    return {
-      ...response,
-      nodes: response.nodes?.map((node: AppNode) => ({
-        ...node,
-        data: {
-          ...node.data,
-          imageUrl: addApiHost(node.data?.imageUrl as string | null),
-        },
-      })),
-    } as CanvasState;
-  },
+  load: (id: string) => apiFetch<CanvasState>(`/canvas/${id}`),
 
-  save: (id: string, state: Partial<CanvasState>) => {
-    const newState: Partial<CanvasState> = {
-      ...state,
-      nodes: state.nodes?.map((node: AppNode) => {
-        const data = node.data ? { ...node.data } : undefined;
-        if (data && data.type === "image" && data.imageUrl) {
-          data.imageUrl = stripApiHost(data.imageUrl);
-        }
-        return { ...node, data } as AppNode;
-      }),
-    };
-
-    return apiFetch<{ success: boolean }>(`/canvas/${id}`, {
+  save: (id: string, state: Partial<CanvasState>) =>
+    apiFetch<{ success: boolean }>(`/canvas/${id}`, {
       method: "PUT",
-      body: JSON.stringify(newState),
-    });
-  },
+      body: JSON.stringify(state),
+    }),
 
   delete: (id: string) =>
     apiFetch<{ success: boolean }>(`/canvas/${id}`, { method: "DELETE" }),
@@ -118,9 +74,7 @@ export const imageApi = {
       throw new Error(error.detail || "Upload failed");
     }
 
-    const data = await response.json();
-    data.imageUrl = addApiHost(data.imageUrl) ?? "";
-    return data;
+    return response.json();
   },
 };
 
@@ -216,9 +170,6 @@ export const jobsApi = {
     eventSource.addEventListener("done", (event) => {
       const data = JSON.parse(event.data);
       const result = data.result;
-      if (result.imageUrl) {
-        result.imageUrl = addApiHost(result.imageUrl) ?? "";
-      }
       callbacks.onDone(result);
       eventSource.close();
     });

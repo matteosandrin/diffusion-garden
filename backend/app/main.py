@@ -8,6 +8,7 @@ from .database import init_db
 from .routers import (
     canvas_router,
     images_router,
+    ImageCacheMiddleware,
     settings_router,
     jobs_router,
     analytics_router,
@@ -59,6 +60,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(ImageCacheMiddleware)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)

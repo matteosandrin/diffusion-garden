@@ -6,6 +6,7 @@ import type {
   AppSettings,
   TextModel,
   Prompts,
+  InputContentItem,
 } from '../types';
 
 const API_BASE = '/api';
@@ -50,11 +51,14 @@ export const canvasApi = {
 // AI Tools API
 export const toolsApi = {
 
-  generateText: (prompt: string, input: string | undefined, model: TextModel) =>
-    apiFetch<GenerateTextResponse>('/tools/generate-text', {
+  generateText: async (prompt: string, input: InputContentItem[] | undefined, model: TextModel) => {
+    const textInput = input?.filter(item => item.type === 'text').map(item => item.content).join('\n\n');
+    const imageUrls = input?.filter(item => item.type === 'image').map(item => item.url);
+    return await apiFetch<GenerateTextResponse>('/tools/generate-text', {
       method: 'POST',
-      body: JSON.stringify({ prompt, input: input || undefined, model }),
-    }),
+      body: JSON.stringify({ prompt, input: textInput, image_urls: imageUrls, model }),
+    });
+  },
 
   describe: (imageBase64: string) =>
     apiFetch<DescribeResponse>('/tools/describe', {

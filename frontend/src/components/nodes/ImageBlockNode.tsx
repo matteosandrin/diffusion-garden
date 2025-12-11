@@ -20,7 +20,15 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
 
   // Get input blocks and their content
   const inputBlocks = getInputBlocks(id);
-  const inputContent = inputBlocks.length > 0 ? getInputBlockContent(id).trim() : '';
+  const inputContentItems = getInputBlockContent(id);
+  // Convert array to string: extract text content and join with newlines
+  const inputContent = inputContentItems.length > 0
+    ? inputContentItems
+        .filter(item => item.type === 'text')
+        .map(item => item.content)
+        .join('\n\n')
+        .trim()
+    : '';
   const hasInputBlocks = inputBlocks.length > 0;
 
   // Monitor input blocks and update prompt accordingly

@@ -1,7 +1,6 @@
 import type {
   CanvasState,
   GenerateTextResponse,
-  DescribeResponse,
   GenerateImageResponse,
   AppSettings,
   TextModel,
@@ -59,12 +58,6 @@ export const toolsApi = {
       body: JSON.stringify({ prompt, input: textInput, image_urls: imageUrls, model }),
     });
   },
-
-  describe: (imageBase64: string) =>
-    apiFetch<DescribeResponse>('/tools/describe', {
-      method: 'POST',
-      body: JSON.stringify({ image_base64: imageBase64 }),
-    }),
 
   generateImage: async (prompt: string, input: InputContentItem[] | undefined) => {
     const imageUrls = input?.filter(item => item.type === 'image').map(item => item.url);

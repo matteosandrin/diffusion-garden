@@ -93,6 +93,7 @@ interface CanvasStore {
     error?: string,
   ) => void;
   deleteNode: (nodeId: string) => void;
+  deleteNodeImage: (nodeId: string) => void;
   deleteSelectedNodes: () => void;
   setSelectedNodes: (nodeIds: string[]) => void;
   clearSelection: () => void;
@@ -330,7 +331,19 @@ export const useCanvasStore = create<CanvasStore>()(
       }));
     },
 
-    deleteNode: async (nodeId) => {
+    deleteNode: (nodeId) => {
+      const { deleteNodeImage } = get();
+      deleteNodeImage(nodeId);
+      set((state) => ({
+        nodes: state.nodes.filter((node) => node.id !== nodeId),
+        edges: state.edges.filter(
+          (edge) => edge.source !== nodeId && edge.target !== nodeId,
+        ),
+        selectedNodeIds: state.selectedNodeIds.filter((id) => id !== nodeId),
+      }));
+    },
+
+    deleteNodeImage: async (nodeId) => {
       const { nodes } = get();
       const node = nodes.find((node) => node.id === nodeId);
       if (!node) return;
@@ -348,13 +361,6 @@ export const useCanvasStore = create<CanvasStore>()(
           }
         }
       }
-      set((state) => ({
-        nodes: state.nodes.filter((node) => node.id !== nodeId),
-        edges: state.edges.filter(
-          (edge) => edge.source !== nodeId && edge.target !== nodeId,
-        ),
-        selectedNodeIds: state.selectedNodeIds.filter((id) => id !== nodeId),
-      }));
     },
 
     deleteSelectedNodes: () => {

@@ -9,7 +9,6 @@ _ENV_FILE = _THIS_DIR.parent / ".env"
 
 class Settings(BaseSettings):
     database_url: str  # required
-    images_dir: str  # required
     r2_url: str  # required
     r2_public_url: str  # required
     r2_bucket: str  # required

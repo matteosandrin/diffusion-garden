@@ -71,7 +71,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     updateBlockStatus(id, 'running');
     
     try {
-      const response = await toolsApi.generateImage(blockData.prompt);
+      const response = await toolsApi.generateImage(blockData.prompt, inputContentItems);
       updateBlockData(id, {
         imageUrl: response.imageUrl,
         imageId: response.imageId,
@@ -81,7 +81,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     } catch (error) {
       updateBlockStatus(id, 'error', error instanceof Error ? error.message : 'Failed to generate image');
     }
-  }, [id, blockData.prompt, updateBlockStatus, updateBlockData]);
+  }, [id, blockData.prompt, inputContentItems, updateBlockStatus, updateBlockData]);
 
   const handleDescribe = useCallback(async () => {
     if (!blockData.imageUrl) return;

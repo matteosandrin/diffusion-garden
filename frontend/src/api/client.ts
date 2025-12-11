@@ -66,11 +66,13 @@ export const toolsApi = {
       body: JSON.stringify({ image_base64: imageBase64 }),
     }),
 
-  generateImage: (prompt: string) =>
-    apiFetch<GenerateImageResponse>('/tools/generate-image', {
+  generateImage: async (prompt: string, input: InputContentItem[] | undefined) => {
+    const imageUrls = input?.filter(item => item.type === 'image').map(item => item.url);
+    return await apiFetch<GenerateImageResponse>('/tools/generate-image', {
       method: 'POST',
-      body: JSON.stringify({ prompt }),
-    }),
+      body: JSON.stringify({ prompt, image_urls: imageUrls }),
+    });
+  },
 };
 
 // Image API

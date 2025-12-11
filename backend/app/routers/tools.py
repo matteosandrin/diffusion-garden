@@ -49,6 +49,8 @@ class DescribeResponse(BaseModel):
 class GenerateImageRequest(BaseModel):
     """Request for image generation."""
     prompt: str
+    input: str | None = None
+    image_urls: list[str] | None = None
 
 
 class GenerateImageResponse(BaseModel):
@@ -95,12 +97,12 @@ async def generate_image(
     db: Session = Depends(get_db)
 ):
     """
-    Generate an image from a text prompt.
+    Generate an image from a text prompt with optional input images.
     Uses Gemini for image generation.
     """
     try:
         # Generate image
-        image, mime_type = await ai_service.generate_image(request.prompt)
+        image, mime_type = await ai_service.generate_image(request.prompt, request.input, request.image_urls)
         
         # Map mime_type to file extension and format
         mime_to_extension = {
@@ -114,7 +116,7 @@ async def generate_image(
         }
         
         # Get extension and format, default to PNG if unknown
-        extension, format_name = mime_to_extension.get(mime_type, ("png", "PNG"))
+        extension, _ = mime_to_extension.get(mime_type, ("png", "PNG"))
         
         # Save image to filesystem
         image_id = str(uuid.uuid4())

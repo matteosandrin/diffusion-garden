@@ -38,15 +38,14 @@ async def upload_image(
     return {"imageId": image_id, "imageUrl": image_url}
 
 
-@router.delete("/{image_id}")
+@router.delete("/{image_filename}")
 @limiter.limit("30/minute")
 async def delete_image(
     request: Request, image_filename: str, db: Session = Depends(get_db)
 ):
     """Delete an image from r2 and database."""
-    image_id = image_filename.split(".")[0]
-    image_record = db.query(Image).filter(Image.id == image_id).first()
-    if not image_record:
+    record = db.query(Image).filter(Image.filename == image_filename).first()
+    if not record:
         raise HTTPException(status_code=404, detail="Image not found")
     try:
         bucket.delete_image(image_filename, db)

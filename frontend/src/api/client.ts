@@ -75,6 +75,10 @@ export const imageApi = {
 
     return response.json();
   },
+  delete: (imageFilename: string) =>
+    apiFetch<{ success: boolean }>(`/images/${imageFilename}`, {
+      method: "DELETE",
+    }),
 };
 
 export const settingsApi = {

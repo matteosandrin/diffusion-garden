@@ -19,6 +19,7 @@ import type {
   InputContentItem,
   ModelsConfig,
 } from "../types";
+import { imageApi } from "../api/client";
 
 interface CanvasStore {
   canvasId: string | null;
@@ -329,7 +330,24 @@ export const useCanvasStore = create<CanvasStore>()(
       }));
     },
 
-    deleteNode: (nodeId) => {
+    deleteNode: async (nodeId) => {
+      const { nodes } = get();
+      const node = nodes.find((node) => node.id === nodeId);
+      if (!node) return;
+      if (node.data.type === "image") {
+        const imageUrl = node.data.imageUrl as string;
+        const imageFilename = imageUrl.split("/").pop() ?? "";
+        if (imageFilename) {
+          try {
+            const response = await imageApi.delete(imageFilename);
+            if (!response.success) {
+              console.error("Failed to delete image", response);
+            }
+          } catch (error) {
+            console.error("Failed to delete image:", error);
+          }
+        }
+      }
       set((state) => ({
         nodes: state.nodes.filter((node) => node.id !== nodeId),
         edges: state.edges.filter(
@@ -340,18 +358,11 @@ export const useCanvasStore = create<CanvasStore>()(
     },
 
     deleteSelectedNodes: () => {
-      const { selectedNodeIds } = get();
+      const { selectedNodeIds, deleteNode } = get();
       if (selectedNodeIds.length === 0) return;
-
-      set((state) => ({
-        nodes: state.nodes.filter((node) => !selectedNodeIds.includes(node.id)),
-        edges: state.edges.filter(
-          (edge) =>
-            !selectedNodeIds.includes(edge.source) &&
-            !selectedNodeIds.includes(edge.target),
-        ),
-        selectedNodeIds: [],
-      }));
+      selectedNodeIds.forEach((nodeId) => {
+        deleteNode(nodeId);
+      });
     },
 
     setSelectedNodes: (nodeIds) => {

@@ -24,9 +24,10 @@ class ExpandResponse(BaseModel):
 
 
 class GenerateTextRequest(BaseModel):
-    """Request for prompt execution with optional input."""
+    """Request for prompt execution with optional input and images."""
     prompt: str
     input: str | None = None
+    image_urls: list[str] | None = None
     model: str = "gpt-5.1"
 
 
@@ -59,12 +60,12 @@ class GenerateImageResponse(BaseModel):
 @router.post("/generate-text", response_model=GenerateTextResponse)
 async def execute_prompt(request: GenerateTextRequest, ai_service: AIService = Depends(get_ai_service)):
     """
-    Execute a prompt with input text integrated into it.
+    Execute a prompt with input text and/or images integrated into it.
     The input is combined with the prompt on the backend.
-    Uses OpenAI GPT models.
+    Uses OpenAI GPT models (supports vision models when images are provided).
     """
     try:
-        result = await ai_service.execute_prompt(request.prompt, request.input, request.model)
+        result = await ai_service.execute_prompt(request.prompt, request.input, request.image_urls, request.model)
         return GenerateTextResponse(result=result)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

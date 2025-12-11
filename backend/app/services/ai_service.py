@@ -2,6 +2,7 @@ import base64
 from PIL import Image
 from openai import AsyncOpenAI
 from google import genai
+import httpx
 from ..config import get_settings
 
 settings = get_settings()
@@ -16,14 +17,19 @@ class AIService:
         
         # Initialize Gemini client
         self.gemini_client = genai.Client(api_key=settings.google_api_key) if settings.google_api_key else None
+        
+        # Initialize HTTP client for fetching images
+        self.http_client = httpx.AsyncClient(timeout=30.0)
     
-    async def execute_prompt(self, prompt: str, input_text: str | None = None, model: str = "gpt-5.1") -> str:
+    async def execute_prompt(self, prompt: str, input_text: str | None = None, image_urls: list[str] | None = None, model: str = "gpt-5.1") -> str:
         """
-        Execute a prompt with optional input text integrated into it.
+        Execute a prompt with optional input text and/or images integrated into it.
+        Images are fetched from URLs and converted to base64 before sending to the API.
         
         Args:
             prompt: The prompt/instruction to execute
             input_text: Optional input text to integrate into the prompt
+            image_urls: Optional list of image URLs (will be fetched and converted to base64)
             model: The OpenAI model to use (gpt-5.1, gpt-4o, or gpt-4o-mini)
             
         Returns:
@@ -40,7 +46,34 @@ class AIService:
             }
         ]
 
-        if input_text:
+        # Build user message content
+        if image_urls:
+            # When images are provided, use array format for content
+            content = []
+            
+            # Add text if provided
+            if input_text:
+                content.append({
+                    "type": "text",
+                    "text": input_text
+                })
+            
+            # Fetch and convert all images to base64
+            for image_url in image_urls:
+                image_base64 = await self._fetch_image_as_base64(image_url)
+                content.append({
+                    "type": "image_url",
+                    "image_url": {
+                        "url": image_base64
+                    }
+                })
+            
+            messages.append({
+                "role": "user",
+                "content": content
+            })
+        elif input_text:
+            # When only text is provided, use simple string format
             messages.append({
                 "role": "user",
                 "content": input_text
@@ -136,6 +169,48 @@ Be vivid and specific, as if helping someone recreate or understand this image w
                 continue
         
         raise ValueError("No image generated in response")
+    
+    async def _fetch_image_as_base64(self, image_url: str) -> str:
+        """
+        Fetch an image from a URL and convert it to base64 data URL format.
+        
+        Args:
+            image_url: URL of the image to fetch (can be a regular URL or already a data URL)
+            
+        Returns:
+            Base64 encoded image in data URL format (e.g., "data:image/jpeg;base64,...")
+        """
+        # If already a data URL, return as-is
+        if image_url.startswith("data:"):
+            return image_url
+        
+        try:
+            # Fetch the image
+            response = await self.http_client.get(image_url)
+            response.raise_for_status()
+            
+            # Determine content type from response headers or URL
+            content_type = response.headers.get("content-type", "image/jpeg")
+            if not content_type.startswith("image/"):
+                # Try to infer from URL extension
+                if image_url.lower().endswith((".png",)):
+                    content_type = "image/png"
+                elif image_url.lower().endswith((".gif",)):
+                    content_type = "image/gif"
+                elif image_url.lower().endswith((".webp",)):
+                    content_type = "image/webp"
+                else:
+                    content_type = "image/jpeg"
+            
+            # Convert to base64
+            image_bytes = response.content
+            image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+            
+            return f"data:{content_type};base64,{image_base64}"
+        except httpx.HTTPError as e:
+            raise ValueError(f"Failed to fetch image from URL {image_url}: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"Error processing image from URL {image_url}: {str(e)}")
 
 
 # Singleton instance

@@ -86,6 +86,10 @@ export function Canvas() {
   // Pending edge state (after draggin an edge out from a block, a pending 'frozen edge' shown as an SVG overlay until user clicks)
   const [pendingEdge, setPendingEdge] = useState<PendingEdge | null>(null);
 
+  // Detect mobile/touch devices
+  const isMobile =
+    typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
+
   // Center viewport on newly created block
   useEffect(() => {
     if (pendingCenterNodeId) {
@@ -295,9 +299,9 @@ export function Canvas() {
         maxZoom={3.0}
         deleteKeyCode={["Backspace", "Delete"]}
         multiSelectionKeyCode={["Shift", "Meta"]}
-        selectionOnDrag
-        panOnDrag={[1, 2]}
-        panOnScroll={true}
+        selectionOnDrag={!isMobile}
+        panOnDrag={isMobile ? true : [1, 2]}
+        panOnScroll={!isMobile}
         selectionMode={SelectionMode.Partial}
         proOptions={{ hideAttribution: true }}
         snapToGrid={true}

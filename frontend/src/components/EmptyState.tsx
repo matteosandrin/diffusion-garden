@@ -110,7 +110,7 @@ export function EmptyState() {
                   border: '1px solid var(--border-subtle)',
                 }}
               >
-                N
+                T
               </kbd>
               <span>for new text</span>
               <ArrowRight size={12} style={{ color: 'var(--text-muted)' }} />

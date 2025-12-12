@@ -11,7 +11,7 @@ import { BaseBlockNode, type ModelOption } from './BaseBlockNode';
 import { BlockToolbarButton } from '../ui/BlockToolbarButton';
 
 const IMAGE_MODELS: ModelOption[] = [
-  { value: 'gemini-pro', label: 'Nanobanana Pro' },
+  { value: 'gemini-3-pro-image-preview', label: 'Nanobanana Pro' },
 ];
 
 function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
@@ -81,7 +81,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     updateBlockStatus(id, 'running');
     
     try {
-      const response = await toolsApi.generateImage(blockData.prompt, inputContentItems);
+      const response = await toolsApi.generateImage(blockData.prompt, inputContentItems, blockData.model as ImageModel);
       updateBlockData(id, {
         imageUrl: response.imageUrl,
         imageId: response.imageId,

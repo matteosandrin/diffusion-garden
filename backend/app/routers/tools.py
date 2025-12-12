@@ -40,7 +40,7 @@ class GenerateImageRequest(BaseModel):
     prompt: str
     input: str | None = None
     image_urls: list[str] | None = None
-    model: str = "gemini-2.0-flash-preview-image-generation"
+    model: str = "gemini-3-pro-image-preview"
 
 
 class GenerateImageResponse(BaseModel):

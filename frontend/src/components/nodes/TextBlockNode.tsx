@@ -130,10 +130,11 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
 
     // Create new text blocks for each item, positioned vertically
     items.forEach((item, index) => {
+      const i = index - Math.ceil(items.length / 2) + 1;
       const newBlockId = addTextBlock(
         {
           x: currentNode.position.x + 360,
-          y: currentNode.position.y + index * 260,
+          y: currentNode.position.y + i * 260,
         },
         {
           content: item,

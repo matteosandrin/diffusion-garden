@@ -324,9 +324,9 @@ export function Canvas() {
         {!isMobile && (
           <MiniMap
             nodeColor={getNodeColor}
-              maskColor="rgba(0, 0, 0, 0.8)"
-              position="bottom-right"
-            />
+            maskColor="rgba(0, 0, 0, 0.8)"
+            position="bottom-right"
+          />
         )}
       </ReactFlow>
 

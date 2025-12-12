@@ -4,11 +4,15 @@ import {
   FileText,
   Upload,
 } from 'lucide-react';
-import type { ImageBlockData } from '../../types';
+import type { ImageBlockData, ImageModel } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 import { toolsApi, imageApi } from '../../api/client';
-import { BaseBlockNode } from './BaseBlockNode';
+import { BaseBlockNode, type ModelOption } from './BaseBlockNode';
 import { BlockToolbarButton } from '../ui/BlockToolbarButton';
+
+const IMAGE_MODELS: ModelOption[] = [
+  { value: 'gemini-pro', label: 'Nanobanana Pro' },
+];
 
 function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as ImageBlockData;
@@ -62,6 +66,13 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
       }
     },
     [id, inputContentItems, updateBlockData]
+  );
+
+  const handleModelChange = useCallback(
+    (model: string) => {
+      updateBlockData(id, { model: model as ImageModel });
+    },
+    [id, updateBlockData]
   );
 
   const handleGenerate = useCallback(async () => {
@@ -193,6 +204,9 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         onPromptChange={handlePromptChange}
         promptPlaceholder="Enter image generation prompt here..."
         promptReadonly={promptFromInput}
+        models={IMAGE_MODELS}
+        selectedModel={blockData.model || 'gemini-pro'}
+        onModelChange={handleModelChange}
       >
         {/* Image content */}
         <div

@@ -1,9 +1,10 @@
-import { useCallback, useRef, useEffect, type ReactNode } from 'react';
+import { useCallback, type ReactNode } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Trash2, ArrowUp, Loader2 } from 'lucide-react';
 import type { BlockStatus } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 import { BlockToolbarButton } from '../ui/BlockToolbarButton';
+import { AutoResizeTextarea } from '../ui/AutoResizeTextarea';
 
 interface BaseBlockNodeProps {
   id: string;
@@ -43,15 +44,6 @@ export function BaseBlockNode({
   blockType,
 }: BaseBlockNodeProps) {
   const { deleteNode } = useCanvasStore();
-  const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Auto-resize prompt textarea
-  useEffect(() => {
-    if (promptTextareaRef.current) {
-      promptTextareaRef.current.style.height = 'auto';
-      promptTextareaRef.current.style.height = `${promptTextareaRef.current.scrollHeight}px`;
-    }
-  }, [prompt]);
 
   const handleDelete = useCallback(() => {
     deleteNode(id);
@@ -95,19 +87,17 @@ export function BaseBlockNode({
         {/* Prompt section */}
         {(prompt !== undefined || onPromptChange) && (
           <div className={`p-3 border-t ${selected ? 'nowheel' : ''}`} style={{ borderColor: 'var(--border-subtle)' }}>
-            <textarea
-              ref={promptTextareaRef}
+            <AutoResizeTextarea
               value={prompt || ''}
-              onChange={(e) => onPromptChange?.(e.target.value)}
+              onChange={(value) => onPromptChange?.(value)}
               placeholder={promptPlaceholder}
               rows={2}
               readOnly={promptReadonly}
               disabled={promptReadonly}
-              className="w-full bg-transparent resize-none outline-none"
+              minHeight="40px"
+              maxHeight="150px"
               style={{
                 color: promptReadonly ? 'var(--text-muted)' : 'var(--text-secondary)',
-                minHeight: '40px',
-                maxHeight: '150px',
                 cursor: promptReadonly ? 'default' : 'text',
               }}
             />

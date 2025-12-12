@@ -1,4 +1,4 @@
-import { memo, useCallback, useState, useRef, useEffect } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { type NodeProps } from '@xyflow/react';
 import {
   Sparkles,
@@ -10,6 +10,7 @@ import { useCanvasStore } from '../../store/canvasStore';
 import { toolsApi } from '../../api/client';
 import { BaseBlockNode } from './BaseBlockNode';
 import { BlockToolbarButton } from '../ui/BlockToolbarButton';
+import { AutoResizeTextarea } from '../ui/AutoResizeTextarea';
 
 const TEXT_MODELS: { value: TextModel; label: string }[] = [
   { value: 'gpt-5.1', label: 'GPT-5.1' },
@@ -21,19 +22,10 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as TextBlockData;
   const { updateBlockData, updateBlockStatus, addTextBlock, addImageBlock, getInputBlockContent } = useCanvasStore();
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
-  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Auto-resize content textarea
-  useEffect(() => {
-    if (contentTextareaRef.current) {
-      contentTextareaRef.current.style.height = 'auto';
-      contentTextareaRef.current.style.height = `${contentTextareaRef.current.scrollHeight}px`;
-    }
-  }, [blockData.content]);
 
   const handleContentChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      updateBlockData(id, { content: e.target.value });
+    (value: string) => {
+      updateBlockData(id, { content: value });
     },
     [id, updateBlockData]
   );
@@ -209,18 +201,12 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     >
       {/* Content section */}
       <div className={`p-3 border-b ${selected ? 'nowheel' : ''}`} style={{ borderColor: 'var(--border-subtle)' }}>
-        <textarea
-          ref={contentTextareaRef}
+        <AutoResizeTextarea
           value={blockData.content}
           onChange={handleContentChange}
           placeholder="Result will appear here..."
           rows={3}
-          className="w-full bg-transparent resize-none outline-none"
-          style={{
-            color: 'var(--text-primary)',
-            minHeight: '60px',
-            maxHeight: '200px',
-          }}
+          style={{ color: 'var(--text-primary)' }}
         />
       </div>
     </BaseBlockNode>

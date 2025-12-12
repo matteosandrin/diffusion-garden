@@ -7,6 +7,7 @@ import type {
   ImageModel,
   Prompts,
   InputContentItem,
+  ModelsConfig,
 } from '../types';
 
 const API_BASE = '/api';
@@ -105,5 +106,7 @@ export const settingsApi = {
     apiFetch<{ openai: boolean; google: boolean }>('/settings/api-keys/status'),
 
   getPrompts: () => apiFetch<Prompts>('/settings/prompts'),
+
+  getModels: () => apiFetch<ModelsConfig>('/settings/models'),
 };
 

@@ -34,7 +34,7 @@ export function AutoResizeTextarea({
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  }, [localValue]);
+  }, [localValue, height]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -50,7 +50,7 @@ export function AutoResizeTextarea({
       ref={textareaRef}
       value={localValue}
       onChange={handleChange}
-      className={`w-full bg-transparent resize-none outline-none pr-2 ${className}`}
+      className={`w-full bg-transparent resize-none outline-none pr-1 ${className}`}
       style={{
         ...(height ? { height } : { minHeight, maxHeight }),
         ...style,

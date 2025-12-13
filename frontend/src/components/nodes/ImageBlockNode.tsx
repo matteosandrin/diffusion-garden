@@ -1,7 +1,7 @@
 import { memo, useCallback, useState, useRef, useEffect } from 'react';
 import { type NodeProps } from '@xyflow/react';
 import {
-  FileText,
+  PilcrowRight,
   Upload,
 } from 'lucide-react';
 import type { ImageBlockData, ImageModel } from '../../types';
@@ -188,9 +188,9 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           <BlockToolbarButton
             onClick={handleDescribe}
             disabled={blockData.status === 'running' || !blockData.imageUrl}
-            title="Describe this image"
+            title="Describe"
           >
-            <FileText size={16} />
+            <PilcrowRight size={16} />
           </BlockToolbarButton>
         }
         onPlay={handleGenerate}

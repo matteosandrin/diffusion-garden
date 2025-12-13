@@ -225,7 +225,7 @@ export function BaseBlockNode({
           <BlockToolbarButton
               onClick={handleDelete}
               disabled={status === 'running'}
-              title="Delete this block"
+              title="Delete"
             >
               <Trash2 size={16}/>
           </BlockToolbarButton>

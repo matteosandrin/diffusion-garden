@@ -74,6 +74,27 @@ export function BaseBlockNode({
 
   return (
     <div className="text-xs">
+      {/* Toolbar - slides down when selected */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 bottom-full flex items-center gap-1 px-2 py-1 rounded-lg z-10 transition-all duration-300 ease-out"
+        style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: 'var(--shadow-card)',
+          transform: selected ? 'translateY(-0.5rem)' : 'translateY(1rem)',
+          opacity: selected ? 1 : 0,
+          pointerEvents: selected ? 'auto' : 'none',
+        }}
+      >
+        {toolbarButtons}
+        <BlockToolbarButton
+            onClick={handleDelete}
+            disabled={status === 'running'}
+            title="Delete"
+          >
+            <Trash2 size={16}/>
+        </BlockToolbarButton>
+      </div>
       {/* Block type label */}
       {blockType && (
         <div
@@ -94,33 +115,13 @@ export function BaseBlockNode({
         className="relative w-[280px] rounded-xl transition-all duration-200 overflow-hidden"
         style={{
           background: 'var(--bg-card)',
-          border: `2px solid ${selected ? accentColor : 'var(--border-subtle)'}`,
+          border: `1px solid ${selected ? accentColor : 'var(--border-subtle)'}`,
           boxShadow: getBoxShadow(),
         }}
       >
 
         {/* Main content */}
         {children}
-
-        {/* Prompt section */}
-        {(prompt !== undefined || onPromptChange) && (
-          <div className={`px-3 py-2 border-t ${selected ? 'nowheel' : ''}`} style={{ borderColor: 'var(--border-subtle)' }}>
-            <AutoResizeTextarea
-              value={prompt || ''}
-              onChange={(value) => onPromptChange?.(value)}
-              placeholder={promptPlaceholder}
-              rows={2}
-              readOnly={promptReadonly}
-              disabled={promptReadonly}
-              minHeight="45px"
-              maxHeight="120px"
-              style={{
-                color: promptReadonly ? 'var(--text-muted)' : 'var(--text-secondary)',
-                cursor: promptReadonly ? 'default' : 'text',
-              }}
-            />
-          </div>
-        )}
 
         {/* Footer with play button */}
         {(onPlay || footerLeftContent || models) && (
@@ -211,24 +212,33 @@ export function BaseBlockNode({
         )}
       </div>
 
-      {/* Toolbar - shown when selected */}
-      {selected && (
+      {/* Prompt bubble - slides down when selected */}
+      {(prompt !== undefined || onPromptChange) && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 top-full mt-2 flex items-center gap-1 px-2 py-1 rounded-lg z-10"
+          className="absolute left-0 top-full w-full px-3 py-2 rounded-lg z-10 transition-all duration-300 ease-out"
           style={{
             background: 'var(--bg-card)',
             border: '1px solid var(--border-subtle)',
             boxShadow: 'var(--shadow-card)',
+            transform: selected ? 'translateY(0.5rem)' : 'translateY(-1rem)',
+            opacity: selected ? 1 : 0,
+            pointerEvents: selected ? 'auto' : 'none',
           }}
         >
-          {toolbarButtons}
-          <BlockToolbarButton
-              onClick={handleDelete}
-              disabled={status === 'running'}
-              title="Delete"
-            >
-              <Trash2 size={16}/>
-          </BlockToolbarButton>
+          <AutoResizeTextarea
+            value={prompt || ''}
+            onChange={(value) => onPromptChange?.(value)}
+            placeholder={promptPlaceholder}
+            rows={2}
+            readOnly={promptReadonly}
+            disabled={promptReadonly}
+            minHeight="45px"
+            maxHeight="120px"
+            style={{
+              color: promptReadonly ? 'var(--text-muted)' : 'var(--text-primary)',
+              cursor: promptReadonly ? 'default' : 'text',
+            }}
+          />
         </div>
       )}
 

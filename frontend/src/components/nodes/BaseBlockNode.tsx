@@ -1,4 +1,4 @@
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useState, useEffect, useRef, type ReactNode } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Trash2, ArrowUp, Loader2, ChevronDown } from 'lucide-react';
 import type { BlockStatus } from '../../types';
@@ -32,6 +32,9 @@ interface BaseBlockNodeProps {
   models?: ModelOption[];
   selectedModel?: string;
   onModelChange?: (model: string) => void;
+  // Auto-run props
+  autoRun?: boolean;
+  onAutoRunComplete?: () => void;
 }
 
 export function BaseBlockNode({
@@ -54,9 +57,23 @@ export function BaseBlockNode({
   models,
   selectedModel,
   onModelChange,
+  autoRun,
+  onAutoRunComplete,
 }: BaseBlockNodeProps) {
   const { deleteNode } = useCanvasStore();
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
+  const hasAutoRunTriggered = useRef(false);
+
+  // Auto-run: execute immediately when block is created with autoRun flag
+  useEffect(() => {
+    if (autoRun && !hasAutoRunTriggered.current && status === 'idle' && onPlay) {
+      hasAutoRunTriggered.current = true;
+      // Notify parent to clear the autoRun flag
+      onAutoRunComplete?.();
+      // Trigger execution
+      onPlay();
+    }
+  }, [autoRun, status, onPlay, onAutoRunComplete]);
 
   const handleDelete = useCallback(() => {
     deleteNode(id);

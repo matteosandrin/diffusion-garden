@@ -47,10 +47,12 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     const currentNode = store.nodes.find((n) => n.id === id);
     if (!currentNode) return;
 
+    const currentNodeWidth = currentNode.width || 280;
+
     // Create new text block with prompt
     const newBlockId = addTextBlock(
       {
-        x: currentNode.position.x + 360,
+        x: currentNode.position.x + currentNodeWidth + 60,
         y: currentNode.position.y,
       },
       {
@@ -77,10 +79,12 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     const currentNode = store.nodes.find((n) => n.id === id);
     if (!currentNode) return;
 
+    const currentNodeWidth = currentNode.width || 280;
+
     // Create new text block with twist prompt
     const newBlockId = addTextBlock(
       {
-        x: currentNode.position.x + 360,
+        x: currentNode.position.x + currentNodeWidth + 60,
         y: currentNode.position.y,
       },
       {
@@ -127,10 +131,12 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     const currentNode = store.nodes.find((n) => n.id === id);
     if (!currentNode) return;
 
+    const currentNodeWidth = currentNode.width || 280;
+
     // Create new image block with prompt
     const newBlockId = addImageBlock(
       {
-        x: currentNode.position.x + 360,
+        x: currentNode.position.x + currentNodeWidth + 60,
         y: currentNode.position.y,
       },
       {
@@ -159,13 +165,16 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     const currentNode = store.nodes.find((n) => n.id === id);
     if (!currentNode) return;
 
+    const currentNodeWidth = currentNode.width || 280;
+    const currentNodeHeight = currentNode.height || 280;
+
     // Create new text blocks for each item, positioned vertically
     items.forEach((item, index) => {
       const i = index - Math.ceil(items.length / 2) + 1;
       const newBlockId = addTextBlock(
         {
-          x: currentNode.position.x + 360,
-          y: currentNode.position.y + i * 260,
+          x: currentNode.position.x + currentNodeWidth + 60,
+          y: currentNode.position.y + i * (currentNodeHeight + 60),
         },
         {
           content: item,

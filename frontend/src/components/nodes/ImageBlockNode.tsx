@@ -78,7 +78,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     updateBlockStatus(id, 'running');
     
     try {
-      const response = await toolsApi.generateImage(blockData.prompt, inputContentItems, blockData.model as ImageModel);
+      const response = await toolsApi.generateImage(blockData.prompt, inputContentItems, blockData.model as ImageModel, blockData.variation || false);
       updateBlockData(id, {
         imageUrl: response.imageUrl,
         imageId: response.imageId,
@@ -163,6 +163,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           status: 'idle',
           autoRun: true,
           prompt: blockData.prompt, // Pass prompt directly for autoRun to work
+          variation: true,
         }
       );
     });

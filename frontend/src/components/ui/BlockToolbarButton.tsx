@@ -29,7 +29,7 @@ export function BlockToolbarButton({
       
       {isHovered && !disabled && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 rounded text-xs whitespace-nowrap z-50 animate-fade-in pointer-events-none"
+          className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 rounded text-xs whitespace-nowrap z-50 animate-fade-in pointer-events-none"
           style={{
             background: 'var(--bg-card)',
             border: '1px solid var(--border-subtle)',

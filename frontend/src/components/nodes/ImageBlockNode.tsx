@@ -109,6 +109,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
       {
         prompt: store.prompts.describe,
         sourceBlockId: id,
+        autoRun: true,
       }
     );
 
@@ -159,7 +160,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         {
           model: blockData.model || models.defaultImageModel,
           source: 'generated',
-          status: 'idle',
         }
       );
     });
@@ -233,6 +233,10 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     [handleFileUpload]
   );
 
+  const handleAutoRunComplete = useCallback(() => {
+    updateBlockData(id, { autoRun: false });
+  }, [id, updateBlockData]);
+
   return (
     <>
       <BaseBlockNode
@@ -270,6 +274,8 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         models={models.imageModels}
         selectedModel={blockData.model || models.defaultImageModel}
         onModelChange={handleModelChange}
+        autoRun={blockData.autoRun}
+        onAutoRunComplete={handleAutoRunComplete}
       >
         {/* Image content */}
         <div

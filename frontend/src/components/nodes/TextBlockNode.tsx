@@ -58,6 +58,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       {
         prompt: store.prompts.expand,
         sourceBlockId: id,
+        autoRun: true,
       }
     );
 
@@ -90,6 +91,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       {
         prompt: store.prompts.twist,
         sourceBlockId: id,
+        autoRun: true,
       }
     );
 
@@ -192,6 +194,10 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     });
   }, [id, blockData.content, addTextBlock]);
 
+  const handleAutoRunComplete = useCallback(() => {
+    updateBlockData(id, { autoRun: false });
+  }, [id, updateBlockData]);
+
   return (
     <BaseBlockNode
       id={id}
@@ -241,6 +247,8 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       prompt={blockData.prompt}
       onPromptChange={handlePromptChange}
       promptPlaceholder="Enter your prompt here..."
+      autoRun={blockData.autoRun}
+      onAutoRunComplete={handleAutoRunComplete}
     >
       {/* Content section */}
       <div className={`px-3 py-2 border-b ${selected ? 'nowheel' : ''}`} style={{ borderColor: 'var(--border-subtle)' }}>

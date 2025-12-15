@@ -138,7 +138,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     if (inputTextBlocks.length === 0) return;
 
     const currentNodeWidth = currentNode.width || 280;
-    const currentNodeHeight = currentNode.height || 280;
+    const currentNodeHeight = Math.max(currentNode.height || 280, 280);
     const blockSpacing = 60;
 
     // Calculate base position (to the right of current block)
@@ -160,6 +160,9 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         {
           model: blockData.model || models.defaultImageModel,
           source: 'generated',
+          status: 'idle',
+          autoRun: true,
+          prompt: blockData.prompt, // Pass prompt directly for autoRun to work
         }
       );
     });
@@ -175,7 +178,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         });
       });
     });
-  }, [id, promptFromInput, blockData.model, models.defaultImageModel, getInputBlocks, addImageBlock]);
+  }, [id, promptFromInput, blockData.model, blockData.prompt, models.defaultImageModel, getInputBlocks, addImageBlock]);
 
   const handleFileUpload = useCallback(
     async (file: File) => {

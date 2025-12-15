@@ -61,11 +61,11 @@ export const toolsApi = {
     });
   },
 
-  generateImage: async (prompt: string, input: InputContentItem[] | undefined, model: ImageModel) => {
+  generateImage: async (prompt: string, input: InputContentItem[] | undefined, model: ImageModel, isVariation: boolean = false) => {
     const imageUrls = input?.filter(item => item.type === 'image').map(item => item.url);
     return await apiFetch<GenerateImageResponse>('/tools/generate-image', {
       method: 'POST',
-      body: JSON.stringify({ prompt, image_urls: imageUrls, model }),
+      body: JSON.stringify({ prompt, image_urls: imageUrls, model, is_variation: isVariation }),
     });
   },
 };

@@ -255,7 +255,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         <AutoResizeTextarea
           value={blockData.content}
           onChange={handleContentChange}
-          placeholder="Result will appear here..."
           rows={3}
           minHeight="180px"
           style={{ color: 'var(--text-primary)' }}

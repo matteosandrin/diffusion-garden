@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect, useRef, type ReactNode } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Trash2, ArrowUp, Loader2, ChevronDown } from 'lucide-react';
+import { Trash2, ArrowUp, Loader2, ChevronDown, TriangleAlert } from 'lucide-react';
 import type { BlockStatus } from '../../types';
 import { useCanvasStore } from '../../store/canvasStore';
 import { BlockToolbarButton } from '../ui/BlockToolbarButton';
@@ -217,14 +217,14 @@ export function BaseBlockNode({
         {/* Error message */}
         {status === 'error' && error && (
           <div
-            className="px-3 py-2 text-xs border-t"
+            className="px-3 py-2 text-xs border-t flex items-center gap-2"
             style={{
               borderColor: 'var(--accent-error)',
               color: 'var(--accent-error)',
               background: 'rgba(255, 255, 255, 0.1)',
             }}
           >
-            {error}
+            <TriangleAlert size={12} className="inline"/> {error}
           </div>
         )}
       </div>

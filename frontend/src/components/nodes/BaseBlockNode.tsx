@@ -89,8 +89,31 @@ export function BaseBlockNode({
     return 'var(--shadow-card)';
   };
 
+  // Running state glow animation styles
+  const runningGlowStyle = status === 'running' ? {
+    animation: 'borderGlow 1s ease-in-out infinite',
+  } : {};
+
   return (
     <div className="text-xs">
+      <style>{`
+        @keyframes borderGlow {
+          0%, 100% {
+            box-shadow: 
+              var(--shadow-card),
+              0 0 15px 0 rgba(255, 255, 255, 0.15),
+              0 0 30px 0 rgba(255, 255, 255, 0.08),
+              inset 0 0 20px 0 rgba(255, 255, 255, 0.02);
+          }
+          50% {
+            box-shadow: 
+              var(--shadow-card),
+              0 0 25px 2px rgba(255, 255, 255, 0.25),
+              0 0 50px 5px rgba(255, 255, 255, 0.12),
+              inset 0 0 30px 0 rgba(255, 255, 255, 0.04);
+          }
+        }
+      `}</style>
       {/* Toolbar - slides down when selected */}
       <div
         className="absolute left-1/2 -translate-x-1/2 bottom-full flex items-center gap-1 px-2 py-1 rounded-lg z-10 transition-all duration-300 ease-out"
@@ -132,8 +155,9 @@ export function BaseBlockNode({
         className="relative w-[280px] rounded-xl transition-all duration-200 overflow-hidden"
         style={{
           background: 'var(--bg-card)',
-          border: `1px solid ${selected ? accentColor : 'var(--border-subtle)'}`,
+          border: `1px solid ${status === 'running' ? 'rgba(255, 255, 255, 0.4)' : selected ? accentColor : 'var(--border-subtle)'}`,
           boxShadow: getBoxShadow(),
+          ...runningGlowStyle,
         }}
       >
 

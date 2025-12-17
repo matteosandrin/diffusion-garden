@@ -10,6 +10,7 @@ import {
   type OnSelectionChangeParams,
   type Node,
   type Viewport,
+  type OnConnectEnd,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -32,6 +33,7 @@ const edgeTypes = {
 
 export function Canvas() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const connectingNodeId = useRef<string | null>(null);
   const { screenToFlowPosition } = useReactFlow();
   
   const {
@@ -44,6 +46,8 @@ export function Canvas() {
     setViewport,
     addTextBlock,
     addImageBlock,
+    addTextBlockWithEdge,
+    addImageBlockWithEdge,
   } = useCanvasStore();
 
   // Context menu state
@@ -51,6 +55,14 @@ export function Canvas() {
     x: number;
     y: number;
     flowPosition: { x: number; y: number };
+  } | null>(null);
+
+  // Edge drop menu state (when releasing edge on empty space)
+  const [edgeDropMenu, setEdgeDropMenu] = useState<{
+    x: number;
+    y: number;
+    flowPosition: { x: number; y: number };
+    sourceNodeId: string;
   } | null>(null);
 
   // Handle selection changes
@@ -83,6 +95,7 @@ export function Canvas() {
   // Close context menu when clicking elsewhere
   const onPaneClick = useCallback(() => {
     setContextMenu(null);
+    setEdgeDropMenu(null);
   }, []);
 
   // Update viewport in store when user stops moving the canvas
@@ -91,6 +104,48 @@ export function Canvas() {
       setViewport(viewport);
     },
     [setViewport]
+  );
+
+  // Track when a connection starts
+  const onConnectStart = useCallback(
+    (_event: MouseEvent | TouchEvent, params: { nodeId: string | null }) => {
+      connectingNodeId.current = params.nodeId;
+    },
+    []
+  );
+
+  // Handle when a connection ends (either connected or dropped on empty space)
+  const onConnectEnd: OnConnectEnd = useCallback(
+    (event) => {
+      // Check if we dropped on empty space (not on a handle)
+      const targetIsPane = (event.target as Element)?.classList?.contains('react-flow__pane');
+      
+      if (targetIsPane && connectingNodeId.current) {
+        // Get the mouse position
+        const mouseEvent = event as MouseEvent;
+        const touchEvent = event as TouchEvent;
+        
+        const clientX = mouseEvent.clientX ?? touchEvent.changedTouches?.[0]?.clientX;
+        const clientY = mouseEvent.clientY ?? touchEvent.changedTouches?.[0]?.clientY;
+        
+        if (clientX !== undefined && clientY !== undefined) {
+          const flowPosition = screenToFlowPosition({
+            x: clientX,
+            y: clientY,
+          });
+
+          setEdgeDropMenu({
+            x: clientX,
+            y: clientY,
+            flowPosition,
+            sourceNodeId: connectingNodeId.current,
+          });
+        }
+      }
+      
+      connectingNodeId.current = null;
+    },
+    [screenToFlowPosition]
   );
 
   // Handle context menu actions
@@ -107,6 +162,21 @@ export function Canvas() {
       setContextMenu(null);
     }
   }, [contextMenu, addImageBlock]);
+
+  // Handle edge drop menu actions
+  const handleEdgeDropAddTextBlock = useCallback(() => {
+    if (edgeDropMenu) {
+      addTextBlockWithEdge(edgeDropMenu.flowPosition, edgeDropMenu.sourceNodeId);
+      setEdgeDropMenu(null);
+    }
+  }, [edgeDropMenu, addTextBlockWithEdge]);
+
+  const handleEdgeDropAddImageBlock = useCallback(() => {
+    if (edgeDropMenu) {
+      addImageBlockWithEdge(edgeDropMenu.flowPosition, edgeDropMenu.sourceNodeId);
+      setEdgeDropMenu(null);
+    }
+  }, [edgeDropMenu, addImageBlockWithEdge]);
 
   // Default edge options
   const defaultEdgeOptions = {
@@ -129,6 +199,8 @@ export function Canvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
         onSelectionChange={onSelectionChange}
         onContextMenu={onContextMenu}
         onPaneClick={onPaneClick}
@@ -177,6 +249,17 @@ export function Canvas() {
           onAddTextBlock={handleAddTextBlock}
           onAddImageBlock={handleAddImageBlock}
           onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {/* Edge Drop Menu */}
+      {edgeDropMenu && (
+        <ContextMenu
+          x={edgeDropMenu.x}
+          y={edgeDropMenu.y}
+          onAddTextBlock={handleEdgeDropAddTextBlock}
+          onAddImageBlock={handleEdgeDropAddImageBlock}
+          onClose={() => setEdgeDropMenu(null)}
         />
       )}
     </div>

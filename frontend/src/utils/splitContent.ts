@@ -8,20 +8,22 @@ export function splitContent(text: string): string[] {
 
   // 1. Numbered lists: "1. ", "1) ", "a. ", "a) "
   const numberedListRegex = /^(?:\d+[.)]\s|[a-zA-Z][.)]\s)/;
-  const lines = trimmed.split('\n');
+  const lines = trimmed.split("\n");
   const numberedItems: string[] = [];
-  let currentItem = '';
-  
+  let currentItem = "";
+
   for (const line of lines) {
     if (numberedListRegex.test(line.trimStart())) {
       if (currentItem.trim()) {
         numberedItems.push(currentItem.trim());
       }
       // Remove the list marker
-      currentItem = line.trimStart().replace(/^(?:\d+[.)]\s|[a-zA-Z][.)]\s)/, '');
+      currentItem = line
+        .trimStart()
+        .replace(/^(?:\d+[.)]\s|[a-zA-Z][.)]\s)/, "");
     } else if (currentItem) {
       // Continuation of current item
-      currentItem += '\n' + line;
+      currentItem += "\n" + line;
     }
   }
   if (currentItem.trim()) {
@@ -34,16 +36,16 @@ export function splitContent(text: string): string[] {
   // 2. Bullet points: -, *, •, ◦ at line start
   const bulletRegex = /^[-*•◦]\s+/;
   const bulletItems: string[] = [];
-  currentItem = '';
-  
+  currentItem = "";
+
   for (const line of lines) {
     if (bulletRegex.test(line.trimStart())) {
       if (currentItem.trim()) {
         bulletItems.push(currentItem.trim());
       }
-      currentItem = line.trimStart().replace(bulletRegex, '');
+      currentItem = line.trimStart().replace(bulletRegex, "");
     } else if (currentItem) {
-      currentItem += '\n' + line;
+      currentItem += "\n" + line;
     }
   }
   if (currentItem.trim()) {
@@ -56,8 +58,8 @@ export function splitContent(text: string): string[] {
   // 3. Markdown headers: lines starting with #
   const headerRegex = /^#+\s+/;
   const headerSections: string[] = [];
-  let currentSection = '';
-  
+  let currentSection = "";
+
   for (const line of lines) {
     if (headerRegex.test(line)) {
       if (currentSection.trim()) {
@@ -65,7 +67,7 @@ export function splitContent(text: string): string[] {
       }
       currentSection = line;
     } else {
-      currentSection += '\n' + line;
+      currentSection += "\n" + line;
     }
   }
   if (currentSection.trim()) {
@@ -76,13 +78,16 @@ export function splitContent(text: string): string[] {
   }
 
   // 4. Paragraphs: double newlines
-  const paragraphs = trimmed.split(/\n\s*\n/).map(p => p.trim()).filter(p => p);
+  const paragraphs = trimmed
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter((p) => p);
   if (paragraphs.length >= 2) {
     return paragraphs;
   }
 
   // 5. Fallback: single newlines
-  const lineItems = lines.map(l => l.trim()).filter(l => l);
+  const lineItems = lines.map((l) => l.trim()).filter((l) => l);
   if (lineItems.length >= 2) {
     return lineItems;
   }
@@ -90,4 +95,3 @@ export function splitContent(text: string): string[] {
   // No split possible
   return [];
 }
-

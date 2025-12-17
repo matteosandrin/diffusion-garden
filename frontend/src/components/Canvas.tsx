@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -11,15 +11,15 @@ import {
   type Node,
   type Viewport,
   type OnConnectEnd,
-} from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 
-import { useCanvasStore } from '../store/canvasStore';
-import { TextBlockNode } from './nodes/TextBlockNode';
-import { ImageBlockNode } from './nodes/ImageBlockNode';
-import { AnimatedEdge } from './edges/AnimatedEdge';
-import { ContextMenu } from './ui/ContextMenu';
-import { PendingEdgeOverlay, type PendingEdge } from './ui/PendingEdgeOverlay';
+import { useCanvasStore } from "../store/canvasStore";
+import { TextBlockNode } from "./nodes/TextBlockNode";
+import { ImageBlockNode } from "./nodes/ImageBlockNode";
+import { AnimatedEdge } from "./edges/AnimatedEdge";
+import { ContextMenu } from "./ui/ContextMenu";
+import { PendingEdgeOverlay, type PendingEdge } from "./ui/PendingEdgeOverlay";
 
 // Register custom node types
 const nodeTypes = {
@@ -36,7 +36,7 @@ export function Canvas() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const connectingNodeId = useRef<string | null>(null);
   const { screenToFlowPosition } = useReactFlow();
-  
+
   const {
     nodes,
     edges,
@@ -74,14 +74,14 @@ export function Canvas() {
     ({ nodes: selectedNodes }: OnSelectionChangeParams) => {
       setSelectedNodes(selectedNodes.map((n) => n.id));
     },
-    [setSelectedNodes]
+    [setSelectedNodes],
   );
 
   // Handle context menu
   const onContextMenu = useCallback(
     (event: React.MouseEvent) => {
       event.preventDefault();
-      
+
       const flowPosition = screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
@@ -93,7 +93,7 @@ export function Canvas() {
         flowPosition,
       });
     },
-    [screenToFlowPosition]
+    [screenToFlowPosition],
   );
 
   // Close context menu when clicking elsewhere
@@ -108,7 +108,7 @@ export function Canvas() {
     (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {
       setViewport(viewport);
     },
-    [setViewport]
+    [setViewport],
   );
 
   // Track when a connection starts
@@ -116,23 +116,27 @@ export function Canvas() {
     (_event: MouseEvent | TouchEvent, params: { nodeId: string | null }) => {
       connectingNodeId.current = params.nodeId;
     },
-    []
+    [],
   );
 
   // Handle when a connection ends (either connected or dropped on empty space)
   const onConnectEnd: OnConnectEnd = useCallback(
     (event) => {
       // Check if we dropped on empty space (not on a handle)
-      const targetIsPane = (event.target as Element)?.classList?.contains('react-flow__pane');
-      
+      const targetIsPane = (event.target as Element)?.classList?.contains(
+        "react-flow__pane",
+      );
+
       if (targetIsPane && connectingNodeId.current) {
         // Get the mouse position
         const mouseEvent = event as MouseEvent;
         const touchEvent = event as TouchEvent;
-        
-        const clientX = mouseEvent.clientX ?? touchEvent.changedTouches?.[0]?.clientX;
-        const clientY = mouseEvent.clientY ?? touchEvent.changedTouches?.[0]?.clientY;
-        
+
+        const clientX =
+          mouseEvent.clientX ?? touchEvent.changedTouches?.[0]?.clientX;
+        const clientY =
+          mouseEvent.clientY ?? touchEvent.changedTouches?.[0]?.clientY;
+
         if (clientX !== undefined && clientY !== undefined) {
           const flowPosition = screenToFlowPosition({
             x: clientX,
@@ -140,7 +144,9 @@ export function Canvas() {
           });
 
           // Find the source node to get its handle position
-          const sourceNode = nodes.find(n => n.id === connectingNodeId.current);
+          const sourceNode = nodes.find(
+            (n) => n.id === connectingNodeId.current,
+          );
           if (sourceNode) {
             // Calculate source handle position (right side of node)
             // Node width is 280px, handle is centered vertically
@@ -166,10 +172,10 @@ export function Canvas() {
           });
         }
       }
-      
+
       connectingNodeId.current = null;
     },
-    [screenToFlowPosition, nodes]
+    [screenToFlowPosition, nodes],
   );
 
   // Handle context menu actions
@@ -190,7 +196,10 @@ export function Canvas() {
   // Handle edge drop menu actions
   const handleEdgeDropAddTextBlock = useCallback(() => {
     if (edgeDropMenu) {
-      addTextBlockWithEdge(edgeDropMenu.flowPosition, edgeDropMenu.sourceNodeId);
+      addTextBlockWithEdge(
+        edgeDropMenu.flowPosition,
+        edgeDropMenu.sourceNodeId,
+      );
       setEdgeDropMenu(null);
       setPendingEdge(null);
     }
@@ -198,7 +207,10 @@ export function Canvas() {
 
   const handleEdgeDropAddImageBlock = useCallback(() => {
     if (edgeDropMenu) {
-      addImageBlockWithEdge(edgeDropMenu.flowPosition, edgeDropMenu.sourceNodeId);
+      addImageBlockWithEdge(
+        edgeDropMenu.flowPosition,
+        edgeDropMenu.sourceNodeId,
+      );
       setEdgeDropMenu(null);
       setPendingEdge(null);
     }
@@ -206,15 +218,15 @@ export function Canvas() {
 
   // Default edge options
   const defaultEdgeOptions = {
-    type: 'animated',
+    type: "animated",
     animated: true,
   };
 
   // MiniMap node color function
   const getNodeColor = useCallback((node: Node) => {
-    if (node.type === 'textBlock') return 'var(--accent-primary)';
-    if (node.type === 'imageBlock') return 'var(--accent-secondary)';
-    return 'var(--border-default)';
+    if (node.type === "textBlock") return "var(--accent-primary)";
+    if (node.type === "imageBlock") return "var(--accent-secondary)";
+    return "var(--border-default)";
   }, []);
 
   return (
@@ -238,8 +250,8 @@ export function Canvas() {
         fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
         minZoom={0.1}
         maxZoom={2.0}
-        deleteKeyCode={['Backspace', 'Delete']}
-        multiSelectionKeyCode={['Shift', 'Meta']}
+        deleteKeyCode={["Backspace", "Delete"]}
+        multiSelectionKeyCode={["Shift", "Meta"]}
         selectionOnDrag
         panOnDrag={[1, 2]} // Middle and right mouse button
         panOnScroll={true} // Enable two-finger trackpad panning

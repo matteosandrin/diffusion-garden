@@ -6,5 +6,6 @@ run-frontend:
 
 format:
 	cd backend && black .
-	cd frontend && prettier --write .
+	cd frontend && npx prettier . --write
+
 .PHONY: run-backend run-frontend run

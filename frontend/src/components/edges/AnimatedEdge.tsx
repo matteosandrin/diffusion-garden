@@ -1,9 +1,5 @@
-import { memo } from 'react';
-import {
-  BaseEdge,
-  getBezierPath,
-  type EdgeProps,
-} from '@xyflow/react';
+import { memo } from "react";
+import { BaseEdge, getBezierPath, type EdgeProps } from "@xyflow/react";
 
 function AnimatedEdgeComponent({
   id,
@@ -33,28 +29,28 @@ function AnimatedEdgeComponent({
         <BaseEdge
           path={edgePath}
           style={{
-            stroke: 'var(--accent-primary)',
+            stroke: "var(--accent-primary)",
             strokeWidth: 6,
-            filter: 'blur(4px)',
+            filter: "blur(4px)",
             opacity: 0.5,
           }}
         />
       )}
-      
+
       {/* Main edge */}
       <BaseEdge
         path={edgePath}
         markerEnd={markerEnd}
         style={{
-          stroke: selected ? 'var(--accent-primary)' : 'var(--border-default)',
+          stroke: selected ? "var(--accent-primary)" : "var(--border-default)",
           strokeWidth: 2,
-          transition: 'stroke 0.2s ease',
+          transition: "stroke 0.2s ease",
           ...style,
         }}
       />
 
       {/* Arrow marker */}
-      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+      <svg style={{ position: "absolute", width: 0, height: 0 }}>
         <defs>
           <marker
             id={`arrow-${id}`}
@@ -66,8 +62,10 @@ function AnimatedEdgeComponent({
           >
             <path
               d="M2,2 L10,6 L2,10 L4,6 Z"
-              fill={selected ? 'var(--accent-primary)' : 'var(--border-default)'}
-              style={{ transition: 'fill 0.2s ease' }}
+              fill={
+                selected ? "var(--accent-primary)" : "var(--border-default)"
+              }
+              style={{ transition: "fill 0.2s ease" }}
             />
           </marker>
         </defs>
@@ -77,4 +75,3 @@ function AnimatedEdgeComponent({
 }
 
 export const AnimatedEdge = memo(AnimatedEdgeComponent);
-

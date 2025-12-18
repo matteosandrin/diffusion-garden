@@ -8,4 +8,7 @@ format:
 	cd backend && black .
 	cd frontend && npx prettier . --write
 
+setup-db:
+	createdb diffusiongarden
+
 .PHONY: run-backend run-frontend run

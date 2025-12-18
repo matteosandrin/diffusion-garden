@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { Type, Image, X } from 'lucide-react';
+import { useEffect, useRef } from "react";
+import { Type, Image, X } from "lucide-react";
 
 interface ContextMenuProps {
   x: number;
@@ -29,17 +29,17 @@ export function ContextMenu({
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, [onClose]);
 
@@ -56,17 +56,17 @@ export function ContextMenu({
       <div
         className="min-w-[180px] rounded-lg border shadow-lg overflow-hidden"
         style={{
-          background: 'var(--bg-card)',
-          borderColor: 'var(--border-subtle)',
-          boxShadow: 'var(--shadow-card)',
+          background: "var(--bg-card)",
+          borderColor: "var(--border-subtle)",
+          boxShadow: "var(--shadow-card)",
         }}
       >
         {title && (
           <div
             className="px-3 py-2 text-xs font-medium uppercase tracking-wider border-b"
             style={{
-              color: 'var(--text-muted)',
-              borderColor: 'var(--border-subtle)',
+              color: "var(--text-muted)",
+              borderColor: "var(--border-subtle)",
             }}
           >
             {title}
@@ -77,18 +77,18 @@ export function ContextMenu({
           <button
             onClick={onAddTextBlock}
             className="w-full px-3 py-2 flex items-center gap-3 transition-colors"
-            style={{ color: 'var(--text-primary)' }}
+            style={{ color: "var(--text-primary)" }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-card-hover)';
+              e.currentTarget.style.background = "var(--bg-card-hover)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.background = "transparent";
             }}
           >
-            <Type size={16} style={{ color: 'var(--accent-primary)' }} />
+            <Type size={16} style={{ color: "var(--accent-primary)" }} />
             <div className="text-left">
               <div className="text-sm font-medium">Text block</div>
-              <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              <div className="text-xs" style={{ color: "var(--text-muted)" }}>
                 Write or expand ideas
               </div>
             </div>
@@ -97,18 +97,18 @@ export function ContextMenu({
           <button
             onClick={onAddImageBlock}
             className="w-full px-3 py-2 flex items-center gap-3 transition-colors"
-            style={{ color: 'var(--text-primary)' }}
+            style={{ color: "var(--text-primary)" }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-card-hover)';
+              e.currentTarget.style.background = "var(--bg-card-hover)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.background = "transparent";
             }}
           >
-            <Image size={16} style={{ color: 'var(--accent-secondary)' }} />
+            <Image size={16} style={{ color: "var(--accent-secondary)" }} />
             <div className="text-left">
               <div className="text-sm font-medium">Image block</div>
-              <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              <div className="text-xs" style={{ color: "var(--text-muted)" }}>
                 Upload or generate images
               </div>
             </div>

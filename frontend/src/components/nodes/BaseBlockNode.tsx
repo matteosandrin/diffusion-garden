@@ -1,10 +1,22 @@
-import { useCallback, useState, useEffect, useRef, type ReactNode } from 'react';
-import { Handle, Position } from '@xyflow/react';
-import { Trash2, ArrowUp, Loader2, ChevronDown, TriangleAlert } from 'lucide-react';
-import type { BlockStatus } from '../../types';
-import { useCanvasStore } from '../../store/canvasStore';
-import { BlockToolbarButton } from '../ui/BlockToolbarButton';
-import { AutoResizeTextarea } from '../ui/AutoResizeTextarea';
+import {
+  useCallback,
+  useState,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from "react";
+import { Handle, Position } from "@xyflow/react";
+import {
+  Trash2,
+  ArrowUp,
+  Loader2,
+  ChevronDown,
+  TriangleAlert,
+} from "lucide-react";
+import type { BlockStatus } from "../../types";
+import { useCanvasStore } from "../../store/canvasStore";
+import { BlockToolbarButton } from "../ui/BlockToolbarButton";
+import { AutoResizeTextarea } from "../ui/AutoResizeTextarea";
 
 export interface ModelOption {
   id: string;
@@ -27,7 +39,7 @@ interface BaseBlockNodeProps {
   promptPlaceholder?: string;
   promptReadonly?: boolean;
   accentColor?: string;
-  blockType?: 'text' | 'image';
+  blockType?: "text" | "image";
   // Model dropdown props
   models?: ModelOption[];
   selectedModel?: string;
@@ -47,12 +59,12 @@ export function BaseBlockNode({
   footerLeftContent,
   onPlay,
   runButtonDisabled,
-  runButtonTitle = 'Execute',
+  runButtonTitle = "Execute",
   prompt,
   onPromptChange,
-  promptPlaceholder = 'Enter your prompt here...',
+  promptPlaceholder = "Enter your prompt here...",
   promptReadonly = false,
-  accentColor = 'var(--accent-primary)',
+  accentColor = "var(--accent-primary)",
   blockType,
   models,
   selectedModel,
@@ -66,7 +78,12 @@ export function BaseBlockNode({
 
   // Auto-run: execute immediately when block is created with autoRun flag
   useEffect(() => {
-    if (autoRun && !hasAutoRunTriggered.current && status === 'idle' && onPlay) {
+    if (
+      autoRun &&
+      !hasAutoRunTriggered.current &&
+      status === "idle" &&
+      onPlay
+    ) {
       hasAutoRunTriggered.current = true;
       // Notify parent to clear the autoRun flag
       onAutoRunComplete?.();
@@ -79,20 +96,26 @@ export function BaseBlockNode({
     deleteNode(id);
   }, [id, deleteNode]);
 
-  const handleModelSelect = useCallback((model: string) => {
-    onModelChange?.(model);
-    setIsModelDropdownOpen(false);
-  }, [onModelChange]);
+  const handleModelSelect = useCallback(
+    (model: string) => {
+      onModelChange?.(model);
+      setIsModelDropdownOpen(false);
+    },
+    [onModelChange],
+  );
 
   // Determine box shadow based on status and selection
   const getBoxShadow = () => {
-    return 'var(--shadow-card)';
+    return "var(--shadow-card)";
   };
 
   // Running state glow animation styles
-  const runningGlowStyle = status === 'running' ? {
-    animation: 'borderGlow 1s ease-in-out infinite',
-  } : {};
+  const runningGlowStyle =
+    status === "running"
+      ? {
+          animation: "borderGlow 1s ease-in-out infinite",
+        }
+      : {};
 
   return (
     <div className="text-xs">
@@ -118,21 +141,21 @@ export function BaseBlockNode({
       <div
         className="absolute left-1/2 -translate-x-1/2 bottom-full flex items-center gap-1 px-2 py-1 rounded-lg z-10 transition-all duration-300 ease-out"
         style={{
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-card)',
-          transform: selected ? 'translateY(-0.5rem)' : 'translateY(1rem)',
+          background: "var(--bg-card)",
+          border: "1px solid var(--border-subtle)",
+          boxShadow: "var(--shadow-card)",
+          transform: selected ? "translateY(-0.5rem)" : "translateY(1rem)",
           opacity: selected ? 1 : 0,
-          pointerEvents: selected ? 'auto' : 'none',
+          pointerEvents: selected ? "auto" : "none",
         }}
       >
         {toolbarButtons}
         <BlockToolbarButton
-            onClick={handleDelete}
-            disabled={status === 'running'}
-            title="Delete"
-          >
-            <Trash2 size={16}/>
+          onClick={handleDelete}
+          disabled={status === "running"}
+          title="Delete"
+        >
+          <Trash2 size={16} />
         </BlockToolbarButton>
       </div>
       {/* Block type label */}
@@ -140,11 +163,11 @@ export function BaseBlockNode({
         <div
           className="absolute -top-5 left-0 text-xs px-1.5 py-0.5 rounded"
           style={{
-            color: 'var(--text-muted)',
-            background: 'transparent',
-            fontSize: '10px',
-            textTransform: 'capitalize',
-            pointerEvents: 'none',
+            color: "var(--text-muted)",
+            background: "transparent",
+            fontSize: "10px",
+            textTransform: "capitalize",
+            pointerEvents: "none",
           }}
         >
           {blockType}
@@ -154,13 +177,12 @@ export function BaseBlockNode({
       <div
         className="relative w-[280px] rounded-xl transition-all duration-200 overflow-hidden"
         style={{
-          background: 'var(--bg-card)',
-          border: `1px solid ${status === 'running' ? 'rgba(255, 255, 255, 0.4)' : selected ? accentColor : 'var(--border-subtle)'}`,
+          background: "var(--bg-card)",
+          border: `1px solid ${status === "running" ? "rgba(255, 255, 255, 0.4)" : selected ? accentColor : "var(--border-subtle)"}`,
           boxShadow: getBoxShadow(),
           ...runningGlowStyle,
         }}
       >
-
         {/* Main content */}
         {children}
 
@@ -168,7 +190,7 @@ export function BaseBlockNode({
         {(onPlay || footerLeftContent || models) && (
           <div
             className="flex items-center justify-between px-3 py-2 border-t"
-            style={{ borderColor: 'var(--border-subtle)' }}
+            style={{ borderColor: "var(--border-subtle)" }}
           >
             {/* Left content - model selector or custom content */}
             <div>
@@ -178,11 +200,12 @@ export function BaseBlockNode({
                     onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
                     className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors"
                     style={{
-                      background: 'var(--bg-elevated)',
-                      color: 'var(--text-secondary)',
+                      background: "var(--bg-elevated)",
+                      color: "var(--text-secondary)",
                     }}
                   >
-                    {models.find((m) => m.id === selectedModel)?.label || selectedModel}
+                    {models.find((m) => m.id === selectedModel)?.label ||
+                      selectedModel}
                     <ChevronDown size={12} />
                   </button>
 
@@ -190,9 +213,9 @@ export function BaseBlockNode({
                     <div
                       className="absolute bottom-full left-0 mb-1 py-1 rounded-lg z-10 min-w-[120px]"
                       style={{
-                        background: 'var(--bg-card)',
-                        border: '1px solid var(--border-subtle)',
-                        boxShadow: 'var(--shadow-card)',
+                        background: "var(--bg-card)",
+                        border: "1px solid var(--border-subtle)",
+                        boxShadow: "var(--shadow-card)",
                       }}
                     >
                       {models.map((model) => (
@@ -201,8 +224,14 @@ export function BaseBlockNode({
                           onClick={() => handleModelSelect(model.id)}
                           className="w-full px-3 py-1.5 text-left text-xs transition-colors"
                           style={{
-                            color: selectedModel === model.id ? accentColor : 'var(--text-secondary)',
-                            background: selectedModel === model.id ? 'var(--bg-card-hover)' : 'transparent',
+                            color:
+                              selectedModel === model.id
+                                ? accentColor
+                                : "var(--text-secondary)",
+                            background:
+                              selectedModel === model.id
+                                ? "var(--bg-card-hover)"
+                                : "transparent",
                           }}
                         >
                           {model.label}
@@ -220,18 +249,18 @@ export function BaseBlockNode({
             {onPlay && (
               <button
                 onClick={onPlay}
-                disabled={status === 'running' || runButtonDisabled}
+                disabled={status === "running" || runButtonDisabled}
                 className="flex items-center gap-1 px-1 py-1 rounded-full text-xs transition-all disabled:opacity-30"
                 style={{
                   background: accentColor,
-                  color: 'black',
+                  color: "black",
                 }}
                 title={runButtonTitle}
               >
-                {status === 'running' ? (
+                {status === "running" ? (
                   <Loader2 size={20} className="animate-spin" />
                 ) : (
-                  <ArrowUp size={20} strokeWidth={3}/>
+                  <ArrowUp size={20} strokeWidth={3} />
                 )}
               </button>
             )}
@@ -239,16 +268,16 @@ export function BaseBlockNode({
         )}
 
         {/* Error message */}
-        {status === 'error' && error && (
+        {status === "error" && error && (
           <div
             className="px-3 py-2 text-xs border-t flex items-center gap-2"
             style={{
-              borderColor: 'var(--accent-error)',
-              color: 'var(--accent-error)',
-              background: 'rgba(255, 255, 255, 0.1)',
+              borderColor: "var(--accent-error)",
+              color: "var(--accent-error)",
+              background: "rgba(255, 255, 255, 0.1)",
             }}
           >
-            <TriangleAlert size={12} className="inline"/> {error}
+            <TriangleAlert size={12} className="inline" /> {error}
           </div>
         )}
       </div>
@@ -258,18 +287,18 @@ export function BaseBlockNode({
         <div
           className="nowheel absolute left-0 top-full -mt-8 w-full px-3 pt-8 pb-2 rounded-b-xl transition-all duration-300 ease-out"
           style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            borderTop: 'none',
-            boxShadow: 'var(--shadow-card)',
-            transform: selected ? 'translateY(0.5rem)' : 'translateY(-100%)',
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-subtle)",
+            borderTop: "none",
+            boxShadow: "var(--shadow-card)",
+            transform: selected ? "translateY(0.5rem)" : "translateY(-100%)",
             opacity: selected ? 1 : 0,
-            pointerEvents: selected ? 'auto' : 'none',
+            pointerEvents: selected ? "auto" : "none",
             zIndex: -1,
           }}
         >
           <AutoResizeTextarea
-            value={prompt || ''}
+            value={prompt || ""}
             onChange={(value) => onPromptChange?.(value)}
             placeholder={promptPlaceholder}
             rows={2}
@@ -278,8 +307,10 @@ export function BaseBlockNode({
             minHeight="45px"
             maxHeight="120px"
             style={{
-              color: promptReadonly ? 'var(--text-muted)' : 'var(--text-primary)',
-              cursor: promptReadonly ? 'default' : 'text',
+              color: promptReadonly
+                ? "var(--text-muted)"
+                : "var(--text-primary)",
+              cursor: promptReadonly ? "default" : "text",
             }}
           />
         </div>
@@ -293,4 +324,3 @@ export function BaseBlockNode({
     </div>
   );
 }
-

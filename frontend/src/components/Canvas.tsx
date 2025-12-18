@@ -19,7 +19,10 @@ import { TextBlockNode } from "./nodes/TextBlockNode";
 import { ImageBlockNode } from "./nodes/ImageBlockNode";
 import { AnimatedEdge } from "./edges/AnimatedEdge";
 import { ContextMenu } from "./ui/ContextMenu";
-import { PendingEdgeOverlay, type PendingEdge } from "./ui/PendingEdgeOverlay";
+import {
+  PendingEdgeOverlay,
+  type PendingEdge,
+} from "./edges/PendingEdgeOverlay";
 
 // Register custom node types
 const nodeTypes = {

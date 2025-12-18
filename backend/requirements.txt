@@ -9,4 +9,5 @@ aiofiles==24.1.0
 pydantic==2.10.4
 pydantic-settings==2.7.0
 pillow==11.0.0
+slowapi==0.1.9
 black==25.11.0

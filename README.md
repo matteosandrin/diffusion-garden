@@ -50,7 +50,7 @@ This app is configured for Railway deployment with two separate services.
 1. **New** → **GitHub Repo** → Select the same repo
 2. Set **Root Directory** to `frontend`
 3. Add environment variables:
-   - `VITE_API_URL` - `https://your-backend-domain.railway.app/api`
+   - `VITE_API_HOST` - `https://your-backend-domain.railway.app/api`
 4. Generate a domain
 
 ### 4. Finalize
@@ -68,4 +68,4 @@ This app is configured for Railway deployment with two separate services.
 | `IMAGES_DIR` | Backend | Path to image storage directory |
 | `FRONTEND_URL` | Backend | Frontend domain for CORS |
 | `DEBUG` | Backend | Set to `false` for production |
-| `VITE_API_URL` | Frontend | Backend API URL |
+| `VITE_API_HOST` | Frontend | Backend API URL |

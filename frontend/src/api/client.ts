@@ -11,7 +11,7 @@ import type {
 } from "../types";
 
 // Use environment variable for API base URL in production, fallback to relative path for dev
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const API_BASE = (import.meta.env.VITE_API_HOST || "") + "/api";
 
 // Generic fetch wrapper with error handling
 async function apiFetch<T>(
@@ -86,7 +86,7 @@ export const toolsApi = {
     const imageUrls = input
       ?.filter((item) => item.type === "image")
       .map((item) => item.url);
-    return await apiFetch<GenerateImageResponse>("/tools/generate-image", {
+    const response = await apiFetch<GenerateImageResponse>("/tools/generate-image", {
       method: "POST",
       body: JSON.stringify({
         prompt,
@@ -95,6 +95,8 @@ export const toolsApi = {
         is_variation: isVariation,
       }),
     });
+    response.imageUrl = `${API_BASE}${response.imageUrl}`;
+    return response;
   },
 };
 

@@ -187,7 +187,7 @@ export function BaseBlockNode({
       )}
 
       <div
-        className="relative w-[280px] rounded-xl transition-all duration-200 overflow-hidden"
+        className={`relative w-[280px] ${blockType === "text" ? "h-[280px]" : ""} rounded-xl transition-all duration-200 overflow-hidden flex flex-col`}
         style={{
           background: "var(--bg-card)",
           border: `1px solid ${status === "running" ? "rgba(255, 255, 255, 0.4)" : selected ? accentColor : "var(--border-subtle)"}`,
@@ -196,12 +196,14 @@ export function BaseBlockNode({
         }}
       >
         {/* Main content */}
-        {children}
+        <div className="grow">
+          {children}
+        </div>
 
         {/* Footer with play button */}
         {(onPlay || footerLeftContent || models) && (
           <div
-            className="flex items-center justify-between px-3 py-2 border-t"
+            className="flex items-center justify-between px-3 py-2 border-t h-[45px]"
             style={{ borderColor: "var(--border-subtle)" }}
           >
             {/* Left content - model selector or custom content */}

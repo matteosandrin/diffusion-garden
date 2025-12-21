@@ -274,14 +274,14 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     >
       {/* Content section */}
       <div
-        className={`px-3 py-2 border-b ${selected ? "nowheel nodrag" : ""}`}
+        className={`h-full px-3 py-2 border-b ${selected ? "nowheel nodrag" : ""}`}
         style={{ borderColor: "var(--border-subtle)" }}
       >
         <AutoResizeTextarea
           value={blockData.content}
           onChange={handleContentChange}
           rows={3}
-          minHeight="180px"
+          height="100%"
           style={{ color: "var(--text-primary)" }}
         />
       </div>

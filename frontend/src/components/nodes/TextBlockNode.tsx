@@ -268,7 +268,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       runButtonTitle="Execute prompt"
       prompt={blockData.prompt}
       onPromptChange={handlePromptChange}
-      promptPlaceholder="Enter your prompt here..."
+      promptPlaceholder="Let your prompt imagination run wild..."
       autoRun={blockData.autoRun}
       onAutoRunComplete={handleAutoRunComplete}
     >

@@ -40,13 +40,12 @@ interface BaseBlockNodeProps {
   promptReadonly?: boolean;
   accentColor?: string;
   blockType?: "text" | "image";
-  // Model dropdown props
   models?: ModelOption[];
   selectedModel?: string;
   onModelChange?: (model: string) => void;
-  // Auto-run props
   autoRun?: boolean;
   onAutoRunComplete?: () => void;
+  hasContent?: boolean;
 }
 
 export function BaseBlockNode({
@@ -71,6 +70,7 @@ export function BaseBlockNode({
   onModelChange,
   autoRun,
   onAutoRunComplete,
+  hasContent = false,
 }: BaseBlockNodeProps) {
   const { deleteNode } = useCanvasStore();
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
@@ -187,7 +187,7 @@ export function BaseBlockNode({
       )}
 
       <div
-        className={`relative w-[280px] ${blockType === "text" ? "h-[280px]" : ""} rounded-xl transition-all duration-200 overflow-hidden flex flex-col`}
+        className={`relative w-[280px] ${blockType === "text" || (!hasContent && blockType === "image") ? "h-[280px]" : ""} rounded-xl transition-all duration-200 overflow-hidden flex flex-col`}
         style={{
           background: "var(--bg-card)",
           border: `1px solid ${status === "running" ? "rgba(255, 255, 255, 0.4)" : selected ? accentColor : "var(--border-subtle)"}`,

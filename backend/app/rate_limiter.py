@@ -9,7 +9,7 @@ from starlette.responses import JSONResponse
 
 def get_client_ip(request: Request) -> str:
     """Extract client IP address from request.
-    
+
     Checks X-Forwarded-For header first for proxy support,
     falls back to direct client IP.
     """
@@ -36,4 +36,3 @@ async def rate_limit_exceeded_handler(
         },
         headers={"Retry-After": str(exc.detail)},
     )
-

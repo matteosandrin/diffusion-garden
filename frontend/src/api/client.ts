@@ -16,6 +16,20 @@ import type {
 const API_HOST = import.meta.env.VITE_API_HOST || "";
 const API_BASE = API_HOST + "/api";
 
+function addApiHost(url?: string | null): string | null {
+  if (!url) return null;
+  if (url && url.startsWith(API_HOST)) {
+    return url;
+  }
+  return `${API_HOST}${url}`;
+}
+const stripApiHost = (url: string): string => {
+  if (API_HOST && url.startsWith(API_HOST)) {
+    return url.slice(API_HOST.length);
+  }
+  return url;
+};
+
 // Generic fetch wrapper with error handling
 async function apiFetch<T>(
   endpoint: string,
@@ -45,21 +59,24 @@ export const canvasApi = {
     const response = await apiFetch<CanvasSummary[]>("/canvas");
     return response.map((canvas: CanvasSummary) => ({
       ...canvas,
-      thumbnailUrl: canvas.thumbnailUrl ? `${API_HOST}${canvas.thumbnailUrl}` : null,
+      thumbnailUrl: addApiHost(canvas.thumbnailUrl),
     })) as unknown as CanvasSummary[];
   },
 
   create: () => apiFetch<{ id: string }>("/canvas", { method: "POST" }),
 
-  load: (id: string) => apiFetch<CanvasState>(`/canvas/${id}`),
+  load: async (id: string) => {
+    const response = await apiFetch<CanvasState>(`/canvas/${id}`);
+    return {
+      ...response,
+      nodes: response.nodes?.map((node: AppNode) => ({
+        ...node,
+        data: { ...node.data, imageUrl: addApiHost(node.data?.imageUrl as string | null) },
+      })),
+    } as CanvasState;
+  },
 
   save: (id: string, state: Partial<CanvasState>) => {
-    const stripApiHost = (url: string): string => {
-      if (API_HOST && url.startsWith(API_HOST)) {
-        return url.slice(API_HOST.length);
-      }
-      return url;
-    };
     const newState: Partial<CanvasState> = {
       ...state,
       nodes: state.nodes?.map((node: AppNode) => {
@@ -127,7 +144,7 @@ export const toolsApi = {
         }),
       },
     );
-    response.imageUrl = `${API_HOST}${response.imageUrl}`;
+    response.imageUrl = addApiHost(response.imageUrl) ?? "";
     return response;
   },
 };
@@ -153,7 +170,7 @@ export const imageApi = {
     }
 
     const data = await response.json();
-    data.imageUrl = `${API_HOST}${data.imageUrl}`;
+    data.imageUrl = addApiHost(data.imageUrl) ?? "";
     return data;
   },
 };

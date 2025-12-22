@@ -87,15 +87,18 @@ export const toolsApi = {
     const imageUrls = input
       ?.filter((item) => item.type === "image")
       .map((item) => item.url);
-    const response = await apiFetch<GenerateImageResponse>("/tools/generate-image", {
-      method: "POST",
-      body: JSON.stringify({
-        prompt,
-        image_urls: imageUrls,
-        model,
-        is_variation: isVariation,
-      }),
-    });
+    const response = await apiFetch<GenerateImageResponse>(
+      "/tools/generate-image",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          prompt,
+          image_urls: imageUrls,
+          model,
+          is_variation: isVariation,
+        }),
+      },
+    );
     response.imageUrl = `${API_HOST}${response.imageUrl}`;
     return response;
   },

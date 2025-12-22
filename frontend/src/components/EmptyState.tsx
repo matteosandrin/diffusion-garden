@@ -21,24 +21,11 @@ export function EmptyState() {
             "linear-gradient(180deg, var(--bg-card) 0%, transparent 100%)",
         }}
       >
-        {/* Icon */}
-        <div
-          className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6"
-          style={{
-            background: "var(--gradient-primary)",
-            boxShadow: "0 8px 32px rgba(255, 255, 255, 0.2)",
-          }}
-        >
-          <Sparkles size={32} color="black" />
-        </div>
-
-        {/* Title */}
-        <h2
-          className="text-2xl font-bold mb-2"
-          style={{ color: "var(--text-primary)" }}
-        >
-          Start creating
-        </h2>
+        <h1 className="text-4xl font-bold mb-4 flex flex-row items-center justify-center gap-3" style={{ color: "var(--text-primary)" }}>
+          <span className="text-2xl">🌻</span>
+          <span className="">diffusion.garden</span>
+          <span className="text-2xl">🌻</span>
+        </h1>
 
         {/* Description */}
         <p
@@ -76,7 +63,7 @@ export function EmptyState() {
             onClick={handleAddImage}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
             style={{
-              background: "var(--accent-secondary)",
+              background: "var(--accent-primary)",
               color: "black",
             }}
             onMouseEnter={(e) => {

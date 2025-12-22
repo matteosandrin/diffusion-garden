@@ -285,7 +285,7 @@ export function BaseBlockNode({
       {/* Prompt bubble - slides out from under the block when selected */}
       {(prompt !== undefined || onPromptChange) && (
         <div
-          className="nowheel absolute left-0 top-full -mt-8 w-full px-3 pt-8 pb-2 rounded-b-xl transition-all duration-300 ease-out"
+          className="nowheel nodrag absolute left-0 top-full -mt-8 w-full px-3 pt-8 pb-2 rounded-b-xl transition-all duration-300 ease-out"
           style={{
             background: "var(--bg-card)",
             border: "1px solid var(--border-subtle)",
@@ -312,6 +312,7 @@ export function BaseBlockNode({
                 : "var(--text-primary)",
               cursor: promptReadonly ? "default" : "text",
             }}
+            className="nowheel nodrag"
           />
         </div>
       )}

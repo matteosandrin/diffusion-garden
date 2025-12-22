@@ -274,7 +274,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     >
       {/* Content section */}
       <div
-        className={`px-3 py-2 border-b ${selected ? "nowheel" : ""}`}
+        className={`px-3 py-2 border-b ${selected ? "nowheel nodrag" : ""}`}
         style={{ borderColor: "var(--border-subtle)" }}
       >
         <AutoResizeTextarea

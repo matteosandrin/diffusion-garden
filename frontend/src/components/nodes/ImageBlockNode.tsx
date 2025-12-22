@@ -187,14 +187,18 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
 
     // Create 4 new image blocks
     const newBlockIds = gridPositions.map((position) => {
-      return addImageBlock(position, {
-        model: blockData.model || models.defaultImageModel,
-        source: "generated",
-        status: "idle",
-        autoRun: true,
-        prompt: blockData.prompt, // Pass prompt directly for autoRun to work
-        variation: true,
-      }, true);
+      return addImageBlock(
+        position,
+        {
+          model: blockData.model || models.defaultImageModel,
+          source: "generated",
+          status: "idle",
+          autoRun: true,
+          prompt: blockData.prompt, // Pass prompt directly for autoRun to work
+          variation: true,
+        },
+        true,
+      );
     });
 
     // Connect each new image block to all input text blocks

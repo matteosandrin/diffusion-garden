@@ -138,6 +138,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         sourceBlockId: id,
         autoRun: true,
       },
+      true,
     );
 
     // Connect current text block to new text block
@@ -193,7 +194,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         autoRun: true,
         prompt: blockData.prompt, // Pass prompt directly for autoRun to work
         variation: true,
-      });
+      }, true);
     });
 
     // Connect each new image block to all input text blocks

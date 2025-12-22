@@ -43,6 +43,8 @@ interface CanvasStore {
   isSaving: boolean;
   lastSaved: Date | null;
 
+  defaultBlockSize: { width: number; height: number };
+
   // Node actions
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
@@ -50,15 +52,18 @@ interface CanvasStore {
 
   // Position helpers
   getViewportCenter: () => { x: number; y: number };
+  getBlockPosition: (position?: { x: number; y: number }, upperLeftCorner?: boolean) => { x: number; y: number };
 
   // Block CRUD
   addTextBlock: (
     position?: { x: number; y: number },
     data?: Partial<TextBlockData>,
+    upperLeftCorner?: boolean,
   ) => string;
   addImageBlock: (
     position?: { x: number; y: number },
     data?: Partial<ImageBlockData>,
+    upperLeftCorner?: boolean,
   ) => string;
   addTextBlockWithEdge: (
     position: { x: number; y: number },
@@ -120,6 +125,9 @@ interface CanvasStore {
   getInputBlockContent: (nodeId: string) => InputContentItem[];
 }
 
+const BLOCK_WIDTH = 280;
+const BLOCK_HEIGHT = 280;
+
 // Helper to generate unique IDs
 const generateId = () =>
   `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -149,6 +157,7 @@ export const useCanvasStore = create<CanvasStore>()(
     prompts: {},
     isSaving: false,
     lastSaved: null,
+    defaultBlockSize: { width: BLOCK_WIDTH, height: BLOCK_HEIGHT },
 
     // React Flow change handlers
     onNodesChange: (changes) => {
@@ -194,10 +203,18 @@ export const useCanvasStore = create<CanvasStore>()(
       return { x: centerX, y: centerY };
     },
 
-    addTextBlock: (position, data) => {
+    getBlockPosition: (position, upperLeftCorner=false) => {
+      const referencePosition = position || get().getViewportCenter();
+      return upperLeftCorner ? referencePosition : {
+        x: referencePosition.x - BLOCK_WIDTH / 2,
+        y: referencePosition.y - BLOCK_HEIGHT / 2,
+      };
+    },
+
+    addTextBlock: (position, data, upperLeftCorner=false) => {
       const id = generateId();
-      const { settings } = get();
-      const blockPosition = position || get().getViewportCenter();
+      const { settings, getBlockPosition } = get();
+      const blockPosition = getBlockPosition(position, upperLeftCorner);
 
       const newNode: AppNode = {
         id,
@@ -225,10 +242,10 @@ export const useCanvasStore = create<CanvasStore>()(
       return id;
     },
 
-    addImageBlock: (position, data) => {
+    addImageBlock: (position, data, upperLeftCorner=false) => {
       const id = generateId();
-      const { settings } = get();
-      const blockPosition = position || get().getViewportCenter();
+      const { settings, getBlockPosition } = get();
+      const blockPosition = getBlockPosition(position, upperLeftCorner);
 
       const newNode: AppNode = {
         id,

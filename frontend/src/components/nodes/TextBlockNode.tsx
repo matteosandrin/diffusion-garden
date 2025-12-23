@@ -5,6 +5,7 @@ import {
   ListChevronsUpDown,
   SeparatorHorizontal,
   Shuffle,
+  RefreshCw,
 } from "lucide-react";
 import type { TextBlockData, TextModel } from "../../types";
 import { useCanvasStore } from "../../store/canvasStore";
@@ -97,6 +98,39 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       },
       {
         prompt: store.prompts.twist,
+        sourceBlockId: id,
+        autoRun: true,
+      },
+      true,
+    );
+
+    // Connect current text block to new text block
+    store.onConnect({
+      source: id,
+      target: newBlockId,
+      sourceHandle: null,
+      targetHandle: null,
+    });
+  }, [id, blockData.content, addTextBlock]);
+
+  const handleReimagine = useCallback(async () => {
+    if (!blockData.content.trim()) return;
+
+    // Get current node position
+    const store = useCanvasStore.getState();
+    const currentNode = store.nodes.find((n) => n.id === id);
+    if (!currentNode) return;
+
+    const currentNodeWidth = currentNode.width || 280;
+
+    // Create new text block with reimagine prompt
+    const newBlockId = addTextBlock(
+      {
+        x: currentNode.position.x + currentNodeWidth + 60,
+        y: currentNode.position.y,
+      },
+      {
+        prompt: store.prompts.reimagine,
         sourceBlockId: id,
         autoRun: true,
       },
@@ -242,6 +276,15 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
             title="Twist"
           >
             <Shuffle size={16} />
+          </BlockToolbarButton>
+          <BlockToolbarButton
+            onClick={handleReimagine}
+            disabled={
+              blockData.status === "running" || !blockData.content.trim()
+            }
+            title="Reimagine"
+          >
+            <RefreshCw size={16} />
           </BlockToolbarButton>
           <BlockToolbarButton
             onClick={handleSplit}

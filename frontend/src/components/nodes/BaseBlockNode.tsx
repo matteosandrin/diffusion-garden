@@ -330,7 +330,7 @@ export function BaseBlockNode({
             {/* Shimmer placeholder overlay */}
             {!prompt && !promptReadonly && (
               <div
-                className="shimmer-placeholder-overlay absolute top-0 left-0 right-0 text-xs pr-1"
+                className="shimmer-placeholder-overlay absolute -top-px left-0 right-0 text-xs pr-1"
                 style={{
                   lineHeight: "1.5",
                 }}

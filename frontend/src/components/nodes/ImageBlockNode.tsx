@@ -1,6 +1,6 @@
 import { memo, useCallback, useState, useRef, useEffect } from "react";
 import { type NodeProps } from "@xyflow/react";
-import { PilcrowRight, Upload, LayoutGrid } from "lucide-react";
+import { PilcrowRight, Upload, LayoutGrid, Braces } from "lucide-react";
 import type { ImageBlockData, ImageModel } from "../../types";
 import { useCanvasStore } from "../../store/canvasStore";
 import { toolsApi, imageApi } from "../../api/client";
@@ -142,6 +142,40 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     );
 
     // Connect current text block to new text block
+    store.onConnect({
+      source: id,
+      target: newBlockId,
+      sourceHandle: null,
+      targetHandle: null,
+    });
+  }, [id, blockData.imageUrl, addTextBlock]);
+
+  const handleImageToJson = useCallback(async () => {
+    if (!blockData.imageUrl) return;
+
+    // Get current node position
+    const store = useCanvasStore.getState();
+    const currentNode = store.nodes.find((n) => n.id === id);
+    if (!currentNode) return;
+
+    const currentNodeWidth = currentNode.width || 280;
+
+    // Create new text block with image-to-JSON prompt
+    const newBlockId = addTextBlock(
+      {
+        x: currentNode.position.x + currentNodeWidth + 60,
+        y: currentNode.position.y,
+      },
+      {
+        prompt: store.prompts.image_to_json,
+        model: models.textModels.find((model) => model.id === "gpt-5.1")?.id,
+        sourceBlockId: id,
+        autoRun: true,
+      },
+      true,
+    );
+
+    // Connect current image block to new text block
     store.onConnect({
       source: id,
       target: newBlockId,
@@ -311,6 +345,13 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
               title="Describe"
             >
               <PilcrowRight size={16} />
+            </BlockToolbarButton>
+            <BlockToolbarButton
+              onClick={handleImageToJson}
+              disabled={blockData.status === "running" || !blockData.imageUrl}
+              title="Image to JSON"
+            >
+              <Braces size={16} />
             </BlockToolbarButton>
           </>
         }

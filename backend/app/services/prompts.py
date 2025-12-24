@@ -1,5 +1,6 @@
 import os
 
+
 def _read_prompt_file(filename):
     dir_path = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(dir_path, filename)
@@ -10,6 +11,7 @@ def _read_prompt_file(filename):
         raise FileNotFoundError(
             f"Prompt file '{filename}' not found at '{full_path}'."
         ) from e
+
 
 describe_prompt = """Describe this image in rich, detailed prose suitable as a creative prompt or comprehensive alt text. 
 Include: 

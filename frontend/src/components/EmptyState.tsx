@@ -21,7 +21,10 @@ export function EmptyState() {
             "linear-gradient(180deg, var(--bg-card) 0%, transparent 100%)",
         }}
       >
-        <h1 className="text-4xl font-bold mb-4 flex flex-row items-center justify-center gap-3" style={{ color: "var(--text-primary)" }}>
+        <h1
+          className="text-4xl font-bold mb-4 flex flex-row items-center justify-center gap-3"
+          style={{ color: "var(--text-primary)" }}
+        >
           <span className="text-2xl">🌻</span>
           <span className="">diffusion.garden</span>
           <span className="text-2xl">🌻</span>

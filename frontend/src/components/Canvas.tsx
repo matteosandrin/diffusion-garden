@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
   ReactFlow,
@@ -39,7 +39,7 @@ const edgeTypes = {
 export function Canvas() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const connectingNodeId = useRef<string | null>(null);
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, setCenter } = useReactFlow();
 
   const {
     nodes,
@@ -47,6 +47,7 @@ export function Canvas() {
     defaultBlockSize,
     contextMenu,
     edgeDropMenu,
+    pendingCenterNodeId,
     onNodesChange,
     onEdgesChange,
     onConnect,
@@ -59,6 +60,7 @@ export function Canvas() {
     setContextMenu,
     setEdgeDropMenu,
     closeMenus,
+    setPendingCenterNodeId,
   } = useCanvasStore(
     useShallow((state) => ({
       nodes: state.nodes,
@@ -66,6 +68,7 @@ export function Canvas() {
       defaultBlockSize: state.defaultBlockSize,
       contextMenu: state.contextMenu,
       edgeDropMenu: state.edgeDropMenu,
+      pendingCenterNodeId: state.pendingCenterNodeId,
       onNodesChange: state.onNodesChange,
       onEdgesChange: state.onEdgesChange,
       onConnect: state.onConnect,
@@ -78,11 +81,32 @@ export function Canvas() {
       setContextMenu: state.setContextMenu,
       setEdgeDropMenu: state.setEdgeDropMenu,
       closeMenus: state.closeMenus,
+      setPendingCenterNodeId: state.setPendingCenterNodeId,
     })),
   );
 
   // Pending edge state (frozen edge shown until user clicks)
   const [pendingEdge, setPendingEdge] = useState<PendingEdge | null>(null);
+
+  // Center viewport on newly created block
+  useEffect(() => {
+    console.log("pendingCenterNodeId:", pendingCenterNodeId);
+    if (pendingCenterNodeId) {
+      const node = nodes.find((n) => n.id === pendingCenterNodeId);
+      if (node) {
+        // Calculate center of the block
+        const nodeWidth = node.measured?.width ?? defaultBlockSize.width;
+        const nodeHeight = node.measured?.height ?? defaultBlockSize.height;
+        const centerX = node.position.x + nodeWidth / 2;
+        const centerY = node.position.y + nodeHeight / 2;
+
+        // Center viewport on the block with smooth animation
+        setCenter(centerX, centerY, { duration: 300, zoom: 1.5 });
+      }
+      // Clear the pending center
+      setPendingCenterNodeId(null);
+    }
+  }, [pendingCenterNodeId, nodes, defaultBlockSize, setCenter, setPendingCenterNodeId]);
 
   // Handle selection changes
   const onSelectionChange = useCallback(

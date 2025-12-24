@@ -314,7 +314,36 @@ function AppContent() {
         }}
       />
       <Canvas />
-      {isEmpty && <EmptyState />}
+      {isEmpty ? (
+        <EmptyState />
+      ) : (
+        // App title chip
+        <div
+          className="absolute left-1/2 -translate-x-1/2"
+          style={{ top: 16, zIndex: 10 }}
+        >
+          <div
+            className="px-4 py-1.5 rounded-full backdrop-blur-md flex items-center justify-center gap-2"
+            style={{
+              background: "rgba(26, 26, 26, 0.7)",
+              border: "1px solid var(--border-subtle)",
+              boxShadow: "0 2px 12px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            <span className="text-xl">🌻</span>
+            <a
+              href="/"
+              className="text-2xl font-bold hover:underline"
+              style={{
+                color: "var(--text-primary)",
+              }}
+            >
+              diffusion.garden
+            </a>
+            <span className="text-xl">🌻</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Any
+import os
 from ..database import get_db
-from ..models import Canvas
+from ..models import Canvas, Image
+from ..config import get_settings
 
 router = APIRouter(prefix="/canvas", tags=["canvas"])
 
@@ -34,6 +36,73 @@ class CanvasResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class CanvasSummary(BaseModel):
+    """Summary of a canvas for gallery listing."""
+
+    id: str
+    thumbnailUrl: str | None
+    nodeCount: int
+    createdAt: str
+    updatedAt: str
+
+
+def extract_image_ids(nodes: list[dict[str, Any]] | None) -> list[str]:
+    """Extract all image IDs from canvas nodes."""
+    if not nodes:
+        return []
+
+    image_ids = []
+    for node in nodes:
+        data = node.get("data", {})
+        if data.get("type") == "image":
+            image_id = data.get("imageId")
+            if image_id:
+                image_ids.append(image_id)
+
+    return image_ids
+
+
+def extract_thumbnail_url(nodes: list[dict[str, Any]] | None) -> str | None:
+    """Extract the first generated image URL, or if not found, any image URL from canvas nodes."""
+    if not nodes:
+        return None
+
+    # First look for a generated image
+    for node in nodes:
+        data = node.get("data", {})
+        if data.get("type") == "image" and data.get("source") == "generated":
+            image_url = data.get("imageUrl")
+            if image_url:
+                return image_url
+
+    # If not found, look for any image
+    for node in nodes:
+        data = node.get("data", {})
+        if data.get("type") == "image":
+            image_url = data.get("imageUrl")
+            if image_url:
+                return image_url
+
+    return None
+
+
+@router.get("", response_model=list[CanvasSummary])
+async def list_canvases(db: Session = Depends(get_db)):
+    """List all canvases with thumbnails."""
+    canvases = db.query(Canvas).order_by(Canvas.updated_at.desc()).all()
+
+    return [
+        CanvasSummary(
+            id=canvas.id,
+            thumbnailUrl=extract_thumbnail_url(canvas.nodes),
+            nodeCount=len(canvas.nodes) if canvas.nodes else 0,
+            createdAt=canvas.created_at.isoformat() if canvas.created_at else "",
+            updatedAt=canvas.updated_at.isoformat() if canvas.updated_at else "",
+        )
+        for canvas in canvases
+    ]
 
 
 @router.post("", response_model=dict)
@@ -85,11 +154,26 @@ async def update_canvas(
 
 @router.delete("/{canvas_id}")
 async def delete_canvas(canvas_id: str, db: Session = Depends(get_db)):
-    """Delete a canvas."""
+    """Delete a canvas and all associated images."""
     canvas = db.query(Canvas).filter(Canvas.id == canvas_id).first()
     if not canvas:
         raise HTTPException(status_code=404, detail="Canvas not found")
 
+    # Extract and delete all images associated with this canvas
+    image_ids = extract_image_ids(canvas.nodes)
+    settings = get_settings()
+
+    for image_id in image_ids:
+        image_record = db.query(Image).filter(Image.id == image_id).first()
+        if image_record:
+            # Delete file from disk
+            filepath = os.path.join(settings.images_dir, image_record.filename)
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            # Delete database record
+            db.delete(image_record)
+
+    # Delete the canvas
     db.delete(canvas)
     db.commit()
     return {"success": True}

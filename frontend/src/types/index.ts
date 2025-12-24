@@ -82,6 +82,15 @@ export interface CanvasState {
   updatedAt: string;
 }
 
+// Canvas summary for gallery listing
+export interface CanvasSummary {
+  id: string;
+  thumbnailUrl: string | null;
+  nodeCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface GenerateTextResponse {
   result: string;
 }

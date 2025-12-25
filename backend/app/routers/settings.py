@@ -10,8 +10,10 @@ settings = get_settings()
 # Available models configuration
 AVAILABLE_TEXT_MODELS = [
     {"id": "gpt-5.1", "label": "GPT-5.1"},
+    {"id": "gpt-4.1", "label": "GPT-4.1"},
+    {"id": "gpt-4.1-mini", "label": "GPT-4.1 mini"},
     {"id": "gpt-4o", "label": "GPT-4o"},
-    {"id": "gpt-4o-mini", "label": "GPT-4o Mini"},
+    {"id": "gpt-4o-mini", "label": "GPT-4o mini"},
 ]
 
 AVAILABLE_IMAGE_MODELS = [
@@ -19,7 +21,7 @@ AVAILABLE_IMAGE_MODELS = [
     {"id": "gemini-2.5-flash-image", "label": "Nano Banana"},
 ]
 
-DEFAULT_TEXT_MODEL = AVAILABLE_TEXT_MODELS[1]["id"]
+DEFAULT_TEXT_MODEL = AVAILABLE_TEXT_MODELS[0]["id"]
 DEFAULT_IMAGE_MODEL = AVAILABLE_IMAGE_MODELS[1]["id"]
 
 

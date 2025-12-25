@@ -55,7 +55,7 @@ class AIService:
 
         messages = [
             {"role": "system", "content": prompts["text_block"]},
-            {"role": "user", "content": prompt}
+            {"role": "user", "content": prompt},
         ]
 
         # Build user message content

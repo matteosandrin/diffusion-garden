@@ -106,7 +106,13 @@ export function Canvas() {
       // Clear the pending center
       setPendingCenterNodeId(null);
     }
-  }, [pendingCenterNodeId, nodes, defaultBlockSize, setCenter, setPendingCenterNodeId]);
+  }, [
+    pendingCenterNodeId,
+    nodes,
+    defaultBlockSize,
+    setCenter,
+    setPendingCenterNodeId,
+  ]);
 
   // Handle selection changes
   const onSelectionChange = useCallback(

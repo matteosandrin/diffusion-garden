@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import {
   ReactFlow,
   Background,
@@ -44,6 +45,8 @@ export function Canvas() {
     nodes,
     edges,
     defaultBlockSize,
+    contextMenu,
+    edgeDropMenu,
     onNodesChange,
     onEdgesChange,
     onConnect,
@@ -53,22 +56,30 @@ export function Canvas() {
     addImageBlock,
     addTextBlockWithEdge,
     addImageBlockWithEdge,
-  } = useCanvasStore();
-
-  // Context menu state
-  const [contextMenu, setContextMenu] = useState<{
-    x: number;
-    y: number;
-    flowPosition: { x: number; y: number };
-  } | null>(null);
-
-  // Edge drop menu state (when releasing edge on empty space)
-  const [edgeDropMenu, setEdgeDropMenu] = useState<{
-    x: number;
-    y: number;
-    flowPosition: { x: number; y: number };
-    sourceNodeId: string;
-  } | null>(null);
+    setContextMenu,
+    setEdgeDropMenu,
+    closeMenus,
+  } = useCanvasStore(
+    useShallow((state) => ({
+      nodes: state.nodes,
+      edges: state.edges,
+      defaultBlockSize: state.defaultBlockSize,
+      contextMenu: state.contextMenu,
+      edgeDropMenu: state.edgeDropMenu,
+      onNodesChange: state.onNodesChange,
+      onEdgesChange: state.onEdgesChange,
+      onConnect: state.onConnect,
+      setSelectedNodes: state.setSelectedNodes,
+      setViewport: state.setViewport,
+      addTextBlock: state.addTextBlock,
+      addImageBlock: state.addImageBlock,
+      addTextBlockWithEdge: state.addTextBlockWithEdge,
+      addImageBlockWithEdge: state.addImageBlockWithEdge,
+      setContextMenu: state.setContextMenu,
+      setEdgeDropMenu: state.setEdgeDropMenu,
+      closeMenus: state.closeMenus,
+    })),
+  );
 
   // Pending edge state (frozen edge shown until user clicks)
   const [pendingEdge, setPendingEdge] = useState<PendingEdge | null>(null);
@@ -97,15 +108,14 @@ export function Canvas() {
         flowPosition,
       });
     },
-    [screenToFlowPosition],
+    [screenToFlowPosition, setContextMenu],
   );
 
   // Close context menu when clicking elsewhere
   const onPaneClick = useCallback(() => {
-    setContextMenu(null);
-    setEdgeDropMenu(null);
+    closeMenus();
     setPendingEdge(null);
-  }, []);
+  }, [closeMenus]);
 
   // Update viewport in store when user stops moving the canvas
   const onMoveEnd = useCallback(
@@ -179,7 +189,7 @@ export function Canvas() {
 
       connectingNodeId.current = null;
     },
-    [screenToFlowPosition, nodes],
+    [screenToFlowPosition, nodes, setEdgeDropMenu],
   );
 
   // Handle context menu actions
@@ -188,14 +198,14 @@ export function Canvas() {
       addTextBlock(contextMenu.flowPosition);
       setContextMenu(null);
     }
-  }, [contextMenu, addTextBlock]);
+  }, [contextMenu, addTextBlock, setContextMenu]);
 
   const handleAddImageBlock = useCallback(() => {
     if (contextMenu) {
       addImageBlock(contextMenu.flowPosition);
       setContextMenu(null);
     }
-  }, [contextMenu, addImageBlock]);
+  }, [contextMenu, addImageBlock, setContextMenu]);
 
   // Handle edge drop menu actions
   const handleEdgeDropAddTextBlock = useCallback(() => {
@@ -208,7 +218,7 @@ export function Canvas() {
       setEdgeDropMenu(null);
       setPendingEdge(null);
     }
-  }, [edgeDropMenu, addTextBlockWithEdge]);
+  }, [edgeDropMenu, addTextBlockWithEdge, setEdgeDropMenu]);
 
   const handleEdgeDropAddImageBlock = useCallback(() => {
     if (edgeDropMenu) {
@@ -220,7 +230,7 @@ export function Canvas() {
       setEdgeDropMenu(null);
       setPendingEdge(null);
     }
-  }, [edgeDropMenu, addImageBlockWithEdge]);
+  }, [edgeDropMenu, addImageBlockWithEdge, setEdgeDropMenu]);
 
   // Default edge options
   const defaultEdgeOptions = {

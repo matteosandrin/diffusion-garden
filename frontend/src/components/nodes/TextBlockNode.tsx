@@ -15,6 +15,8 @@ import { BlockToolbarButton } from "../ui/BlockToolbarButton";
 import { AutoResizeTextarea } from "../ui/AutoResizeTextarea";
 import { splitContent } from "../../utils/splitContent";
 
+type PromptKey = "expand" | "twist" | "reimagine";
+
 function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   const blockData = data as unknown as TextBlockData;
   const {
@@ -47,104 +49,70 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     [id, updateBlockData],
   );
 
-  const handleExpand = useCallback(async () => {
-    if (!blockData.content.trim()) return;
+  const createConnectedBlock = useCallback(
+    (promptKey: PromptKey | "image") => {
+      if (!blockData.content.trim()) return;
 
-    // Get current node position
-    const store = useCanvasStore.getState();
-    const currentNode = store.nodes.find((n) => n.id === id);
-    if (!currentNode) return;
+      const store = useCanvasStore.getState();
+      const currentNode = store.nodes.find((n) => n.id === id);
+      if (!currentNode) return;
 
-    const currentNodeWidth = currentNode.width || 280;
-
-    // Create new text block with prompt
-    const newBlockId = addTextBlock(
-      {
+      const currentNodeWidth = currentNode.width || 280;
+      const newPosition = {
         x: currentNode.position.x + currentNodeWidth + 60,
         y: currentNode.position.y,
-      },
-      {
-        prompt: store.prompts.expand,
-        sourceBlockId: id,
-        autoRun: true,
-      },
-      true,
-    );
+      };
 
-    // Connect current text block to new text block
-    store.onConnect({
-      source: id,
-      target: newBlockId,
-      sourceHandle: null,
-      targetHandle: null,
-    });
-  }, [id, blockData.content, addTextBlock]);
+      const newBlockId =
+        promptKey === "image"
+          ? addImageBlock(
+              newPosition,
+              {
+                source: "generated",
+                status: "idle",
+                sourceBlockId: id,
+              },
+              true,
+            )
+          : addTextBlock(
+              newPosition,
+              {
+                prompt: store.prompts[promptKey],
+                sourceBlockId: id,
+                autoRun: true,
+              },
+              true,
+            );
 
-  const handleTwist = useCallback(async () => {
-    if (!blockData.content.trim()) return;
+      store.onConnect({
+        source: id,
+        target: newBlockId,
+        sourceHandle: null,
+        targetHandle: null,
+      });
+    },
+    [id, blockData.content, addTextBlock, addImageBlock],
+  );
 
-    // Get current node position
-    const store = useCanvasStore.getState();
-    const currentNode = store.nodes.find((n) => n.id === id);
-    if (!currentNode) return;
+  const handleExpand = useCallback(
+    () => createConnectedBlock("expand"),
+    [createConnectedBlock],
+  );
 
-    const currentNodeWidth = currentNode.width || 280;
+  const handleTwist = useCallback(
+    () => createConnectedBlock("twist"),
+    [createConnectedBlock],
+  );
 
-    // Create new text block with twist prompt
-    const newBlockId = addTextBlock(
-      {
-        x: currentNode.position.x + currentNodeWidth + 60,
-        y: currentNode.position.y,
-      },
-      {
-        prompt: store.prompts.twist,
-        sourceBlockId: id,
-        autoRun: true,
-      },
-      true,
-    );
+  const handleReimagine = useCallback(
+    () => createConnectedBlock("reimagine"),
+    [createConnectedBlock],
+  );
 
-    // Connect current text block to new text block
-    store.onConnect({
-      source: id,
-      target: newBlockId,
-      sourceHandle: null,
-      targetHandle: null,
-    });
-  }, [id, blockData.content, addTextBlock]);
-
-  const handleReimagine = useCallback(async () => {
-    if (!blockData.content.trim()) return;
-
-    // Get current node position
-    const store = useCanvasStore.getState();
-    const currentNode = store.nodes.find((n) => n.id === id);
-    if (!currentNode) return;
-
-    const currentNodeWidth = currentNode.width || 280;
-
-    // Create new text block with reimagine prompt
-    const newBlockId = addTextBlock(
-      {
-        x: currentNode.position.x + currentNodeWidth + 60,
-        y: currentNode.position.y,
-      },
-      {
-        prompt: store.prompts.reimagine,
-        sourceBlockId: id,
-        autoRun: true,
-      },
-      true,
-    );
-
-    // Connect current text block to new text block
-    store.onConnect({
-      source: id,
-      target: newBlockId,
-      sourceHandle: null,
-      targetHandle: null,
-    });
-  }, [id, blockData.content, addTextBlock]);
+  const handleGenerateImage = useCallback(
+    () => createConnectedBlock("image"),
+    [createConnectedBlock],
+  );
 
   const handleExecute = useCallback(async () => {
     const promptToExecute = blockData.prompt?.trim();
@@ -153,7 +121,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     updateBlockStatus(id, "running");
 
     try {
-      // Get content from connected input blocks
       const inputContentItems = getInputBlockContent(id);
 
       const response = await toolsApi.generateText(
@@ -162,7 +129,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         blockData.model,
       );
 
-      // Update content with the result
       updateBlockData(id, { content: response.result });
       updateBlockStatus(id, "success");
     } catch (error) {
@@ -173,40 +139,6 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       );
     }
   }, [id, blockData, updateBlockStatus, updateBlockData, getInputBlockContent]);
-
-  const handleGenerateImage = useCallback(() => {
-    if (!blockData.content.trim()) return;
-
-    // Get current node position
-    const store = useCanvasStore.getState();
-    const currentNode = store.nodes.find((n) => n.id === id);
-    if (!currentNode) return;
-
-    const currentNodeWidth = currentNode.width || 280;
-
-    // Create new image block with prompt
-    const newBlockId = addImageBlock(
-      {
-        x: currentNode.position.x + currentNodeWidth + 60,
-        y: currentNode.position.y,
-      },
-      {
-        prompt: store.prompts.twist,
-        source: "generated",
-        status: "idle",
-        sourceBlockId: id,
-      },
-      true,
-    );
-
-    // Connect text block to image block
-    store.onConnect({
-      source: id,
-      target: newBlockId,
-      sourceHandle: null,
-      targetHandle: null,
-    });
-  }, [id, blockData.content, addImageBlock]);
 
   const handleSplit = useCallback(() => {
     const items = splitContent(blockData.content);

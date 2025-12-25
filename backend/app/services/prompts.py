@@ -1,3 +1,16 @@
+import os
+
+def _read_prompt_file(filename):
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    full_path = os.path.join(dir_path, filename)
+    try:
+        with open(full_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError as e:
+        raise FileNotFoundError(
+            f"Prompt file '{filename}' not found at '{full_path}'."
+        ) from e
+
 describe_prompt = """Describe this image in rich, detailed prose suitable as a creative prompt or comprehensive alt text. 
 Include: 
 - Main subjects and their positioning 
@@ -22,6 +35,8 @@ chosen universe, while preserving the original's emotional stakes and narrative
 logic. The result should feel like a parallel-universe version of the same
 idea—clearly related, but fresh, surprising, and self-contained."""
 
+image_to_json_prompt = _read_prompt_file("image_to_json_prompt.txt")
+
 prompts = {
     "expand": "Take the following idea and expand it into a more detailed, richer version. "
     + "Maintain the same style, tone, and intent as the original. Add depth, examples, "
@@ -31,4 +46,5 @@ prompts = {
     + "or introduce an ironic, humorous, or thought-provoking element that transforms the original.",
     "reimagine": reimagine_prompt.replace("\n", " "),
     "describe": describe_prompt,
+    "image_to_json": image_to_json_prompt,
 }

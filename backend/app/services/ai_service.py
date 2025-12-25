@@ -77,7 +77,7 @@ class AIService:
             messages.append({"role": "user", "content": input_text})
 
         response = await self.openai_client.chat.completions.create(
-            model=model, messages=messages
+            model=model, messages=messages, temperature=0.7
         )
 
         print(response)

@@ -30,7 +30,7 @@ class AIService:
             else None
         )
 
-    async def execute_prompt(
+    async def generate_text(
         self,
         prompt: str,
         input_text: str | None = None,

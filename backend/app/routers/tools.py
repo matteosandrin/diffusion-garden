@@ -8,22 +8,10 @@ from ..database import get_db
 from ..models import Image
 from ..config import get_settings
 from ..rate_limiter import limiter
+from .settings import TextModelId, ImageModelId, DEFAULT_TEXT_MODEL, DEFAULT_IMAGE_MODEL
 
 router = APIRouter(prefix="/tools", tags=["tools"])
 settings = get_settings()
-
-
-class ExpandRequest(BaseModel):
-    """Request for text expansion."""
-
-    text: str
-    model: str = "gpt-5.1"
-
-
-class ExpandResponse(BaseModel):
-    """Response from text expansion."""
-
-    result: str
 
 
 class GenerateTextRequest(BaseModel):
@@ -32,7 +20,7 @@ class GenerateTextRequest(BaseModel):
     prompt: str
     input: str | None = None
     image_urls: list[str] | None = None
-    model: str = "gpt-5.1"
+    model: TextModelId = DEFAULT_TEXT_MODEL
 
 
 class GenerateTextResponse(BaseModel):
@@ -47,7 +35,7 @@ class GenerateImageRequest(BaseModel):
     prompt: str
     input: str | None = None
     image_urls: list[str] | None = None
-    model: str = "gemini-3-pro-image-preview"
+    model: ImageModelId = DEFAULT_IMAGE_MODEL
     is_variation: bool = False
 
 
@@ -60,7 +48,7 @@ class GenerateImageResponse(BaseModel):
 
 @router.post("/generate-text", response_model=GenerateTextResponse)
 @limiter.limit("20/minute")
-async def execute_prompt(
+async def generate_text(
     request: Request,
     body: GenerateTextRequest,
     ai_service: AIService = Depends(get_ai_service),
@@ -71,7 +59,7 @@ async def execute_prompt(
     Uses OpenAI GPT models (supports vision models when images are provided).
     """
     try:
-        result = await ai_service.execute_prompt(
+        result = await ai_service.generate_text(
             body.prompt, body.input, body.image_urls, body.model
         )
         return GenerateTextResponse(result=result)

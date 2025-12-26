@@ -226,7 +226,7 @@ export function BaseBlockNode({
 
                   {isModelDropdownOpen && (
                     <div
-                      className="absolute bottom-full left-0 mb-1 py-1 rounded-lg z-10 min-w-[120px]"
+                      className="absolute bottom-full left-0 mb-1 py-1 rounded-lg z-10 min-w-fit"
                       style={{
                         background: "var(--bg-card)",
                         border: "1px solid var(--border-subtle)",
@@ -237,7 +237,7 @@ export function BaseBlockNode({
                         <button
                           key={model.id}
                           onClick={() => handleModelSelect(model.id)}
-                          className="w-full px-3 py-1.5 text-left text-xs transition-colors"
+                          className="w-full px-3 py-1.5 text-left text-xs transition-colors whitespace-nowrap"
                           style={{
                             color:
                               selectedModel === model.id

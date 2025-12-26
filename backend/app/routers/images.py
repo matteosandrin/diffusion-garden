@@ -10,7 +10,6 @@ from ..config import get_settings
 router = APIRouter(prefix="/images", tags=["images"])
 settings = get_settings()
 
-# Allowed image types
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
@@ -18,24 +17,20 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 @router.post("/upload")
 async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """Upload an image file."""
-    # Validate content type
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid file type. Allowed types: {', '.join(ALLOWED_TYPES)}",
         )
 
-    # Read file content
     content = await file.read()
 
-    # Validate file size
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=400,
             detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024*1024)}MB",
         )
 
-    # Generate unique filename
     image_id = str(uuid.uuid4())
     ext = (
         file.filename.split(".")[-1]
@@ -45,14 +40,11 @@ async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_d
     filename = f"{image_id}.{ext}"
     filepath = os.path.join(settings.images_dir, filename)
 
-    # Ensure images directory exists
     os.makedirs(settings.images_dir, exist_ok=True)
 
-    # Save file
     with open(filepath, "wb") as f:
         f.write(content)
 
-    # Create database record
     image_record = Image(
         id=image_id,
         filename=filename,
@@ -94,12 +86,10 @@ async def delete_image(image_id: str, db: Session = Depends(get_db)):
     if not image_record:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    # Delete file
     filepath = os.path.join(settings.images_dir, image_record.filename)
     if os.path.exists(filepath):
         os.remove(filepath)
 
-    # Delete database record
     db.delete(image_record)
     db.commit()
 

@@ -11,10 +11,8 @@ from .rate_limiter import limiter, rate_limit_exceeded_handler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
-    # Startup: Initialize database
     init_db()
     yield
-    # Shutdown: cleanup if needed
 
 
 app = FastAPI(
@@ -24,7 +22,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS - allow frontend origins
 allowed_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -43,11 +40,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Rate limiting
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
-# Include routers
 app.include_router(canvas_router, prefix="/api")
 app.include_router(tools_router, prefix="/api")
 app.include_router(images_router, prefix="/api")

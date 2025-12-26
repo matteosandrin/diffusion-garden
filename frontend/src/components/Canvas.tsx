@@ -25,13 +25,11 @@ import {
   type PendingEdge,
 } from "./edges/PendingEdgeOverlay";
 
-// Register custom node types
 const nodeTypes = {
   textBlock: TextBlockNode,
   imageBlock: ImageBlockNode,
 };
 
-// Register custom edge types
 const edgeTypes = {
   animated: AnimatedEdge,
 };
@@ -85,7 +83,7 @@ export function Canvas() {
     })),
   );
 
-  // Pending edge state (frozen edge shown until user clicks)
+  // Pending edge state (after draggin an edge out from a block, a pending 'frozen edge' shown as an SVG overlay until user clicks)
   const [pendingEdge, setPendingEdge] = useState<PendingEdge | null>(null);
 
   // Center viewport on newly created block
@@ -94,16 +92,13 @@ export function Canvas() {
     if (pendingCenterNodeId) {
       const node = nodes.find((n) => n.id === pendingCenterNodeId);
       if (node) {
-        // Calculate center of the block
         const nodeWidth = node.measured?.width ?? defaultBlockSize.width;
         const nodeHeight = node.measured?.height ?? defaultBlockSize.height;
         const centerX = node.position.x + nodeWidth / 2;
         const centerY = node.position.y + nodeHeight / 2;
 
-        // Center viewport on the block with smooth animation
         setCenter(centerX, centerY, { duration: 300, zoom: 1.5 });
       }
-      // Clear the pending center
       setPendingCenterNodeId(null);
     }
   }, [
@@ -114,7 +109,6 @@ export function Canvas() {
     setPendingCenterNodeId,
   ]);
 
-  // Handle selection changes
   const onSelectionChange = useCallback(
     ({ nodes: selectedNodes }: OnSelectionChangeParams) => {
       setSelectedNodes(selectedNodes.map((n) => n.id));
@@ -122,7 +116,6 @@ export function Canvas() {
     [setSelectedNodes],
   );
 
-  // Handle context menu
   const onContextMenu = useCallback(
     (event: React.MouseEvent) => {
       event.preventDefault();
@@ -141,13 +134,11 @@ export function Canvas() {
     [screenToFlowPosition, setContextMenu],
   );
 
-  // Close context menu when clicking elsewhere
   const onPaneClick = useCallback(() => {
     closeMenus();
     setPendingEdge(null);
   }, [closeMenus]);
 
-  // Update viewport in store when user stops moving the canvas
   const onMoveEnd = useCallback(
     (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {
       setViewport(viewport);
@@ -155,7 +146,6 @@ export function Canvas() {
     [setViewport],
   );
 
-  // Track when a connection starts
   const onConnectStart = useCallback(
     (_event: MouseEvent | TouchEvent, params: { nodeId: string | null }) => {
       connectingNodeId.current = params.nodeId;
@@ -163,16 +153,13 @@ export function Canvas() {
     [],
   );
 
-  // Handle when a connection ends (either connected or dropped on empty space)
   const onConnectEnd: OnConnectEnd = useCallback(
     (event) => {
-      // Check if we dropped on empty space (not on a handle)
       const targetIsPane = (event.target as Element)?.classList?.contains(
         "react-flow__pane",
       );
 
       if (targetIsPane && connectingNodeId.current) {
-        // Get the mouse position
         const mouseEvent = event as MouseEvent;
         const touchEvent = event as TouchEvent;
 
@@ -187,19 +174,15 @@ export function Canvas() {
             y: clientY,
           });
 
-          // Find the source node to get its handle position
           const sourceNode = nodes.find(
             (n) => n.id === connectingNodeId.current,
           );
           if (sourceNode) {
-            // Calculate source handle position (right side of node)
-            // Node width is 280px, handle is centered vertically
             const nodeWidth = sourceNode.measured?.width ?? 280;
             const nodeHeight = sourceNode.measured?.height ?? 150;
             const sourceX = sourceNode.position.x + nodeWidth;
             const sourceY = sourceNode.position.y + nodeHeight / 2;
 
-            // Set the pending edge (frozen edge overlay)
             setPendingEdge({
               sourceX,
               sourceY,
@@ -222,7 +205,6 @@ export function Canvas() {
     [screenToFlowPosition, nodes, setEdgeDropMenu],
   );
 
-  // Handle context menu actions
   const handleAddTextBlock = useCallback(() => {
     if (contextMenu) {
       addTextBlock(contextMenu.flowPosition);
@@ -237,7 +219,6 @@ export function Canvas() {
     }
   }, [contextMenu, addImageBlock, setContextMenu]);
 
-  // Handle edge drop menu actions
   const handleEdgeDropAddTextBlock = useCallback(() => {
     if (edgeDropMenu) {
       const centeredPosition = {
@@ -262,13 +243,11 @@ export function Canvas() {
     }
   }, [edgeDropMenu, addImageBlockWithEdge, setEdgeDropMenu]);
 
-  // Default edge options
   const defaultEdgeOptions = {
     type: "animated",
     animated: true,
   };
 
-  // MiniMap node color function
   const getNodeColor = useCallback((node: Node) => {
     if (node.type === "textBlock") return "var(--accent-primary)";
     if (node.type === "imageBlock") return "var(--accent-secondary)";
@@ -300,8 +279,8 @@ export function Canvas() {
         deleteKeyCode={["Backspace", "Delete"]}
         multiSelectionKeyCode={["Shift", "Meta"]}
         selectionOnDrag
-        panOnDrag={[1, 2]} // Middle and right mouse button
-        panOnScroll={true} // Enable two-finger trackpad panning
+        panOnDrag={[1, 2]}
+        panOnScroll={true}
         selectionMode={SelectionMode.Partial}
         proOptions={{ hideAttribution: true }}
         snapToGrid={true}
@@ -326,7 +305,6 @@ export function Canvas() {
         />
       </ReactFlow>
 
-      {/* Context Menu */}
       {contextMenu && (
         <ContextMenu
           x={contextMenu.x}
@@ -337,7 +315,6 @@ export function Canvas() {
         />
       )}
 
-      {/* Edge Drop Menu */}
       {edgeDropMenu && (
         <ContextMenu
           x={edgeDropMenu.x}
@@ -351,7 +328,6 @@ export function Canvas() {
         />
       )}
 
-      {/* Pending Edge SVG Overlay - frozen edge until user clicks */}
       {pendingEdge && <PendingEdgeOverlay pendingEdge={pendingEdge} />}
     </div>
   );

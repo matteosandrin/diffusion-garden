@@ -20,7 +20,6 @@ def get_client_ip(request: Request) -> str:
     return get_remote_address(request)
 
 
-# Initialize the limiter with in-memory storage
 limiter = Limiter(key_func=get_client_ip)
 
 

@@ -24,7 +24,6 @@ function AnimatedEdgeComponent({
 
   return (
     <>
-      {/* Glow effect for selected edges */}
       {selected && (
         <BaseEdge
           path={edgePath}
@@ -37,7 +36,6 @@ function AnimatedEdgeComponent({
         />
       )}
 
-      {/* Main edge */}
       <BaseEdge
         path={edgePath}
         markerEnd={markerEnd}
@@ -49,7 +47,6 @@ function AnimatedEdgeComponent({
         }}
       />
 
-      {/* Arrow marker */}
       <svg style={{ position: "absolute", width: 0, height: 0 }}>
         <defs>
           <marker

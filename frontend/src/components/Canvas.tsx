@@ -280,6 +280,7 @@ export function Canvas() {
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
@@ -293,7 +294,7 @@ export function Canvas() {
         edgeTypes={edgeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
         fitView
-        fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
+        fitViewOptions={{ padding: 0.2, maxZoom: 1.5 }}
         minZoom={0.1}
         maxZoom={3.0}
         deleteKeyCode={["Backspace", "Delete"]}

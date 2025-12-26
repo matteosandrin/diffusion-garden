@@ -26,55 +26,86 @@ export interface ModelOption {
   label: string;
 }
 
+export interface RunConfig {
+  disabled?: boolean;
+  title?: string;
+  onPlay?: () => void;
+}
+
+export interface PromptConfig {
+  value?: string;
+  placeholder?: string;
+  readonly?: boolean;
+  onChange?: (value: string) => void;
+}
+
+export interface ModelConfig {
+  models?: ModelOption[];
+  selectedModel?: string;
+  onModelChange?: (model: string) => void;
+}
+
+export interface AutoRunConfig {
+  enabled?: boolean;
+  onComplete?: () => void;
+}
+
+export interface StyleConfig {
+  accentColor?: string;
+}
+
+export interface UIConfig {
+  toolbarButtons?: ReactNode;
+  footerLeftContent?: ReactNode;
+}
+
 interface BaseBlockNodeProps {
   id: string;
+  blockType: "text" | "image";
   selected: boolean;
   status: BlockStatus;
   error?: string;
   children: ReactNode;
-  toolbarButtons?: ReactNode;
-  footerLeftContent?: ReactNode;
-  onPlay?: () => void;
-  runButtonDisabled?: boolean;
-  runButtonTitle?: string;
-  prompt?: string;
-  onPromptChange?: (value: string) => void;
-  promptPlaceholder?: string;
-  promptReadonly?: boolean;
-  accentColor?: string;
-  blockType?: "text" | "image";
-  models?: ModelOption[];
-  selectedModel?: string;
-  onModelChange?: (model: string) => void;
-  autoRun?: boolean;
-  onAutoRunComplete?: () => void;
+  run?: RunConfig;
+  prompt?: PromptConfig;
+  model?: ModelConfig;
+  autoRun?: AutoRunConfig;
+  style?: StyleConfig;
+  ui?: UIConfig;
   hasContent?: boolean;
 }
 
 export function BaseBlockNode({
   id,
+  blockType,
   selected,
   status,
   error,
   children,
-  toolbarButtons,
-  footerLeftContent,
-  onPlay,
-  runButtonDisabled,
-  runButtonTitle = "Execute",
+  run,
   prompt,
-  onPromptChange,
-  promptPlaceholder = "Enter your prompt here...",
-  promptReadonly = false,
-  accentColor = "var(--accent-primary)",
-  blockType,
-  models,
-  selectedModel,
-  onModelChange,
+  model,
   autoRun,
-  onAutoRunComplete,
+  style,
+  ui,
   hasContent = false,
 }: BaseBlockNodeProps) {
+  const {
+    onPlay,
+    disabled: runButtonDisabled,
+    title: runButtonTitle = "Execute",
+  } = run || {};
+  const {
+    value: promptValue,
+    onChange: onPromptChange,
+    placeholder: promptPlaceholder = "Enter your prompt here...",
+    readonly: promptReadonly = false,
+  } = prompt || {};
+  const { models, selectedModel, onModelChange } = model || {};
+  const { enabled: autoRunEnabled, onComplete: onAutoRunComplete } =
+    autoRun || {};
+  const { accentColor = "var(--accent-primary)" } = style || {};
+  const { toolbarButtons, footerLeftContent } = ui || {};
   const {
     deleteNode,
     selectedNodeIds,
@@ -99,7 +130,7 @@ export function BaseBlockNode({
 
   useEffect(() => {
     if (
-      autoRun &&
+      autoRunEnabled &&
       !hasAutoRunTriggered.current &&
       status === "idle" &&
       onPlay
@@ -109,7 +140,7 @@ export function BaseBlockNode({
       onAutoRunComplete?.();
       onPlay();
     }
-  }, [autoRun, status, onPlay, onAutoRunComplete]);
+  }, [autoRunEnabled, status, onPlay, onAutoRunComplete]);
 
   useEffect(() => {
     if (nodesToRun.includes(id) && status !== "running" && onPlay) {
@@ -320,7 +351,7 @@ export function BaseBlockNode({
       </div>
 
       {/* Prompt bubble - slides out from under the block when selected */}
-      {(prompt !== undefined || onPromptChange) && (
+      {(promptValue !== undefined || onPromptChange) && (
         <div
           className="nowheel nodrag absolute left-0 top-full -mt-8 w-full px-3 pt-8 pb-2 rounded-b-xl transition-all duration-300 ease-out"
           style={{
@@ -337,7 +368,7 @@ export function BaseBlockNode({
           <div className="relative">
             <AutoResizeTextarea
               ref={promptTextareaRef}
-              value={prompt || ""}
+              value={promptValue || ""}
               onChange={(value) => onPromptChange?.(value)}
               rows={2}
               readOnly={promptReadonly}
@@ -353,7 +384,7 @@ export function BaseBlockNode({
               className="nowheel nodrag"
             />
             {/* Shimmer placeholder overlay */}
-            {!prompt && !promptReadonly && (
+            {!promptValue && !promptReadonly && (
               <div
                 className="shimmer-placeholder-overlay absolute -top-px left-0 right-0 text-xs pr-1"
                 style={{

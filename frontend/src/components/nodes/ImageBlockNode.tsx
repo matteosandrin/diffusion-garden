@@ -252,7 +252,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         return;
       }
 
-      updateBlockStatus(id, "running");
+      updateBlockStatus(id, "uploading");
 
       try {
         const result = await imageApi.upload(file);

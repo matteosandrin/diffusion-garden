@@ -118,9 +118,9 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     [createConnectedBlock],
   );
 
-  const handleExecute = useCallback(async () => {
-    const promptToExecute = blockData.prompt?.trim();
-    if (!promptToExecute) return;
+  const handleRun = useCallback(async () => {
+    const promptToRun = blockData.prompt?.trim();
+    if (!promptToRun) return;
 
     updateBlockStatus(id, "running");
 
@@ -128,7 +128,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       const inputContentItems = getInputBlockContent(id);
 
       const response = await toolsApi.generateText(
-        promptToExecute,
+        promptToRun,
         inputContentItems,
         blockData.model,
       );
@@ -139,7 +139,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       updateBlockStatus(
         id,
         "error",
-        error instanceof Error ? error.message : "Failed to execute",
+        error instanceof Error ? error.message : "Failed to run",
       );
     }
   }, [id, blockData, updateBlockStatus, updateBlockData, getInputBlockContent]);
@@ -255,8 +255,8 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       }}
       run={{
         disabled: !blockData.prompt?.trim() && !blockData.content.trim(),
-        title: "Execute prompt",
-        onPlay: handleExecute,
+        title: "Run prompt",
+        onRun: handleRun,
       }}
       prompt={{
         value: blockData.prompt,

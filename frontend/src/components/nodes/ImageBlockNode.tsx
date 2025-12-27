@@ -138,7 +138,9 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         sourceBlockId: id,
         autoRun: true,
       },
-      true,
+      {
+        upperLeftCorner: true,
+      },
     );
 
     // Connect current text block to new text block
@@ -172,7 +174,9 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         sourceBlockId: id,
         autoRun: true,
       },
-      true,
+      {
+        upperLeftCorner: true,
+      },
     );
 
     // Connect current image block to new text block
@@ -231,7 +235,10 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
           prompt: blockData.prompt, // Pass prompt directly for autoRun to work
           variation: true,
         },
-        true,
+        {
+          upperLeftCorner: true,
+          centerViewportToBlock: false,
+        }
       );
     });
 

@@ -30,6 +30,9 @@ interface CanvasStore {
   // Selection
   selectedNodeIds: string[];
 
+  // Run queue - nodes that should execute
+  nodesToRun: string[];
+
   // Settings
   settings: AppSettings;
 
@@ -107,6 +110,10 @@ interface CanvasStore {
   setSelectedNodes: (nodeIds: string[]) => void;
   clearSelection: () => void;
 
+  // Run queue
+  requestRunForNodes: (nodeIds: string[]) => void;
+  clearNodeFromRunQueue: (nodeId: string) => void;
+
   // Viewport
   setViewport: (viewport: Viewport) => void;
 
@@ -161,6 +168,7 @@ export const useCanvasStore = create<CanvasStore>()(
     edges: [],
     viewport: { x: 0, y: 0, zoom: 1 },
     selectedNodeIds: [],
+    nodesToRun: [],
     settings: {
       defaultTextModel: "",
       defaultImageModel: "",
@@ -385,6 +393,17 @@ export const useCanvasStore = create<CanvasStore>()(
 
     clearSelection: () => {
       set({ selectedNodeIds: [] });
+    },
+
+    // Run queue
+    requestRunForNodes: (nodeIds) => {
+      set({ nodesToRun: nodeIds });
+    },
+
+    clearNodeFromRunQueue: (nodeId) => {
+      set((state) => ({
+        nodesToRun: state.nodesToRun.filter((id) => id !== nodeId),
+      }));
     },
 
     // Viewport

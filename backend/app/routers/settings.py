@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Literal, get_args
 from fastapi import APIRouter
 from pydantic import BaseModel
 from ..config import get_settings
@@ -7,22 +7,37 @@ from ..services import prompts
 router = APIRouter(prefix="/settings", tags=["settings"])
 settings = get_settings()
 
-# Available models configuration
+# Define model IDs as Literal types for Pydantic validation
+TextModelId = Literal["gpt-5.1", "gpt-4.1", "gpt-4.1-mini", "gpt-4o", "gpt-4o-mini"]
+ImageModelId = Literal["gemini-3-pro-image-preview", "gemini-2.5-flash-image"]
+
+# Model labels for display
+TEXT_MODEL_LABELS = {
+    "gpt-5.1": "GPT-5.1",
+    "gpt-4.1": "GPT-4.1",
+    "gpt-4.1-mini": "GPT-4.1 mini",
+    "gpt-4o": "GPT-4o",
+    "gpt-4o-mini": "GPT-4o mini",
+}
+
+IMAGE_MODEL_LABELS = {
+    "gemini-3-pro-image-preview": "Nano Banana Pro",
+    "gemini-2.5-flash-image": "Nano Banana",
+}
+
+# Available models configuration derived from Literal types
 AVAILABLE_TEXT_MODELS = [
-    {"id": "gpt-5.1", "label": "GPT-5.1"},
-    {"id": "gpt-4.1", "label": "GPT-4.1"},
-    {"id": "gpt-4.1-mini", "label": "GPT-4.1 mini"},
-    {"id": "gpt-4o", "label": "GPT-4o"},
-    {"id": "gpt-4o-mini", "label": "GPT-4o mini"},
+    {"id": model_id, "label": TEXT_MODEL_LABELS[model_id]}
+    for model_id in get_args(TextModelId)
 ]
 
 AVAILABLE_IMAGE_MODELS = [
-    {"id": "gemini-3-pro-image-preview", "label": "Nano Banana Pro"},
-    {"id": "gemini-2.5-flash-image", "label": "Nano Banana"},
+    {"id": model_id, "label": IMAGE_MODEL_LABELS[model_id]}
+    for model_id in get_args(ImageModelId)
 ]
 
-DEFAULT_TEXT_MODEL = AVAILABLE_TEXT_MODELS[0]["id"]
-DEFAULT_IMAGE_MODEL = AVAILABLE_IMAGE_MODELS[1]["id"]
+DEFAULT_TEXT_MODEL: TextModelId = "gpt-5.1"
+DEFAULT_IMAGE_MODEL: ImageModelId = "gemini-2.5-flash-image"
 
 
 class ModelOption(BaseModel):

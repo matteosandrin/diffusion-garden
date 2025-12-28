@@ -4,6 +4,10 @@ A block-based AI canvas for rapid creative exploration. Compose ideas
 as networks of text and image blocks, connect them into directed acyclic graphs
 (DAGs), and use AI tools to branch, remix, and evolve those ideas.
 
+Check out the demo below:
+
+[![](https://github.com/matteosandrin/diffusion-garden/blob/master/img/thumbnail.png?raw=true)](https://youtu.be/iSUNGcwaHM0)
+
 ## Local Development
 
 ```bash

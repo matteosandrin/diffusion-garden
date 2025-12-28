@@ -140,7 +140,8 @@ export function BaseBlockNode({
     if (!onPlay) return;
 
     // Check if this node is part of a multi-selection
-    const isMultiSelect = selectedNodeIds.length > 1 && selectedNodeIds.includes(id);
+    const isMultiSelect =
+      selectedNodeIds.length > 1 && selectedNodeIds.includes(id);
 
     if (isMultiSelect) {
       // Queue all selected nodes for execution

@@ -238,7 +238,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         {
           upperLeftCorner: true,
           centerViewportToBlock: false,
-        }
+        },
       );
     });
 

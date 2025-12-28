@@ -15,7 +15,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import { useCanvasStore } from "../store/canvasStore";
+import { useCanvasStore, GRID_SIZE } from "../store/canvasStore";
 import { TextBlockNode } from "./nodes/TextBlockNode";
 import { ImageBlockNode } from "./nodes/ImageBlockNode";
 import { AnimatedEdge } from "./edges/AnimatedEdge";
@@ -298,11 +298,11 @@ export function Canvas() {
         selectionMode={SelectionMode.Partial}
         proOptions={{ hideAttribution: true }}
         snapToGrid={true}
-        snapGrid={[20, 20]}
+        snapGrid={[GRID_SIZE, GRID_SIZE]}
       >
         <Background
           variant={BackgroundVariant.Dots}
-          gap={20}
+          gap={GRID_SIZE}
           size={1}
           color="#888888"
         />

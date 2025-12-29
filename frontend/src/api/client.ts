@@ -1,8 +1,6 @@
 import type {
   CanvasState,
   CanvasSummary,
-  GenerateTextResponse,
-  GenerateImageResponse,
   AppSettings,
   TextModel,
   ImageModel,
@@ -10,6 +8,8 @@ import type {
   InputContentItem,
   ModelsConfig,
   AppNode,
+  CreateJobResponse,
+  Job,
 } from "../types";
 
 const API_HOST = import.meta.env.VITE_API_HOST || "";
@@ -99,56 +99,6 @@ export const canvasApi = {
     apiFetch<{ success: boolean }>(`/canvas/${id}`, { method: "DELETE" }),
 };
 
-export const toolsApi = {
-  generateText: async (
-    prompt: string,
-    input: InputContentItem[] | undefined,
-    model: TextModel,
-  ) => {
-    const textInput = input
-      ?.filter((item) => item.type === "text")
-      .map((item) => item.content)
-      .join("\n\n");
-    const imageUrls = input
-      ?.filter((item) => item.type === "image")
-      .map((item) => item.url);
-    return await apiFetch<GenerateTextResponse>("/tools/generate-text", {
-      method: "POST",
-      body: JSON.stringify({
-        prompt,
-        input: textInput,
-        image_urls: imageUrls,
-        model,
-      }),
-    });
-  },
-
-  generateImage: async (
-    prompt: string,
-    input: InputContentItem[] | undefined,
-    model: ImageModel,
-    isVariation: boolean = false,
-  ) => {
-    const imageUrls = input
-      ?.filter((item) => item.type === "image")
-      .map((item) => item.url);
-    const response = await apiFetch<GenerateImageResponse>(
-      "/tools/generate-image",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          prompt,
-          image_urls: imageUrls,
-          model,
-          is_variation: isVariation,
-        }),
-      },
-    );
-    response.imageUrl = addApiHost(response.imageUrl) ?? "";
-    return response;
-  },
-};
-
 export const imageApi = {
   upload: async (
     file: File,
@@ -189,4 +139,127 @@ export const settingsApi = {
   getPrompts: () => apiFetch<Prompts>("/settings/prompts"),
 
   getModels: () => apiFetch<ModelsConfig>("/settings/models"),
+};
+
+export interface JobStreamCallbacks {
+  onChunk?: (text: string) => void;
+  onDone: (result: {
+    text?: string;
+    imageId?: string;
+    imageUrl?: string;
+  }) => void;
+  onError: (error: string) => void;
+  onCancelled?: () => void;
+}
+
+export const jobsApi = {
+  createTextJob: async (
+    blockId: string,
+    prompt: string,
+    input: InputContentItem[] | undefined,
+    model: TextModel,
+  ): Promise<CreateJobResponse> => {
+    const textInput = input
+      ?.filter((item) => item.type === "text")
+      .map((item) => item.content)
+      .join("\n\n");
+    const imageUrls = input
+      ?.filter((item) => item.type === "image")
+      .map((item) => item.url);
+
+    return await apiFetch<CreateJobResponse>("/jobs/generate-text", {
+      method: "POST",
+      body: JSON.stringify({
+        block_id: blockId,
+        prompt,
+        input: textInput,
+        image_urls: imageUrls,
+        model,
+      }),
+    });
+  },
+
+  createImageJob: async (
+    blockId: string,
+    prompt: string,
+    input: InputContentItem[] | undefined,
+    model: ImageModel,
+    isVariation: boolean = false,
+  ): Promise<CreateJobResponse> => {
+    const imageUrls = input
+      ?.filter((item) => item.type === "image")
+      .map((item) => item.url);
+
+    return await apiFetch<CreateJobResponse>("/jobs/generate-image", {
+      method: "POST",
+      body: JSON.stringify({
+        block_id: blockId,
+        prompt,
+        image_urls: imageUrls,
+        model,
+        is_variation: isVariation,
+      }),
+    });
+  },
+
+  subscribeToJob: (
+    jobId: string,
+    callbacks: JobStreamCallbacks,
+  ): (() => void) => {
+    const eventSource = new EventSource(`${API_BASE}/jobs/${jobId}/stream`);
+
+    eventSource.addEventListener("chunk", (event) => {
+      const data = JSON.parse(event.data);
+      callbacks.onChunk?.(data.text);
+    });
+
+    eventSource.addEventListener("done", (event) => {
+      const data = JSON.parse(event.data);
+      const result = data.result;
+      if (result.imageUrl) {
+        result.imageUrl = addApiHost(result.imageUrl) ?? "";
+      }
+      callbacks.onDone(result);
+      eventSource.close();
+    });
+
+    eventSource.addEventListener("error", (event) => {
+      if (event instanceof MessageEvent) {
+        const data = JSON.parse(event.data);
+        callbacks.onError(data.error);
+      } else {
+        callbacks.onError("Connection error");
+      }
+      eventSource.close();
+    });
+
+    eventSource.addEventListener("cancelled", () => {
+      callbacks.onCancelled?.();
+      eventSource.close();
+    });
+
+    eventSource.onerror = () => {
+      // Only report error if the connection was not intentionally closed
+      if (eventSource.readyState === EventSource.CLOSED) {
+        return;
+      }
+      callbacks.onError("Connection lost");
+      eventSource.close();
+    };
+
+    // Return a cleanup function to close the connection
+    return () => {
+      eventSource.close();
+    };
+  },
+
+  cancelJob: (jobId: string) =>
+    apiFetch<{ success: boolean }>(`/jobs/${jobId}/cancel`, {
+      method: "POST",
+    }),
+
+  getJob: (jobId: string) => apiFetch<Job>(`/jobs/${jobId}`),
+
+  getJobsForBlock: (blockId: string) =>
+    apiFetch<Job[]>(`/jobs/block/${blockId}`),
 };

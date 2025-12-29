@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useRef } from "react";
 import { type NodeProps } from "@xyflow/react";
 import {
   Image,
@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import type { TextBlockData, TextModel } from "../../types";
 import { useCanvasStore } from "../../store/canvasStore";
-import { toolsApi } from "../../api/client";
+import { jobsApi } from "../../api/client";
 import { BaseBlockNode } from "./BaseBlockNode";
 import { BlockToolbarButton } from "../ui/BlockToolbarButton";
 import { AutoResizeTextarea } from "../ui/AutoResizeTextarea";
@@ -27,6 +27,8 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     getInputBlockContent,
     models,
   } = useCanvasStore();
+
+  const streamCleanupFunctionRef = useRef<(() => void) | null>(null);
 
   const handleContentChange = useCallback(
     (value: string) => {
@@ -122,27 +124,79 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     const promptToRun = blockData.prompt?.trim();
     if (!promptToRun) return;
 
+    if (streamCleanupFunctionRef.current) {
+      streamCleanupFunctionRef.current();
+      streamCleanupFunctionRef.current = null;
+    }
+
     updateBlockStatus(id, "running");
+    updateBlockData(id, { content: "" });
 
     try {
       const inputContentItems = getInputBlockContent(id);
-
-      const response = await toolsApi.generateText(
+      const { jobId } = await jobsApi.createTextJob(
+        id,
         promptToRun,
         inputContentItems,
         blockData.model,
       );
-
-      updateBlockData(id, { content: response.result });
-      updateBlockStatus(id, "success");
+      updateBlockData(id, { jobId });
+      streamCleanupFunctionRef.current = jobsApi.subscribeToJob(jobId, {
+        onChunk: (text) => {
+          updateBlockData(id, { content: text });
+        },
+        onDone: (result) => {
+          updateBlockData(id, {
+            content: result.text,
+            jobId: undefined,
+          });
+          updateBlockStatus(id, "success");
+          streamCleanupFunctionRef.current = null;
+        },
+        onError: (error) => {
+          updateBlockData(id, { jobId: undefined });
+          updateBlockStatus(id, "error", error);
+          streamCleanupFunctionRef.current = null;
+        },
+        onCancelled: () => {
+          updateBlockData(id, { jobId: undefined });
+          updateBlockStatus(id, "idle");
+          streamCleanupFunctionRef.current = null;
+        },
+      });
     } catch (error) {
+      updateBlockData(id, { jobId: undefined });
       updateBlockStatus(
         id,
         "error",
         error instanceof Error ? error.message : "Failed to run",
       );
     }
-  }, [id, blockData, updateBlockStatus, updateBlockData, getInputBlockContent]);
+  }, [
+    id,
+    blockData.prompt,
+    blockData.model,
+    updateBlockStatus,
+    updateBlockData,
+    getInputBlockContent,
+  ]);
+
+  const handleCancel = useCallback(async () => {
+    if (blockData.jobId) {
+      try {
+        await jobsApi.cancelJob(blockData.jobId);
+      } catch (error) {
+        // Canceling is best effort, so we log the error but don't interrupt
+        console.log(error);
+      }
+    }
+    if (streamCleanupFunctionRef.current) {
+      streamCleanupFunctionRef.current();
+      streamCleanupFunctionRef.current = null;
+    }
+    updateBlockData(id, { jobId: undefined });
+    updateBlockStatus(id, "idle");
+  }, [id, blockData.jobId, updateBlockData, updateBlockStatus]);
 
   const handleSplit = useCallback(() => {
     const items = splitContent(blockData.content);
@@ -257,6 +311,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         disabled: !blockData.prompt?.trim() && !blockData.content.trim(),
         title: "Run prompt",
         onRun: handleRun,
+        onCancel: handleCancel,
       }}
       prompt={{
         value: blockData.prompt,

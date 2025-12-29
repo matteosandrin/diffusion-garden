@@ -27,3 +27,21 @@ class Image(Base):
     source = Column(String(50))
     prompt = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Job(Base):
+    __tablename__ = "jobs"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    type = Column(String(20), nullable=False)  # "text" or "image"
+    status = Column(
+        String(20), nullable=False, default="pending"
+    )  # pending, running, completed, failed, cancelled
+    block_id = Column(String(50), nullable=False)  # Links to frontend block
+    request_data = Column(JSON, nullable=False)  # prompt, model, inputs
+    result_data = Column(JSON)  # Generated content
+    error = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

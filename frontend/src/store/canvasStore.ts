@@ -21,32 +21,19 @@ import type {
 } from "../types";
 
 interface CanvasStore {
-  // Canvas state
   canvasId: string | null;
   nodes: AppNode[];
   edges: AppEdge[];
   viewport: Viewport;
-
-  // Selection
   selectedNodeIds: string[];
 
-  // Run queue - nodes that should execute
+  // Run queue is used to implement the execution of nodes in parallel
   nodesToRun: string[];
-
-  // Settings
   settings: AppSettings;
-
-  // Models configuration from backend
   models: ModelsConfig;
-
-  // Prompts
   prompts: Prompts;
-
-  // UI state
   isSaving: boolean;
   lastSaved: Date | null;
-
-  // Context menu state
   contextMenu: {
     x: number;
     y: number;
@@ -58,25 +45,17 @@ interface CanvasStore {
     flowPosition: { x: number; y: number };
     sourceNodeId: string;
   } | null;
-
-  // Pending center - node to center viewport on after creation
   pendingCenterNodeId: string | null;
-
   defaultBlockSize: { width: number; height: number };
 
-  // Node actions
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   onConnect: (connection: Connection) => void;
-
-  // Position helpers
   getViewportCenter: () => { x: number; y: number };
   getBlockPosition: (
     position?: { x: number; y: number },
     upperLeftCorner?: boolean,
   ) => { x: number; y: number };
-
-  // Block CRUD
   addTextBlock: (
     position?: { x: number; y: number },
     data?: Partial<TextBlockData>,
@@ -114,54 +93,28 @@ interface CanvasStore {
   ) => void;
   deleteNode: (nodeId: string) => void;
   deleteSelectedNodes: () => void;
-
-  // Selection
   setSelectedNodes: (nodeIds: string[]) => void;
   clearSelection: () => void;
-
-  // Run queue
   requestRunForNodes: (nodeIds: string[]) => void;
   clearNodeFromRunQueue: (nodeId: string) => void;
-
-  // Viewport
   setViewport: (viewport: Viewport) => void;
-
-  // Settings
   updateSettings: (settings: Partial<AppSettings>) => void;
-
-  // Models
   setModels: (models: ModelsConfig) => void;
-
-  // Prompts
   setPrompts: (prompts: Prompts) => void;
-
-  // Canvas management
   setCanvasId: (id: string) => void;
   loadCanvas: (nodes: AppNode[], edges: AppEdge[], viewport?: Viewport) => void;
   setSaving: (isSaving: boolean) => void;
   setLastSaved: (date: Date) => void;
-
-  // Context menu actions
   setContextMenu: (menu: CanvasStore["contextMenu"]) => void;
   setEdgeDropMenu: (menu: CanvasStore["edgeDropMenu"]) => void;
   closeMenus: () => void;
-
-  // Centering
   setPendingCenterNodeId: (nodeId: string | null) => void;
-
-  // Helper to check for cycles
   wouldCreateCycle: (source: string, target: string) => boolean;
-
-  // Get ancestors and descendants for lineage highlighting
   getLineage: (nodeId: string) => {
     ancestors: string[];
     descendants: string[];
   };
-
-  // Get input blocks (blocks that connect TO this block)
   getInputBlocks: (nodeId: string) => AppNode[];
-
-  // Get content from all input blocks as typed array
   getInputBlockContent: (nodeId: string) => InputContentItem[];
 }
 
@@ -169,19 +122,16 @@ const BLOCK_WIDTH = 280;
 const BLOCK_HEIGHT = 280;
 export const GRID_SIZE = 20;
 
-// Helper to snap a position to the grid
 const snapToGrid = (position: { x: number; y: number }) => ({
   x: Math.round(position.x / GRID_SIZE) * GRID_SIZE,
   y: Math.round(position.y / GRID_SIZE) * GRID_SIZE,
 });
 
-// Helper to generate unique IDs
 const generateId = () =>
   `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 export const useCanvasStore = create<CanvasStore>()(
   subscribeWithSelector((set, get) => ({
-    // Initial state
     canvasId: null,
     nodes: [],
     edges: [],
@@ -210,7 +160,6 @@ export const useCanvasStore = create<CanvasStore>()(
     pendingCenterNodeId: null,
     defaultBlockSize: { width: BLOCK_WIDTH, height: BLOCK_HEIGHT },
 
-    // React Flow change handlers
     onNodesChange: (changes) => {
       set((state) => ({
         nodes: applyNodeChanges(changes, state.nodes) as AppNode[],
@@ -227,7 +176,6 @@ export const useCanvasStore = create<CanvasStore>()(
       const { source, target } = connection;
       if (!source || !target) return;
 
-      // Check for cycles
       if (get().wouldCreateCycle(source, target)) {
         console.warn("Connection would create a cycle");
         return;
@@ -245,10 +193,9 @@ export const useCanvasStore = create<CanvasStore>()(
       }));
     },
 
-    // Position helpers
     getViewportCenter: () => {
       const { viewport } = get();
-      // Convert screen center to flow coordinates
+      // Translate screen center to react-flow viewport center
       const centerX = (window.innerWidth / 2 - viewport.x) / viewport.zoom;
       const centerY = (window.innerHeight / 2 - viewport.y) / viewport.zoom;
       return { x: centerX, y: centerY };
@@ -417,7 +364,6 @@ export const useCanvasStore = create<CanvasStore>()(
       }));
     },
 
-    // Selection
     setSelectedNodes: (nodeIds) => {
       set({ selectedNodeIds: nodeIds });
     },
@@ -426,7 +372,6 @@ export const useCanvasStore = create<CanvasStore>()(
       set({ selectedNodeIds: [] });
     },
 
-    // Run queue
     requestRunForNodes: (nodeIds) => {
       set({ nodesToRun: nodeIds });
     },
@@ -437,19 +382,16 @@ export const useCanvasStore = create<CanvasStore>()(
       }));
     },
 
-    // Viewport
     setViewport: (viewport) => {
       set({ viewport });
     },
 
-    // Settings
     updateSettings: (newSettings) => {
       set((state) => ({
         settings: { ...state.settings, ...newSettings },
       }));
     },
 
-    // Models
     setModels: (models) => {
       set({
         models,
@@ -461,12 +403,10 @@ export const useCanvasStore = create<CanvasStore>()(
       });
     },
 
-    // Prompts
     setPrompts: (prompts) => {
       set({ prompts });
     },
 
-    // Canvas management
     setCanvasId: (id) => {
       set({ canvasId: id });
     },
@@ -503,26 +443,20 @@ export const useCanvasStore = create<CanvasStore>()(
       set({ pendingCenterNodeId: nodeId });
     },
 
-    // Cycle detection using DFS
     wouldCreateCycle: (source, target) => {
       const { edges } = get();
-
-      // Build adjacency list including the proposed new edge
       const adjacency = new Map<string, string[]>();
 
-      // Add existing edges
       edges.forEach((edge) => {
         const sources = adjacency.get(edge.source) || [];
         sources.push(edge.target);
         adjacency.set(edge.source, sources);
       });
 
-      // Add the proposed edge
       const sources = adjacency.get(source) || [];
       sources.push(target);
       adjacency.set(source, sources);
 
-      // DFS to detect cycle
       const visited = new Set<string>();
       const recursionStack = new Set<string>();
 
@@ -543,7 +477,6 @@ export const useCanvasStore = create<CanvasStore>()(
         return false;
       };
 
-      // Check all nodes
       for (const node of adjacency.keys()) {
         if (!visited.has(node)) {
           if (hasCycle(node)) return true;
@@ -553,27 +486,21 @@ export const useCanvasStore = create<CanvasStore>()(
       return false;
     },
 
-    // Lineage tracking
     getLineage: (nodeId) => {
       const { edges } = get();
-
-      // Build both forward and reverse adjacency lists
       const forward = new Map<string, string[]>();
       const backward = new Map<string, string[]>();
 
       edges.forEach((edge) => {
-        // Forward: source -> targets
         const fwd = forward.get(edge.source) || [];
         fwd.push(edge.target);
         forward.set(edge.source, fwd);
 
-        // Backward: target -> sources
         const bwd = backward.get(edge.target) || [];
         bwd.push(edge.source);
         backward.set(edge.target, bwd);
       });
 
-      // Find all ancestors (BFS backward)
       const ancestors = new Set<string>();
       const ancestorQueue = [nodeId];
       while (ancestorQueue.length > 0) {
@@ -587,7 +514,6 @@ export const useCanvasStore = create<CanvasStore>()(
         }
       }
 
-      // Find all descendants (BFS forward)
       const descendants = new Set<string>();
       const descendantQueue = [nodeId];
       while (descendantQueue.length > 0) {
@@ -607,7 +533,6 @@ export const useCanvasStore = create<CanvasStore>()(
       };
     },
 
-    // Get input blocks (blocks that connect TO this block)
     getInputBlocks: (nodeId) => {
       const { edges, nodes } = get();
 
@@ -616,11 +541,9 @@ export const useCanvasStore = create<CanvasStore>()(
         .filter((edge) => edge.target === nodeId)
         .map((edge) => edge.source);
 
-      // Find corresponding nodes
       return nodes.filter((node) => inputEdgeSources.includes(node.id));
     },
 
-    // Get content from all input blocks as typed array
     getInputBlockContent: (nodeId) => {
       const inputBlocks = get().getInputBlocks(nodeId);
 

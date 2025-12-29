@@ -3,9 +3,7 @@ from pathlib import Path
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
-# Get the directory where this config file lives (backend/app/)
 _THIS_DIR = Path(__file__).resolve().parent
-# .env is in backend/, one level up from backend/app/
 _ENV_FILE = _THIS_DIR.parent / ".env"
 
 

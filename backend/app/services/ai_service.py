@@ -16,14 +16,12 @@ class AIService:
     """Service for AI operations using OpenAI and Gemini."""
 
     def __init__(self):
-        # Initialize OpenAI client
         self.openai_client = (
             AsyncOpenAI(api_key=settings.openai_api_key)
             if settings.openai_api_key
             else None
         )
 
-        # Initialize Gemini client
         self.gemini_client = (
             genai.Client(api_key=settings.google_api_key)
             if settings.google_api_key
@@ -58,16 +56,12 @@ class AIService:
             {"role": "user", "content": prompt},
         ]
 
-        # Build user message content
         if image_urls:
-            # When images are provided, use array format for content
             content = []
 
-            # Add text if provided
             if input_text:
                 content.append({"type": "text", "text": input_text})
 
-            # Fetch and convert all images to base64
             for image_url in image_urls:
                 image_base64 = await self._load_image_as_base64(image_url)
                 content.append(
@@ -76,7 +70,6 @@ class AIService:
 
             messages.append({"role": "user", "content": content})
         elif input_text:
-            # When only text is provided, use simple string format
             messages.append({"role": "user", "content": input_text})
 
         response = await self.openai_client.chat.completions.create(
@@ -112,19 +105,15 @@ class AIService:
         if not self.gemini_client:
             raise ValueError("Google API key not configured")
 
-        # Build contents array with text and optional images
         contents = []
 
-        # Add text prompt and input if provided
         if prompt:
             contents.append(genai.types.Part.from_text(text=prompt))
         if input:
             contents.append(genai.types.Part.from_text(text=input))
 
-        # Add images if provided
         if image_urls:
             for image_url in image_urls:
-                # Load image as base64 data URL
                 image_bytes, content_type = await self._load_image_as_bytes(image_url)
                 contents.append(
                     genai.types.Part.from_bytes(
@@ -133,7 +122,6 @@ class AIService:
                     )
                 )
 
-        # Build config with optional random seed for variations
         config_kwargs = {"response_modalities": ["IMAGE"]}
         if is_variation:
             config_kwargs["seed"] = random.randint(0, 2147483647)
@@ -154,8 +142,7 @@ class AIService:
 
         for part in response.candidates[0].content.parts:
             try:
-                # Check if part has inline_data with mime_type
-                mime_type = "image/png"  # Default to PNG
+                mime_type = "image/png"
                 if hasattr(part, "inline_data") and part.inline_data is not None:
                     if (
                         hasattr(part.inline_data, "mime_type")
@@ -196,16 +183,13 @@ class AIService:
             Bytes of the image
         """
         try:
-            # Determine the file path
             filepath = None
 
             # Check if it's an API URL (e.g., /api/images/{image_id} or http://.../api/images/{image_id})
             api_match = re.search(r"/api/images/([^/?]+)", image_url)
             if api_match:
                 image_id = api_match.group(1)
-                # Try to find the file by image_id (filename is {image_id}.{ext})
                 images_dir = Path(settings.images_dir)
-                # Look for files matching the image_id pattern
                 for ext in ["jpg", "jpeg", "png", "gif", "webp"]:
                     potential_path = images_dir / f"{image_id}.{ext}"
                     if potential_path.exists():
@@ -218,7 +202,6 @@ class AIService:
                     if potential_path.exists():
                         filepath = potential_path
             else:
-                # Treat as a file path
                 filepath = Path(image_url)
                 # If relative path, resolve relative to images directory
                 if not filepath.is_absolute():
@@ -227,14 +210,12 @@ class AIService:
             if filepath is None or not filepath.exists():
                 raise FileNotFoundError(f"Image file not found: {image_url}")
 
-            # Read the file from disk (using asyncio.to_thread for async file I/O)
             def read_file():
                 with open(filepath, "rb") as f:
                     return f.read()
 
             image_bytes = await asyncio.to_thread(read_file)
 
-            # Determine content type from file extension
             ext = filepath.suffix.lower()
             if ext in [".png"]:
                 content_type = "image/png"
@@ -245,7 +226,6 @@ class AIService:
             elif ext in [".jpg", ".jpeg"]:
                 content_type = "image/jpeg"
             else:
-                # Try to detect from file content using PIL
                 try:
                     img = Image.open(filepath)
                     content_type = (

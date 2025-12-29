@@ -11,22 +11,16 @@ router = APIRouter(prefix="/canvas", tags=["canvas"])
 
 
 class CanvasCreate(BaseModel):
-    """Request body for creating a canvas."""
-
     pass
 
 
 class CanvasUpdate(BaseModel):
-    """Request body for updating a canvas."""
-
     nodes: list[dict[str, Any]] | None = None
     edges: list[dict[str, Any]] | None = None
     viewport: dict[str, float] | None = None
 
 
 class CanvasResponse(BaseModel):
-    """Response body for canvas operations."""
-
     id: str
     nodes: list[dict[str, Any]]
     edges: list[dict[str, Any]]
@@ -39,8 +33,6 @@ class CanvasResponse(BaseModel):
 
 
 class CanvasSummary(BaseModel):
-    """Summary of a canvas for gallery listing."""
-
     id: str
     thumbnailUrl: str | None
     nodeCount: int
@@ -49,7 +41,6 @@ class CanvasSummary(BaseModel):
 
 
 def extract_image_ids(nodes: list[dict[str, Any]] | None) -> list[str]:
-    """Extract all image IDs from canvas nodes."""
     if not nodes:
         return []
 
@@ -159,21 +150,17 @@ async def delete_canvas(canvas_id: str, db: Session = Depends(get_db)):
     if not canvas:
         raise HTTPException(status_code=404, detail="Canvas not found")
 
-    # Extract and delete all images associated with this canvas
     image_ids = extract_image_ids(canvas.nodes)
     settings = get_settings()
 
     for image_id in image_ids:
         image_record = db.query(Image).filter(Image.id == image_id).first()
         if image_record:
-            # Delete file from disk
             filepath = os.path.join(settings.images_dir, image_record.filename)
             if os.path.exists(filepath):
                 os.remove(filepath)
-            # Delete database record
             db.delete(image_record)
 
-    # Delete the canvas
     db.delete(canvas)
     db.commit()
     return {"success": True}

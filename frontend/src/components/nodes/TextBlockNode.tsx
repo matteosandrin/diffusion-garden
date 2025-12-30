@@ -51,6 +51,37 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     [id, updateBlockData],
   );
 
+  const handleJobChunk = useCallback(
+    (text: string) => {
+      updateBlockData(id, { content: text });
+    },
+    [id, updateBlockData],
+  );
+
+  const handleJobDone = useCallback(
+    (result: { text?: string }) => {
+      updateBlockData(id, { content: result.text, jobId: undefined });
+      updateBlockStatus(id, "success");
+      streamCleanupFunctionRef.current = null;
+    },
+    [id, updateBlockData, updateBlockStatus],
+  );
+
+  const handleJobError = useCallback(
+    (error: string) => {
+      updateBlockData(id, { jobId: undefined });
+      updateBlockStatus(id, "error", error);
+      streamCleanupFunctionRef.current = null;
+    },
+    [id, updateBlockData, updateBlockStatus],
+  );
+
+  const handleJobCancelled = useCallback(() => {
+    updateBlockData(id, { jobId: undefined });
+    updateBlockStatus(id, "idle");
+    streamCleanupFunctionRef.current = null;
+  }, [id, updateBlockData, updateBlockStatus]);
+
   const createConnectedBlock = useCallback(
     (promptKey: PromptKey | "image") => {
       if (!blockData.content.trim()) return;
@@ -142,27 +173,10 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       );
       updateBlockData(id, { jobId });
       streamCleanupFunctionRef.current = jobsApi.subscribeToJob(jobId, {
-        onChunk: (text) => {
-          updateBlockData(id, { content: text });
-        },
-        onDone: (result) => {
-          updateBlockData(id, {
-            content: result.text,
-            jobId: undefined,
-          });
-          updateBlockStatus(id, "success");
-          streamCleanupFunctionRef.current = null;
-        },
-        onError: (error) => {
-          updateBlockData(id, { jobId: undefined });
-          updateBlockStatus(id, "error", error);
-          streamCleanupFunctionRef.current = null;
-        },
-        onCancelled: () => {
-          updateBlockData(id, { jobId: undefined });
-          updateBlockStatus(id, "idle");
-          streamCleanupFunctionRef.current = null;
-        },
+        onChunk: handleJobChunk,
+        onDone: handleJobDone,
+        onError: handleJobError,
+        onCancelled: handleJobCancelled,
       });
     } catch (error) {
       updateBlockData(id, { jobId: undefined });
@@ -179,6 +193,10 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
     updateBlockStatus,
     updateBlockData,
     getInputBlockContent,
+    handleJobChunk,
+    handleJobDone,
+    handleJobError,
+    handleJobCancelled,
   ]);
 
   const handleCancel = useCallback(async () => {
@@ -250,6 +268,17 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
       style={{
         accentColor: "var(--accent-primary)",
       }}
+      jobRecovery={
+        blockData.jobId
+          ? {
+              jobId: blockData.jobId,
+              onChunk: handleJobChunk,
+              onDone: handleJobDone,
+              onError: handleJobError,
+              onCancelled: handleJobCancelled,
+            }
+          : undefined
+      }
       ui={{
         toolbarButtons: (
           <>

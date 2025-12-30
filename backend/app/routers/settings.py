@@ -2,7 +2,7 @@ from typing import Dict, List, Literal, get_args
 from fastapi import APIRouter
 from pydantic import BaseModel
 from ..config import get_settings
-from ..services import prompts
+from ..prompts import prompts
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 settings = get_settings()

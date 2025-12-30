@@ -189,72 +189,84 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
   return (
     <BaseBlockNode
       id={id}
+      blockType="text"
       selected={selected}
       status={blockData.status}
       error={blockData.error}
-      accentColor="var(--accent-primary)"
-      blockType="text"
-      toolbarButtons={
-        <>
-          <BlockToolbarButton
-            onClick={handleExpand}
-            disabled={
-              blockData.status === "running" || !blockData.content.trim()
-            }
-            title="Expand"
-          >
-            <ListChevronsUpDown size={16} />
-          </BlockToolbarButton>
-          <BlockToolbarButton
-            onClick={handleTwist}
-            disabled={
-              blockData.status === "running" || !blockData.content.trim()
-            }
-            title="Twist"
-          >
-            <Shuffle size={16} />
-          </BlockToolbarButton>
-          <BlockToolbarButton
-            onClick={handleReimagine}
-            disabled={
-              blockData.status === "running" || !blockData.content.trim()
-            }
-            title="Reimagine"
-          >
-            <RefreshCw size={16} />
-          </BlockToolbarButton>
-          <BlockToolbarButton
-            onClick={handleSplit}
-            disabled={
-              blockData.status === "running" ||
-              splitContent(blockData.content).length < 2
-            }
-            title="Split"
-          >
-            <SeparatorHorizontal size={16} />
-          </BlockToolbarButton>
-          <BlockToolbarButton
-            onClick={handleGenerateImage}
-            disabled={
-              blockData.status === "running" || !blockData.content.trim()
-            }
-            title="Generate image"
-          >
-            <Image size={16} />
-          </BlockToolbarButton>
-        </>
-      }
-      models={models.textModels}
-      selectedModel={blockData.model}
-      onModelChange={handleModelChange}
-      onPlay={handleExecute}
-      runButtonDisabled={!blockData.prompt?.trim() && !blockData.content.trim()}
-      runButtonTitle="Execute prompt"
-      prompt={blockData.prompt}
-      onPromptChange={handlePromptChange}
-      promptPlaceholder="Let your prompt imagination run wild..."
-      autoRun={blockData.autoRun}
-      onAutoRunComplete={handleAutoRunComplete}
+      style={{
+        accentColor: "var(--accent-primary)",
+      }}
+      ui={{
+        toolbarButtons: (
+          <>
+            <BlockToolbarButton
+              onClick={handleExpand}
+              disabled={
+                blockData.status === "running" || !blockData.content.trim()
+              }
+              title="Expand"
+            >
+              <ListChevronsUpDown size={16} />
+            </BlockToolbarButton>
+            <BlockToolbarButton
+              onClick={handleTwist}
+              disabled={
+                blockData.status === "running" || !blockData.content.trim()
+              }
+              title="Twist"
+            >
+              <Shuffle size={16} />
+            </BlockToolbarButton>
+            <BlockToolbarButton
+              onClick={handleReimagine}
+              disabled={
+                blockData.status === "running" || !blockData.content.trim()
+              }
+              title="Reimagine"
+            >
+              <RefreshCw size={16} />
+            </BlockToolbarButton>
+            <BlockToolbarButton
+              onClick={handleSplit}
+              disabled={
+                blockData.status === "running" ||
+                splitContent(blockData.content).length < 2
+              }
+              title="Split"
+            >
+              <SeparatorHorizontal size={16} />
+            </BlockToolbarButton>
+            <BlockToolbarButton
+              onClick={handleGenerateImage}
+              disabled={
+                blockData.status === "running" || !blockData.content.trim()
+              }
+              title="Generate image"
+            >
+              <Image size={16} />
+            </BlockToolbarButton>
+          </>
+        ),
+      }}
+      model={{
+        models: models.textModels,
+        selectedModel: blockData.model,
+        onModelChange: handleModelChange,
+      }}
+      run={{
+        disabled: !blockData.prompt?.trim() && !blockData.content.trim(),
+        title: "Execute prompt",
+        onPlay: handleExecute,
+      }}
+      prompt={{
+        value: blockData.prompt,
+        placeholder: "Let your prompt imagination run wild...",
+        onChange: handlePromptChange,
+      }}
+      autoRun={{
+        enabled: blockData.autoRun,
+        onComplete: handleAutoRunComplete,
+      }}
     >
       {/* Content section */}
       <div

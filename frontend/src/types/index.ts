@@ -32,7 +32,7 @@ export interface TextBlockData {
   error?: string;
   generatedBy?: string; // Tool that generated this block
   sourceBlockId?: string; // Parent block ID
-  autoRun?: boolean; // If true, execute immediately after creation
+  autoRun?: boolean; // If true, run immediately after creation
   [key: string]: unknown; // Index signature for React Flow compatibility
 }
 

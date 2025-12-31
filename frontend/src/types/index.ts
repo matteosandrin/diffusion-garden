@@ -1,6 +1,6 @@
 import type { Node, Edge } from "@xyflow/react";
 
-export type BlockStatus = "idle" | "running" | "success" | "error";
+export type BlockStatus = "idle" | "running" | "uploading" | "success" | "error";
 
 export type TextModel = string;
 export type ImageModel = string;

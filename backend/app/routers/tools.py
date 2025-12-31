@@ -58,9 +58,7 @@ async def generate_text(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to run prompt: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to run prompt: {str(e)}")
 
 
 @router.post("/generate-image", response_model=GenerateImageResponse)

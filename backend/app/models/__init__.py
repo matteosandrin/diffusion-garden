@@ -1,3 +1,3 @@
-from .canvas import Canvas, Image
+from .canvas import Canvas, Image, Job
 
-__all__ = ["Canvas", "Image"]
+__all__ = ["Canvas", "Image", "Job"]

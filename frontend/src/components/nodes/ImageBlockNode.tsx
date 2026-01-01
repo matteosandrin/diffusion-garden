@@ -6,6 +6,7 @@ import {
   LayoutGrid,
   Braces,
   Loader2,
+  Download,
 } from "lucide-react";
 import type { ImageBlockData, ImageModel } from "../../types";
 import { useCanvasStore } from "../../store/canvasStore";
@@ -315,6 +316,63 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
     updateBlockData(id, { autoRun: false });
   }, [id, updateBlockData]);
 
+  const handleDownload = useCallback(async () => {
+    if (!blockData.imageUrl) return;
+
+    // Helper to trigger browser download from a blob/URL and filename
+    const triggerDownload = (url: string, filename: string) => {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    };
+
+    // Helper to figure out filename from a URL
+    const getFilenameFromUrl = (url: string, fallback: string) => {
+      try {
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+          const urlObj = new URL(url);
+          const pathname = urlObj.pathname;
+          return pathname.split("/").pop() || fallback;
+        } else {
+          // Handle relative URLs or others (e.g., /api/images/123.png)
+          const pathname = url.split("?")[0]; // Remove query params
+          return pathname.split("/").pop() || fallback;
+        }
+      } catch {
+        return fallback;
+      }
+    };
+
+    try {
+      let filename = `image-${id}.png`;
+      // Handle base64 data URLs separately
+      if (blockData.imageUrl.startsWith("data:")) {
+        const response = await fetch(blockData.imageUrl);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        triggerDownload(url, filename);
+        return;
+      }
+
+      // Fetch non-data image and download w/ extracted or fallback filename
+      const response = await fetch(blockData.imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      filename = getFilenameFromUrl(blockData.imageUrl, filename);
+      triggerDownload(url, filename);
+    } catch (error) {
+      updateBlockStatus(
+        id,
+        "error",
+        error instanceof Error ? error.message : "Failed to download image",
+      );
+    }
+  }, [id, blockData.imageUrl, updateBlockStatus]);
+
   // Paste image from clipboard into image block
   useEffect(() => {
     if (!selected) return;
@@ -374,6 +432,13 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
                 title="Image to JSON"
               >
                 <Braces size={16} />
+              </BlockToolbarButton>
+              <BlockToolbarButton
+                onClick={handleDownload}
+                disabled={blockData.status === "running" || !blockData.imageUrl}
+                title="Download"
+              >
+                <Download size={16} />
               </BlockToolbarButton>
             </>
           ),

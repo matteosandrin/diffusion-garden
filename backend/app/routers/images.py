@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends, Request
+from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 import uuid
 import os
@@ -62,7 +62,11 @@ async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_d
 
 
 @router.get("/{image_id}")
-async def get_image(image_id: str, db: Session = Depends(get_db)):
+async def get_image(
+    image_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
     """Retrieve an image by ID."""
     image_record = db.query(Image).filter(Image.id == image_id).first()
     if not image_record:
@@ -72,10 +76,18 @@ async def get_image(image_id: str, db: Session = Depends(get_db)):
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="Image file not found")
 
+    # Get origin from request for CORS header
+    origin = request.headers.get("origin")
+    headers = {}
+    if origin:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+
     return FileResponse(
         filepath,
         media_type=image_record.content_type or "image/png",
         filename=image_record.original_filename or image_record.filename,
+        headers=headers,
     )
 
 

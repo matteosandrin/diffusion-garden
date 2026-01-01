@@ -278,5 +278,10 @@ export interface DailyStatsResponse {
 }
 
 export const analyticsApi = {
-  getDaily: () => apiFetch<DailyStatsResponse>("/analytics/daily"),
+  getDaily: (timezone?: string) => {
+    const url = timezone
+      ? `/analytics/daily?timezone=${encodeURIComponent(timezone)}`
+      : "/analytics/daily";
+    return apiFetch<DailyStatsResponse>(url);
+  },
 };

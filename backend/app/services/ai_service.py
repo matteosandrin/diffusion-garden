@@ -8,7 +8,7 @@ from typing import AsyncIterator
 from PIL import Image
 from openai import AsyncOpenAI
 from google import genai
-from ..prompts import prompts
+from ..prompts import get_text_system_prompt
 from ..config import get_settings
 
 settings = get_settings()
@@ -64,7 +64,7 @@ class AIService:
             raise ValueError("OpenAI API key not configured")
 
         messages = [
-            {"role": "system", "content": prompts["text_block"]},
+            {"role": "system", "content": get_text_system_prompt()},
             {"role": "user", "content": prompt},
         ]
 

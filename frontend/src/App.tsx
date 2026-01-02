@@ -1,4 +1,12 @@
 import { useEffect, useCallback, useState } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useNavigate,
+  useParams,
+  Link,
+} from "react-router-dom";
 import { ReactFlowProvider } from "@xyflow/react";
 import { Canvas } from "./components/Canvas";
 import { Toolbar } from "./components/ui/Toolbar";
@@ -10,9 +18,115 @@ import { canvasApi, settingsApi } from "./api/client";
 import { useDebouncedCallback } from "./hooks/useDebouncedCallback";
 import type { CanvasSummary } from "./types";
 
-type ViewMode = "loading" | "gallery" | "canvas" | "analytics";
+function LoadingSpinner() {
+  return (
+    <div
+      className="w-full h-full flex items-center justify-center"
+      style={{ background: "var(--bg-canvas)" }}
+    >
+      <div
+        className="w-8 h-8 border-2 rounded-full animate-spin"
+        style={{
+          borderColor: "var(--border-subtle)",
+          borderTopColor: "var(--accent-primary)",
+        }}
+      />
+    </div>
+  );
+}
 
-function AppContent() {
+function GalleryRoute() {
+  const navigate = useNavigate();
+  const [canvases, setCanvases] = useState<CanvasSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { setCanvasId, loadCanvas } = useCanvasStore();
+
+  useEffect(() => {
+    const fetchCanvases = async () => {
+      try {
+        const canvasList = await canvasApi.list();
+
+        if (canvasList.length > 0) {
+          setCanvases(canvasList);
+          setIsLoading(false);
+        } else {
+          await handleCreateNew();
+        }
+      } catch (error) {
+        console.error("Failed to fetch canvases:", error);
+        // Fallback: create new canvas
+        try {
+          await handleCreateNew();
+        } catch (createError) {
+          console.error("Failed to create canvas:", createError);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchCanvases();
+  }, [navigate, setCanvasId, loadCanvas]);
+
+  const handleSelectCanvas = async (id: string) => {
+    try {
+      const canvas = await canvasApi.load(id);
+      useCanvasStore.getState().setCanvasId(id);
+      useCanvasStore
+        .getState()
+        .loadCanvas(canvas.nodes as any, canvas.edges as any, canvas.viewport);
+      navigate(`/c/${id}`);
+    } catch (error) {
+      console.error("Failed to load canvas:", error);
+    }
+  };
+
+  const handleCreateNew = async () => {
+    try {
+      const { id: newId } = await canvasApi.create();
+      setCanvasId(newId);
+      loadCanvas([], [], { x: 0, y: 0, zoom: 1 });
+      navigate(`/c/${newId}`);
+    } catch (error) {
+      console.error("Failed to create canvas:", error);
+    }
+  };
+
+  const handleDeleteCanvas = async (id: string) => {
+    try {
+      await canvasApi.delete(id);
+      // Refresh the gallery
+      const canvasList = await canvasApi.list();
+      if (canvasList.length > 0) {
+        setCanvases(canvasList);
+      } else {
+        // No canvases left, create a new one
+        await handleCreateNew();
+      }
+    } catch (error) {
+      console.error("Failed to delete canvas:", error);
+    }
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  return (
+    <CanvasGallery
+      canvases={canvases}
+      onSelectCanvas={handleSelectCanvas}
+      onCreateNew={handleCreateNew}
+      onDeleteCanvas={handleDeleteCanvas}
+    />
+  );
+}
+
+// Canvas route component
+function CanvasRoute() {
+  const { canvasId: urlCanvasId } = useParams<{ canvasId: string }>();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+
   const {
     nodes,
     edges,
@@ -26,14 +140,36 @@ function AppContent() {
     selectedNodeIds,
     setSaving,
     setLastSaved,
-    setPrompts,
-    setModels,
     contextMenu,
     edgeDropMenu,
   } = useCanvasStore();
 
-  const [viewMode, setViewMode] = useState<ViewMode>("loading");
-  const [canvases, setCanvases] = useState<CanvasSummary[]>([]);
+  // Load canvas from URL param
+  useEffect(() => {
+    const loadCanvasFromUrl = async () => {
+      if (!urlCanvasId) {
+        navigate("/");
+        return;
+      }
+
+      // Skip if already loaded
+      if (canvasId === urlCanvasId && !isLoading) {
+        return;
+      }
+
+      try {
+        const canvas = await canvasApi.load(urlCanvasId);
+        setCanvasId(urlCanvasId);
+        loadCanvas(canvas.nodes as any, canvas.edges as any, canvas.viewport);
+        setIsLoading(false);
+      } catch (error) {
+        console.log("Canvas from URL not found");
+        navigate("/");
+      }
+    };
+
+    loadCanvasFromUrl();
+  }, [urlCanvasId, navigate, setCanvasId, loadCanvas, canvasId, isLoading]);
 
   // Auto-save with debounce
   const saveCanvas = useDebouncedCallback(
@@ -54,165 +190,20 @@ function AppContent() {
         setSaving(false);
       }
     },
-    1000, // 1 second debounce
+    1000,
     [canvasId, nodes, edges, viewport],
   );
 
   // Save on changes
   useEffect(() => {
-    if (canvasId && (nodes.length > 0 || edges.length > 0)) {
+    if (canvasId && (nodes.length > 0 || edges.length > 0) && !isLoading) {
       saveCanvas();
     }
-  }, [nodes, edges, viewport, canvasId, saveCanvas]);
+  }, [nodes, edges, viewport, canvasId, saveCanvas, isLoading]);
 
-  // Fetch prompts and models at session start
-  useEffect(() => {
-    const fetchPrompts = async () => {
-      try {
-        const prompts = await settingsApi.getPrompts();
-        setPrompts(prompts);
-      } catch (error) {
-        console.error("Failed to fetch prompts:", error);
-      }
-    };
-
-    const fetchModels = async () => {
-      try {
-        const models = await settingsApi.getModels();
-        setModels(models);
-      } catch (error) {
-        console.error("Failed to fetch models:", error);
-      }
-    };
-
-    fetchPrompts();
-    fetchModels();
-  }, [setPrompts, setModels]);
-
-  const navigateToCanvas = (id: string) => {
-    window.history.pushState({}, "", `/c/${id}`);
-  };
-
-  const navigateToGallery = () => {
-    window.history.pushState({}, "", "/");
-  };
-
-  // Extract canvas ID from URL path like /c/<id>
-  const getCanvasIdFromUrl = useCallback(() => {
-    const match = window.location.pathname.match(/^\/c\/([^/]+)/);
-    return match ? match[1] : null;
-  }, []);
-
-  // Check if we're on the analytics page
-  const isAnalyticsUrl = useCallback(() => {
-    return window.location.pathname === "/analytics";
-  }, []);
-
-  const openCanvas = async (id: string, pushHistory = true) => {
-    try {
-      const canvas = await canvasApi.load(id);
-      setCanvasId(id);
-      loadCanvas(canvas.nodes as any, canvas.edges as any, canvas.viewport);
-      if (pushHistory) {
-        navigateToCanvas(id);
-      }
-      setViewMode("canvas");
-    } catch (error) {
-      console.error("Failed to load canvas:", error);
-    }
-  };
-
-  const showGallery = async () => {
-    try {
-      const canvasList = await canvasApi.list();
-      setCanvases(canvasList);
-      setViewMode("gallery");
-    } catch (error) {
-      console.error("Failed to fetch canvases:", error);
-    }
-  };
-
-  const createNewCanvas = async () => {
-    try {
-      const { id: newId } = await canvasApi.create();
-      setCanvasId(newId);
-      loadCanvas([], [], { x: 0, y: 0, zoom: 1 });
-      navigateToCanvas(newId);
-      setViewMode("canvas");
-    } catch (error) {
-      console.error("Failed to create canvas:", error);
-    }
-  };
-
-  const deleteCanvas = async (id: string) => {
-    try {
-      await canvasApi.delete(id);
-      // Refresh the gallery
-      const canvasList = await canvasApi.list();
-      if (canvasList.length > 0) {
-        setCanvases(canvasList);
-      } else {
-        // No canvases left, create a new one
-        await createNewCanvas();
-      }
-    } catch (error) {
-      console.error("Failed to delete canvas:", error);
-    }
-  };
-
-  // Initialize app - check URL or show gallery
-  useEffect(() => {
-    const initApp = async () => {
-      // Check if analytics page
-      if (isAnalyticsUrl()) {
-        setViewMode("analytics");
-        return;
-      }
-
-      const urlCanvasId = getCanvasIdFromUrl();
-
-      // If canvas ID in URL, try to load it directly
-      if (urlCanvasId) {
-        try {
-          const canvas = await canvasApi.load(urlCanvasId);
-          setCanvasId(urlCanvasId);
-          loadCanvas(canvas.nodes as any, canvas.edges as any, canvas.viewport);
-          setViewMode("canvas");
-          return;
-        } catch (error) {
-          console.log("Canvas from URL not found");
-          navigateToGallery();
-        }
-      }
-
-      // No canvas in URL - fetch list of canvases
-      try {
-        const canvasList = await canvasApi.list();
-
-        if (canvasList.length > 0) {
-          // Show gallery if canvases exist
-          setCanvases(canvasList);
-          setViewMode("gallery");
-        } else {
-          // No canvases exist - create a new one
-          await createNewCanvas();
-        }
-      } catch (error) {
-        console.error("Failed to fetch canvases:", error);
-        // Fallback: create new canvas
-        await createNewCanvas();
-      }
-    };
-
-    initApp();
-  }, [setCanvasId, loadCanvas]);
-
-  // Keyboard shortcuts (only in canvas view)
+  // Keyboard shortcuts
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      // Only handle shortcuts in canvas view
-      if (viewMode !== "canvas") return;
-
       // Ignore if typing in an input
       if (
         e.target instanceof HTMLInputElement ||
@@ -248,7 +239,6 @@ function AppContent() {
       }
     },
     [
-      viewMode,
       addTextBlock,
       addImageBlock,
       deleteSelectedNodes,
@@ -263,72 +253,10 @@ function AppContent() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  // Handle browser back/forward navigation
-  useEffect(() => {
-    const handlePopState = async () => {
-      if (isAnalyticsUrl()) {
-        setViewMode("analytics");
-        return;
-      }
-
-      const urlCanvasId = getCanvasIdFromUrl();
-
-      if (urlCanvasId) {
-        // Navigate to canvas (without pushing to history)
-        await openCanvas(urlCanvasId, false);
-      } else {
-        // Navigate to gallery
-        await showGallery();
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [getCanvasIdFromUrl, isAnalyticsUrl]);
-
-  // Loading state
-  if (viewMode === "loading") {
-    return (
-      <div
-        className="w-full h-full flex items-center justify-center"
-        style={{ background: "var(--bg-canvas)" }}
-      >
-        <div
-          className="w-8 h-8 border-2 rounded-full animate-spin"
-          style={{
-            borderColor: "var(--border-subtle)",
-            borderTopColor: "var(--accent-primary)",
-          }}
-        />
-      </div>
-    );
+  if (isLoading) {
+    return <LoadingSpinner />;
   }
 
-  // Gallery view
-  if (viewMode === "gallery") {
-    return (
-      <CanvasGallery
-        canvases={canvases}
-        onSelectCanvas={openCanvas}
-        onCreateNew={createNewCanvas}
-        onDeleteCanvas={deleteCanvas}
-      />
-    );
-  }
-
-  // Analytics view
-  if (viewMode === "analytics") {
-    return (
-      <AnalyticsPage
-        onBack={() => {
-          navigateToGallery();
-          showGallery();
-        }}
-      />
-    );
-  }
-
-  // Canvas view
   const isEmpty = nodes.length === 0;
 
   return (
@@ -336,12 +264,7 @@ function AppContent() {
       className="w-full h-full relative"
       style={{ background: "var(--bg-canvas)" }}
     >
-      <Toolbar
-        onBackToGallery={() => {
-          navigateToGallery();
-          showGallery();
-        }}
-      />
+      <Toolbar onBackToGallery={() => navigate("/")} />
       <Canvas />
       {isEmpty ? (
         <EmptyState />
@@ -360,15 +283,15 @@ function AppContent() {
             }}
           >
             <span className="text-xl">🌻</span>
-            <a
-              href="/"
+            <Link
+              to="/"
               className="text-2xl font-bold hover:underline"
               style={{
                 color: "var(--text-primary)",
               }}
             >
               diffusion.garden
-            </a>
+            </Link>
             <span className="text-xl">🌻</span>
           </div>
         </div>
@@ -377,11 +300,57 @@ function AppContent() {
   );
 }
 
+// Analytics route component
+function AnalyticsRoute() {
+  const navigate = useNavigate();
+
+  return <AnalyticsPage onBack={() => navigate("/")} />;
+}
+
+// Main app content with settings initialization
+function AppContent() {
+  const { setPrompts, setModels } = useCanvasStore();
+
+  // Fetch prompts and models at session start
+  useEffect(() => {
+    const fetchPrompts = async () => {
+      try {
+        const prompts = await settingsApi.getPrompts();
+        setPrompts(prompts);
+      } catch (error) {
+        console.error("Failed to fetch prompts:", error);
+      }
+    };
+
+    const fetchModels = async () => {
+      try {
+        const models = await settingsApi.getModels();
+        setModels(models);
+      } catch (error) {
+        console.error("Failed to fetch models:", error);
+      }
+    };
+
+    fetchPrompts();
+    fetchModels();
+  }, [setPrompts, setModels]);
+
+  return (
+    <Routes>
+      <Route path="/" element={<GalleryRoute />} />
+      <Route path="/c/:canvasId" element={<CanvasRoute />} />
+      <Route path="/analytics" element={<AnalyticsRoute />} />
+    </Routes>
+  );
+}
+
 function App() {
   return (
-    <ReactFlowProvider>
-      <AppContent />
-    </ReactFlowProvider>
+    <BrowserRouter>
+      <ReactFlowProvider>
+        <AppContent />
+      </ReactFlowProvider>
+    </BrowserRouter>
   );
 }
 

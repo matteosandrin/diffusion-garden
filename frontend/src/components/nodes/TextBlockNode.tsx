@@ -308,7 +308,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
         onModelChange: handleModelChange,
       }}
       run={{
-        disabled: !blockData.prompt?.trim() && !blockData.content.trim(),
+        disabled: !blockData.prompt?.trim(),
         title: "Run prompt",
         onRun: handleRun,
         onCancel: handleCancel,

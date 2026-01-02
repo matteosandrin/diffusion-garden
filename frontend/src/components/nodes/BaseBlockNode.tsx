@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { BlockStatus } from "../../types";
 import { useCanvasStore } from "../../store/canvasStore";
+import { jobsApi } from "../../api/client";
 import { BlockToolbarButton } from "../ui/BlockToolbarButton";
 import {
   AutoResizeTextarea,
@@ -61,6 +62,14 @@ export interface UIConfig {
   footerLeftContent?: ReactNode;
 }
 
+export interface JobRecoveryConfig {
+  jobId?: string;
+  onChunk?: (text: string) => void;
+  onDone: (result: { text?: string; imageId?: string; imageUrl?: string }) => void;
+  onError: (error: string) => void;
+  onCancelled?: () => void;
+}
+
 interface BaseBlockNodeProps {
   id: string;
   blockType: "text" | "image";
@@ -75,6 +84,7 @@ interface BaseBlockNodeProps {
   style?: StyleConfig;
   ui?: UIConfig;
   hasContent?: boolean;
+  jobRecovery?: JobRecoveryConfig;
 }
 
 export function BaseBlockNode({
@@ -91,6 +101,7 @@ export function BaseBlockNode({
   style,
   ui,
   hasContent = false,
+  jobRecovery,
 }: BaseBlockNodeProps) {
   const {
     onRun,
@@ -119,6 +130,62 @@ export function BaseBlockNode({
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const hasAutoRunTriggered = useRef(false);
   const promptTextareaRef = useRef<AutoResizeTextareaRef>(null);
+  const jobRecoveryAttemptedRef = useRef(false);
+  const recoveryCleanupRef = useRef<(() => void) | null>(null);
+
+  // Job recovery: check if there's a running job and subscribe to updates
+  useEffect(() => {
+    if (!jobRecovery?.jobId || jobRecoveryAttemptedRef.current) return;
+    jobRecoveryAttemptedRef.current = true;
+
+    const recoverJob = async () => {
+      try {
+        const job = await jobsApi.getJob(jobRecovery.jobId!);
+
+        if (job.status === "completed" && job.result) {
+          jobRecovery.onDone(job.result);
+          return;
+        }
+        if (job.status === "failed") {
+          jobRecovery.onError(job.error || "Job failed");
+          return;
+        }
+        if (job.status === "cancelled") {
+          jobRecovery.onCancelled?.();
+          return;
+        }
+
+        // Job is pending or running - subscribe to SSE stream
+        if (job.status === "pending" || job.status === "running") {
+          recoveryCleanupRef.current = jobsApi.subscribeToJob(jobRecovery.jobId!, {
+            onChunk: jobRecovery.onChunk,
+            onDone: jobRecovery.onDone,
+            onError: jobRecovery.onError,
+            onCancelled: jobRecovery.onCancelled,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to recover job:", err);
+        jobRecovery.onError(err instanceof Error ? err.message : "Failed to recover job");
+      }
+    };
+
+    recoverJob();
+
+    return () => {
+      if (recoveryCleanupRef.current) {
+        recoveryCleanupRef.current();
+        recoveryCleanupRef.current = null;
+      }
+    };
+  }, [jobRecovery]);
+
+  // Reset recovery flag when jobId changes
+  useEffect(() => {
+    if (!jobRecovery?.jobId) {
+      jobRecoveryAttemptedRef.current = false;
+    }
+  }, [jobRecovery?.jobId]);
 
   // Focus prompt textarea when block becomes selected
   useEffect(() => {

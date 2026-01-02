@@ -334,7 +334,7 @@ function TextBlockNodeComponent({ id, data, selected }: NodeProps) {
           rows={3}
           height="100%"
           style={{ color: "var(--text-primary)" }}
-          autoScrollToBottom={ blockData.status === "running" }
+          autoScrollToBottom={blockData.status === "running"}
         />
       </div>
     </BaseBlockNode>

@@ -32,6 +32,10 @@ async def _get_ipdata(ip_address: str) -> dict:
 
 async def _notify_pushover(ipdata: dict, path: str, referrer: str):
 
+    print("notify_pushover: ipdata", ipdata)
+    print("notify_pushover: path", path)
+    print("notify_pushover: referrer", referrer)
+
     message = (
         "Location: "
         + ipdata.get("emoji_flag", "")
@@ -87,6 +91,6 @@ async def notify(request: Request, body: NotifyRequest):
     if not ip_address:
         ip_address = request.client.host
     ipdata = await _get_ipdata(ip_address)
-    pushover_resp = await _notify_pushover(ipdata, body.path, body.referrer)
+    await _notify_pushover(ipdata, body.path, body.referrer)
 
     return {"status": "ok"}

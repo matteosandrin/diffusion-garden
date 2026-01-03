@@ -6,6 +6,7 @@ import {
   useNavigate,
   useParams,
   Link,
+  useLocation,
 } from "react-router-dom";
 import { ReactFlowProvider } from "@xyflow/react";
 import { Canvas } from "./components/Canvas";
@@ -14,7 +15,7 @@ import { EmptyState } from "./components/EmptyState";
 import { CanvasGallery } from "./components/CanvasGallery";
 import { AnalyticsPage } from "./components/AnalyticsPage";
 import { useCanvasStore } from "./store/canvasStore";
-import { canvasApi, settingsApi } from "./api/client";
+import { canvasApi, settingsApi, notifyApi } from "./api/client";
 import { useDebouncedCallback } from "./hooks/useDebouncedCallback";
 import type { CanvasSummary } from "./types";
 
@@ -307,6 +308,33 @@ function AnalyticsRoute() {
   return <AnalyticsPage onBack={() => navigate("/")} />;
 }
 
+function PageVisitTracker() {
+  const location = useLocation();
+  const getReferrer = () => {
+    const referrer = document.referrer;
+    if (
+      referrer.includes("diffusion.garden") ||
+      referrer.includes("localhost")
+    ) {
+      return null;
+    }
+    return referrer;
+  };
+  useEffect(() => {
+    const sendNotification = async () => {
+      try {
+        await notifyApi.notify(location.pathname, getReferrer());
+      } catch (error) {
+        // Silently fail - we don't want to interrupt user experience
+        console.error("Failed to send page visit notification:", error);
+      }
+    };
+    sendNotification();
+  }, [location.pathname]);
+
+  return null;
+}
+
 // Main app content with settings initialization
 function AppContent() {
   const { setPrompts, setModels } = useCanvasStore();
@@ -336,11 +364,14 @@ function AppContent() {
   }, [setPrompts, setModels]);
 
   return (
-    <Routes>
-      <Route path="/" element={<GalleryRoute />} />
-      <Route path="/c/:canvasId" element={<CanvasRoute />} />
-      <Route path="/analytics" element={<AnalyticsRoute />} />
-    </Routes>
+    <>
+      <PageVisitTracker />
+      <Routes>
+        <Route path="/" element={<GalleryRoute />} />
+        <Route path="/c/:canvasId" element={<CanvasRoute />} />
+        <Route path="/analytics" element={<AnalyticsRoute />} />
+      </Routes>
+    </>
   );
 }
 

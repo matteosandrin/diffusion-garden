@@ -14,14 +14,19 @@ interface AggregatedDay {
 const tdStyle = "border border-white px-3 py-2";
 
 export function AnalyticsPage({ onBack }: { onBack: () => void }) {
+  // Get local timezone as default
+  const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const [timezone, setTimezone] = useState<string>(localTimezone);
   const [stats, setStats] = useState<DailyStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const response = await analyticsApi.getDaily();
+        const response = await analyticsApi.getDaily(timezone);
         setStats(response.stats);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch stats");
@@ -30,12 +35,11 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
       }
     };
     fetchStats();
-  }, []);
+  }, [timezone]);
 
   // Aggregate stats by date
   const aggregatedByDate: AggregatedDay[] = [];
   const dateMap = new Map<string, AggregatedDay>();
-
   for (const stat of stats) {
     let day = dateMap.get(stat.date);
     if (!day) {
@@ -62,7 +66,6 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
     day.output_tokens += stat.output_tokens;
     day.total_tokens += stat.total_tokens;
   }
-
   // Calculate totals
   const totals = aggregatedByDate.reduce(
     (acc, day) => ({
@@ -82,14 +85,12 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
       total_tokens: 0,
     },
   );
-
   // Get max values for chart scaling
   const maxRequests = Math.max(
     ...aggregatedByDate.map((d) => d.total_requests),
     1,
   );
   const maxTokens = Math.max(...aggregatedByDate.map((d) => d.total_tokens), 1);
-
   // Reverse for chart (oldest to newest)
   const chartData = [...aggregatedByDate].reverse().slice(-14); // Last 14 days
 
@@ -107,12 +108,28 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div className="p-4 font-mono h-full overflow-auto">
-      <h1 className="text-2xl font-bold mb-4">Analytics</h1>
+    <div className="p-4 font-mono h-full overflow-auto flex flex-col gap-8">
+      <h1 className="text-2xl font-bold">Analytics</h1>
+      <div className="flex items-center">
+        <div className="flex items-center h-full px-2 border border-white">
+          <label htmlFor="timezone-select" className="text-sm">
+            Timezone:
+          </label>
+        </div>
+        <select
+          id="timezone-select"
+          value={timezone}
+          onChange={(e) => setTimezone(e.target.value)}
+          className="px-3 py-1 border border-white bg-black text-white font-mono text-sm"
+        >
+          <option value={localTimezone}>Local ({localTimezone})</option>
+          <option value="UTC">UTC</option>
+        </select>
+      </div>
 
       {/* Summary */}
-      <div style={{ marginBottom: 30 }}>
-        <h2>Summary</h2>
+      <div>
+        <h2 className="text-lg font-bold mb-2">Summary</h2>
         <p>
           Total Requests: <strong>{totals.total_requests}</strong> (Text:{" "}
           {totals.text_requests}, Image: {totals.image_requests})
@@ -126,8 +143,10 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
 
       {/* Chart */}
       {chartData.length > 0 && (
-        <div style={{ marginBottom: 30 }}>
-          <h2>Requests per Day (Last 14 Days)</h2>
+        <div>
+          <h2 className="text-lg font-bold mb-2">
+            Requests per Day (Last 14 Days)
+          </h2>
           <svg
             width="100%"
             height="200"
@@ -230,8 +249,10 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
 
       {/* Tokens Chart */}
       {chartData.length > 0 && (
-        <div style={{ marginBottom: 30 }}>
-          <h2>Tokens per Day (Last 14 Days)</h2>
+        <div>
+          <h2 className="text-lg font-bold mb-2">
+            Tokens per Day (Last 14 Days)
+          </h2>
           <svg
             width="100%"
             height="200"
@@ -303,56 +324,62 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
       )}
 
       {/* Table */}
-      <h2>Daily Breakdown</h2>
-      {aggregatedByDate.length === 0 ? (
-        <p>No data yet.</p>
-      ) : (
-        <table border={1} cellPadding={8} cellSpacing={0}>
-          <thead>
-            <tr>
-              <th className={tdStyle}>Date</th>
-              <th className={tdStyle}>Total Requests</th>
-              <th className={tdStyle}>Text Requests</th>
-              <th className={tdStyle}>Image Requests</th>
-              <th className={tdStyle}>Input Tokens</th>
-              <th className={tdStyle}>Output Tokens</th>
-              <th className={tdStyle}>Total Tokens</th>
-            </tr>
-          </thead>
-          <tbody>
-            {aggregatedByDate.map((day) => (
-              <tr key={day.date}>
-                <td className={tdStyle}>{day.date}</td>
-                <td className={tdStyle}>{day.total_requests}</td>
-                <td className={tdStyle}>{day.text_requests}</td>
-                <td className={tdStyle}>{day.image_requests}</td>
-                <td className={tdStyle}>{day.input_tokens.toLocaleString()}</td>
-                <td className={tdStyle}>
-                  {day.output_tokens.toLocaleString()}
-                </td>
-                <td className={tdStyle}>{day.total_tokens.toLocaleString()}</td>
+      <div>
+        <h2 className="text-lg font-bold mb-2">Daily Breakdown</h2>
+        {aggregatedByDate.length === 0 ? (
+          <p>No data yet.</p>
+        ) : (
+          <table border={1} cellPadding={8} cellSpacing={0}>
+            <thead>
+              <tr>
+                <th className={tdStyle}>Date</th>
+                <th className={tdStyle}>Total Requests</th>
+                <th className={tdStyle}>Text Requests</th>
+                <th className={tdStyle}>Image Requests</th>
+                <th className={tdStyle}>Input Tokens</th>
+                <th className={tdStyle}>Output Tokens</th>
+                <th className={tdStyle}>Total Tokens</th>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="font-bold">
-              <td className={tdStyle}>Total</td>
-              <td className={tdStyle}>{totals.total_requests}</td>
-              <td className={tdStyle}>{totals.text_requests}</td>
-              <td className={tdStyle}>{totals.image_requests}</td>
-              <td className={tdStyle}>
-                {totals.input_tokens.toLocaleString()}
-              </td>
-              <td className={tdStyle}>
-                {totals.output_tokens.toLocaleString()}
-              </td>
-              <td className={tdStyle}>
-                {totals.total_tokens.toLocaleString()}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {aggregatedByDate.map((day) => (
+                <tr key={day.date}>
+                  <td className={tdStyle}>{day.date}</td>
+                  <td className={tdStyle}>{day.total_requests}</td>
+                  <td className={tdStyle}>{day.text_requests}</td>
+                  <td className={tdStyle}>{day.image_requests}</td>
+                  <td className={tdStyle}>
+                    {day.input_tokens.toLocaleString()}
+                  </td>
+                  <td className={tdStyle}>
+                    {day.output_tokens.toLocaleString()}
+                  </td>
+                  <td className={tdStyle}>
+                    {day.total_tokens.toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="font-bold">
+                <td className={tdStyle}>Total</td>
+                <td className={tdStyle}>{totals.total_requests}</td>
+                <td className={tdStyle}>{totals.text_requests}</td>
+                <td className={tdStyle}>{totals.image_requests}</td>
+                <td className={tdStyle}>
+                  {totals.input_tokens.toLocaleString()}
+                </td>
+                <td className={tdStyle}>
+                  {totals.output_tokens.toLocaleString()}
+                </td>
+                <td className={tdStyle}>
+                  {totals.total_tokens.toLocaleString()}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        )}
+      </div>
     </div>
   );
 }

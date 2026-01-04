@@ -1,10 +1,11 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel
 from sqlalchemy import func, cast, Date, text
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import AnalyticsLog
+from ..rate_limiter import limiter
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
@@ -23,7 +24,9 @@ class DailyStatsResponse(BaseModel):
 
 
 @router.get("/daily", response_model=DailyStatsResponse)
+@limiter.limit("30/minute")
 async def get_daily_stats(
+    request: Request,
     timezone: Optional[str] = Query(
         None,
         description="Timezone name (e.g., 'America/New_York', 'Europe/London', 'UTC'). If not provided, uses UTC.",

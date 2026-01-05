@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from slowapi.errors import RateLimitExceeded
 from .database import init_db
@@ -11,9 +12,11 @@ from .routers import (
     jobs_router,
     analytics_router,
     notify_router,
+    update_router,
 )
 from .rate_limiter import limiter, rate_limit_exceeded_handler
 from .services import get_job_processor
+from .config import get_settings
 
 
 @asynccontextmanager
@@ -29,6 +32,8 @@ async def lifespan(app: FastAPI):
     # Stop the job processor gracefully
     await job_processor.stop()
 
+
+settings = get_settings()
 
 app = FastAPI(
     title="AI Blocks Canvas API",
@@ -58,12 +63,15 @@ app.add_middleware(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
+app.mount("/images", StaticFiles(directory=settings.images_dir), name="images")
+
 app.include_router(canvas_router, prefix="/api")
 app.include_router(images_router, prefix="/api")
 app.include_router(settings_router, prefix="/api")
 app.include_router(jobs_router, prefix="/api")
 app.include_router(analytics_router, prefix="/api")
 app.include_router(notify_router, prefix="/api")
+app.include_router(update_router, prefix="/api")
 
 
 @app.get("/")

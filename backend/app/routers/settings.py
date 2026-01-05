@@ -2,7 +2,7 @@ from typing import Dict, List, Literal, get_args
 from fastapi import APIRouter
 from pydantic import BaseModel
 from ..config import get_settings
-from ..prompts import prompts
+from ..prompts import get_prompt, available_prompts
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 settings = get_settings()
@@ -84,7 +84,7 @@ async def check_api_keys():
 
 @router.get("/prompts", response_model=Dict[str, str])
 async def get_prompts():
-    return prompts
+    return {key: get_prompt(key) for key in available_prompts()}
 
 
 @router.get("/models", response_model=ModelsResponse)

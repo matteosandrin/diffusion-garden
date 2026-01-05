@@ -53,6 +53,7 @@ prompts = {
     "image_to_json": image_to_json_prompt,
 }
 
+
 def _generate_prompt_with_dynamic_context(original_prompt):
     date = datetime.now().strftime("%B %d, %Y")
     # Select a dynamic phrase and inject the current date
@@ -60,19 +61,22 @@ def _generate_prompt_with_dynamic_context(original_prompt):
         "Generated on {date} as part of ongoing refinement.",
         "Refinement session on {date}, iteration process.",
         "As of {date}, this is the current prompt iteration.",
-        "On {date}, this prompt was generated for refinement purposes."
+        "On {date}, this prompt was generated for refinement purposes.",
     ]
     random_phrase = secrets.choice(phrases).format(date=date)
     modified_prompt = f"{random_phrase}\n\n{original_prompt}"
     return modified_prompt
+
 
 def get_prompt(key: str):
     if key not in prompts:
         raise ValueError(f"Prompt key '{key}' not found")
     return prompts[key]
 
+
 def get_text_system_prompt():
     return _generate_prompt_with_dynamic_context(text_block_prompt)
+
 
 def available_prompts():
     return list(prompts.keys())

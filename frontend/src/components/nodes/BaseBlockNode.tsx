@@ -296,7 +296,7 @@ export function BaseBlockNode({
       `}</style>
       {/* Toolbar - slides down when selected */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 bottom-full flex items-center gap-1 px-2 py-1 rounded-lg z-10 transition-all duration-300 ease-out"
+        className="absolute left-1/2 -translate-x-1/2 bottom-full flex items-center gap-1 px-2 py-1 rounded-lg z-10 transition-all duration-100 ease-out"
         style={{
           background: "var(--bg-card)",
           border: "1px solid var(--border-subtle)",
@@ -460,7 +460,7 @@ export function BaseBlockNode({
       {/* Prompt bubble - slides out from under the block when selected */}
       {shouldShowPrompt && (
         <div
-          className="nowheel nodrag absolute left-0 top-full -mt-8 w-full px-3 pt-8 pb-2 rounded-b-xl transition-all duration-300 ease-out"
+          className="nowheel nodrag absolute left-0 top-full -mt-8 w-full px-3 pt-8 pb-2 rounded-b-xl transition-all duration-100 ease-out"
           style={{
             background: "var(--bg-card)",
             border: "1px solid var(--border-subtle)",

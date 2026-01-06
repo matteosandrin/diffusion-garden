@@ -8,13 +8,18 @@ _ENV_FILE = _THIS_DIR.parent / ".env"
 
 
 class Settings(BaseSettings):
+    database_url: str  # required
+    images_dir: str  # required
+    r2_url: str  # required
+    r2_public_url: str  # required
+    r2_bucket: str  # required
+    r2_access_key: str  # required
+    r2_secret_key: str  # required
     openai_api_key: str = ""
     google_api_key: str = ""
     ipdata_api_key: str = ""
     pushover_token: str = ""
     pushover_user: str = ""
-    database_url: str  # Required - will raise if DATABASE_URL not set
-    images_dir: str  # Required - will raise if IMAGES_DIR not set
     debug: bool = True
 
     class Config:

@@ -14,14 +14,6 @@ ALLOWED_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 
-class ImageCacheMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        response = await call_next(request)
-        if request.url.path.startswith("/images/") and response.status_code == 200:
-            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
-        return response
-
-
 @router.post("/upload")
 @limiter.limit("30/minute")
 async def upload_image(

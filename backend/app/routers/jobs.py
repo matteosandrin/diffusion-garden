@@ -111,7 +111,9 @@ async def create_image_job(
 
 
 @router.get("/{job_id}/stream")
+@limiter.limit("60/minute")
 async def stream_job(
+    request: Request,
     job_id: str,
     db: Session = Depends(get_db),
 ):
@@ -179,7 +181,9 @@ async def subscribe_to_job_updates(job_id: str):
 
 
 @router.post("/{job_id}/cancel")
+@limiter.limit("30/minute")
 async def cancel_job(
+    request: Request,
     job_id: str,
     db: Session = Depends(get_db),
 ):
@@ -201,7 +205,9 @@ async def cancel_job(
 
 
 @router.get("/block/{block_id}", response_model=list[JobResponse])
+@limiter.limit("60/minute")
 async def get_jobs_for_block(
+    request: Request,
     block_id: str,
     db: Session = Depends(get_db),
 ):
@@ -228,7 +234,9 @@ async def get_jobs_for_block(
 
 
 @router.get("/{job_id}", response_model=JobResponse)
+@limiter.limit("120/minute")
 async def get_job(
+    request: Request,
     job_id: str,
     db: Session = Depends(get_db),
 ):

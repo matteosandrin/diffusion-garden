@@ -42,10 +42,9 @@ async def upload_image_and_record(content: bytes, content_type: str, db: Session
 
 
 def delete_image(image_filename: str, db: Session):
-    image_id = image_filename.split(".")[0]
-    image_record = db.query(Image).filter(Image.id == image_id).first()
-    if not image_record:
+    record = db.query(Image).filter(Image.filename == image_filename).first()
+    if not record:
         return
     r2_client.delete_object(Bucket=settings.r2_bucket, Key=image_filename)
-    db.delete(image_record)
+    db.delete(record)
     db.commit()

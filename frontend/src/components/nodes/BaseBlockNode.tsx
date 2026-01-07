@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import type { BlockStatus } from "../../types";
 import { useCanvasStore } from "../../store/canvasStore";
-import { jobsApi, addApiHost } from "../../api/client";
+import { jobsApi } from "../../api/client";
 import { BlockToolbarButton } from "../ui/BlockToolbarButton";
 import {
   AutoResizeTextarea,
@@ -157,9 +157,6 @@ export function BaseBlockNode({
         const job = await jobsApi.getJob(jobRecovery.jobId!);
 
         if (job.status === "completed" && job.result) {
-          if (job.result.imageUrl) {
-            job.result.imageUrl = addApiHost(job.result.imageUrl) ?? undefined;
-          }
           jobRecovery.onDone(job.result);
           return;
         }

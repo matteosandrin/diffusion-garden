@@ -7,7 +7,6 @@ import type {
   Prompts,
   InputContentItem,
   ModelsConfig,
-  AppNode,
   CreateJobResponse,
   Job,
 } from "../types";

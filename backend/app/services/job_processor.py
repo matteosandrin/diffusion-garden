@@ -282,7 +282,7 @@ class JobProcessor:
             job.status = "completed"
             job.result_data = {
                 "imageId": image_id,
-                "imageUrl": f"/api/images/{image_id}",
+                "imageUrl": f"/images/{filename}",
             }
             db.commit()
             self._broadcast(job_id, JobEvent("done", {"result": job.result_data}))

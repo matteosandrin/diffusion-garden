@@ -59,9 +59,7 @@ function AnimatedEdgeComponent({
           >
             <path
               d="M2,2 L10,6 L2,10 L4,6 Z"
-              fill={
-                selected ? "var(--accent-primary)" : "#5a5a5a"
-              }
+              fill={selected ? "var(--accent-primary)" : "#5a5a5a"}
               style={{ transition: "fill 0.2s ease" }}
             />
           </marker>

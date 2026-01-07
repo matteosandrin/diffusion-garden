@@ -20,9 +20,11 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
   const [stats, setStats] = useState<DailyStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [notificationsDisabled, setNotificationsDisabled] = useState<boolean>(() => {
-    return localStorage.getItem("disableNotifications") === "true";
-  });
+  const [notificationsDisabled, setNotificationsDisabled] = useState<boolean>(
+    () => {
+      return localStorage.getItem("disableNotifications") === "true";
+    },
+  );
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -149,7 +151,9 @@ export function AnalyticsPage({ onBack }: { onBack: () => void }) {
               : "Notifications enabled - click to disable"
           }
         >
-          {notificationsDisabled ? "🔕 Notifications Off" : "🔔 Notifications On"}
+          {notificationsDisabled
+            ? "🔕 Notifications Off"
+            : "🔔 Notifications On"}
         </button>
       </div>
 

@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File, Depends, Request
-from fastapi.responses import FileResponse, Response
-from sqlalchemy.orm import Session
 import uuid
 import os
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends, Request
+from sqlalchemy.orm import Session
+from starlette.middleware.base import BaseHTTPMiddleware
 from ..database import get_db
 from ..models import Image
 from ..config import get_settings
@@ -13,6 +13,14 @@ settings = get_settings()
 
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+
+
+class ImageCacheMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/images/") and response.status_code == 200:
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
 
 
 @router.post("/upload")

@@ -36,11 +36,76 @@ function LoadingSpinner() {
   );
 }
 
+const saveCanvasIdToLocalStorage = (canvasId: string) => {
+  localStorage.setItem("lastCanvasId", canvasId);
+};
+
+const getCanvasIdFromLocalStorage = (): string | null => {
+  return localStorage.getItem("lastCanvasId");
+};
+
+function RootRoute() {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const redirectToCanvas = async () => {
+      try {
+        const savedCanvasId = getCanvasIdFromLocalStorage();
+        if (savedCanvasId) {
+          try {
+            await canvasApi.load(savedCanvasId);
+            navigate(`/c/${savedCanvasId}`);
+            return;
+          } catch (error) {
+            localStorage.removeItem("lastCanvasId");
+          }
+        }
+        const canvasList = await canvasApi.list();
+        if (canvasList.length > 0) {
+          const sortedCanvases = [...canvasList].sort(
+            (a, b) =>
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+          );
+          const latestCanvasId = sortedCanvases[0].id;
+          saveCanvasIdToLocalStorage(latestCanvasId);
+          navigate(`/c/${latestCanvasId}`);
+        } else {
+          navigate("/gallery");
+        }
+      } catch (error) {
+        console.error("Failed to redirect to canvas:", error);
+        navigate("/gallery");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    redirectToCanvas();
+  }, [navigate]);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  return null;
+}
+
 function GalleryRoute() {
   const navigate = useNavigate();
   const [canvases, setCanvases] = useState<CanvasSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { setCanvasId, loadCanvas } = useCanvasStore();
+
+  const handleCreateNew = useCallback(async () => {
+    try {
+      const { id: newId } = await canvasApi.create();
+      setCanvasId(newId);
+      loadCanvas([], [], { x: 0, y: 0, zoom: 1 });
+      navigate(`/c/${newId}`);
+    } catch (error) {
+      console.error("Failed to create canvas:", error);
+    }
+  }, [navigate, setCanvasId, loadCanvas]);
 
   useEffect(() => {
     const fetchCanvases = async () => {
@@ -66,7 +131,7 @@ function GalleryRoute() {
     };
 
     fetchCanvases();
-  }, [navigate, setCanvasId, loadCanvas]);
+  }, [handleCreateNew]);
 
   const handleSelectCanvas = async (id: string) => {
     try {
@@ -78,17 +143,6 @@ function GalleryRoute() {
       navigate(`/c/${id}`);
     } catch (error) {
       console.error("Failed to load canvas:", error);
-    }
-  };
-
-  const handleCreateNew = async () => {
-    try {
-      const { id: newId } = await canvasApi.create();
-      setCanvasId(newId);
-      loadCanvas([], [], { x: 0, y: 0, zoom: 1 });
-      navigate(`/c/${newId}`);
-    } catch (error) {
-      console.error("Failed to create canvas:", error);
     }
   };
 
@@ -162,6 +216,7 @@ function CanvasRoute() {
         const canvas = await canvasApi.load(urlCanvasId);
         setCanvasId(urlCanvasId);
         loadCanvas(canvas.nodes as any, canvas.edges as any, canvas.viewport);
+        saveCanvasIdToLocalStorage(urlCanvasId);
         setIsLoading(false);
       } catch (error) {
         console.log("Canvas from URL not found");
@@ -265,7 +320,7 @@ function CanvasRoute() {
       className="w-full h-full relative"
       style={{ background: "var(--bg-canvas)" }}
     >
-      <Toolbar onBackToGallery={() => navigate("/")} />
+      <Toolbar onBackToGallery={() => navigate("/gallery")} />
       <Canvas />
       {isEmpty ? (
         <EmptyState />
@@ -285,7 +340,7 @@ function CanvasRoute() {
           >
             <span className="text-xl">🌻</span>
             <Link
-              to="/"
+              to="/gallery"
               className="text-2xl font-bold hover:underline"
               style={{
                 color: "var(--text-primary)",
@@ -386,7 +441,8 @@ function AppContent() {
     <>
       <PageVisitTracker />
       <Routes>
-        <Route path="/" element={<GalleryRoute />} />
+        <Route path="/" element={<RootRoute />} />
+        <Route path="/gallery" element={<GalleryRoute />} />
         <Route path="/c/:canvasId" element={<CanvasRoute />} />
         <Route path="/analytics" element={<AnalyticsRoute />} />
       </Routes>

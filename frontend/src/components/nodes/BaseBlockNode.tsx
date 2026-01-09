@@ -258,7 +258,7 @@ export function BaseBlockNode({
     } else {
       onRun();
     }
-  }, [id, onRun, selectedNodeIds, requestRunForNodes]);
+  }, [onRun, selectedNodeIds, requestRunForNodes, isMultiSelect]);
 
   const getBoxShadow = () => {
     return "var(--shadow-card)";

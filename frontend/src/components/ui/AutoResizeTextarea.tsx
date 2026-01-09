@@ -54,20 +54,24 @@ export const AutoResizeTextarea = forwardRef<
 
   // Local state to prevent cursor reset on typing
   const [localValue, setLocalValue] = useState(value);
+  const [prevPropValue, setPrevPropValue] = useState(value);
 
-  // Sync from external value to local state (when value changes externally)
+  // Sync external value during render
+  if (prevPropValue !== value) {
+    setPrevPropValue(value);
+    setLocalValue(value);
+  }
+
+  // Auto-scroll to bottom when value changes externally and feature is enabled
   useEffect(() => {
     const valueChangedExternally = previousValueRef.current !== value;
-    const previousValue = previousValueRef.current;
+    const prevValue = previousValueRef.current;
     previousValueRef.current = value;
-    setLocalValue(value);
 
-    // Reset interaction flag when content is cleared (new run starting)
-    if (valueChangedExternally && previousValue && !value) {
+    if (valueChangedExternally && prevValue && !value) {
       userHasInteractedRef.current = false;
     }
 
-    // Auto-scroll to bottom when value changes externally and feature is enabled
     if (
       autoScrollToBottom &&
       valueChangedExternally &&

@@ -135,7 +135,7 @@ function GalleryRoute() {
       useCanvasStore.getState().setCanvasId(id);
       useCanvasStore
         .getState()
-        .loadCanvas(canvas.nodes as any, canvas.edges as any, canvas.viewport);
+        .loadCanvas(canvas.nodes, canvas.edges, canvas.viewport);
       navigate(`/c/${id}`);
     } catch (error) {
       console.error("Failed to load canvas:", error);
@@ -211,10 +211,10 @@ function CanvasRoute() {
       try {
         const canvas = await canvasApi.load(urlCanvasId);
         setCanvasId(urlCanvasId);
-        loadCanvas(canvas.nodes as any, canvas.edges as any, canvas.viewport);
+        loadCanvas(canvas.nodes, canvas.edges, canvas.viewport);
         saveCanvasIdToLocalStorage(urlCanvasId);
         setIsLoading(false);
-      } catch (error) {
+      } catch {
         console.log("Canvas from URL not found");
         navigate("/");
       }
@@ -224,27 +224,23 @@ function CanvasRoute() {
   }, [urlCanvasId, navigate, setCanvasId, loadCanvas, canvasId, isLoading]);
 
   // Auto-save with debounce
-  const saveCanvas = useDebouncedCallback(
-    async () => {
-      if (!canvasId) return;
+  const saveCanvas = useDebouncedCallback(async () => {
+    if (!canvasId) return;
 
-      setSaving(true);
-      try {
-        await canvasApi.save(canvasId, {
-          nodes,
-          edges,
-          viewport,
-        });
-        setLastSaved(new Date());
-      } catch (error) {
-        console.error("Failed to save canvas:", error);
-      } finally {
-        setSaving(false);
-      }
-    },
-    1000,
-    [canvasId, nodes, edges, viewport],
-  );
+    setSaving(true);
+    try {
+      await canvasApi.save(canvasId, {
+        nodes,
+        edges,
+        viewport,
+      });
+      setLastSaved(new Date());
+    } catch (error) {
+      console.error("Failed to save canvas:", error);
+    } finally {
+      setSaving(false);
+    }
+  }, 1000);
 
   // Save on changes
   useEffect(() => {

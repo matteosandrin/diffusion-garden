@@ -239,7 +239,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
       sourceHandle: null,
       targetHandle: null,
     });
-  }, [id, blockData.imageUrl, addTextBlock]);
+  }, [id, blockData.imageUrl, addTextBlock, models.textModels]);
 
   const handleVariations = useCallback(() => {
     if (!promptFromInput) return;

@@ -69,7 +69,11 @@ class JobProcessor:
         for event in self._cancellation_events.values():
             event.set()
 
-        for task in [self._processor_task, self._subscriber_cleanup_task, self._job_retention_task]:
+        for task in [
+            self._processor_task,
+            self._subscriber_cleanup_task,
+            self._job_retention_task,
+        ]:
             if task:
                 task.cancel()
                 try:
@@ -90,7 +94,9 @@ class JobProcessor:
         """
         if job_id not in self._subscribers:
             self._subscribers[job_id] = set()
-        subscriber_queue: asyncio.Queue = asyncio.Queue(maxsize=SUBSCRIBER_QUEUE_MAXSIZE)
+        subscriber_queue: asyncio.Queue = asyncio.Queue(
+            maxsize=SUBSCRIBER_QUEUE_MAXSIZE
+        )
         self._subscribers[job_id].add(subscriber_queue)
         return subscriber_queue
 
@@ -305,7 +311,9 @@ class JobProcessor:
                             if job_id in self._subscribers:
                                 num_subscribers = len(self._subscribers[job_id])
                                 del self._subscribers[job_id]
-                                print(f"Cleaned up {num_subscribers} subscriber(s) for completed job {job_id}")
+                                print(
+                                    f"Cleaned up {num_subscribers} subscriber(s) for completed job {job_id}"
+                                )
 
                 finally:
                     db.close()
@@ -337,7 +345,9 @@ class JobProcessor:
                     db.commit()
 
                     if deleted_count > 0:
-                        print(f"Deleted {deleted_count} old job(s) older than {JOB_RETENTION_DAYS} days")
+                        print(
+                            f"Deleted {deleted_count} old job(s) older than {JOB_RETENTION_DAYS} days"
+                        )
 
                 finally:
                     db.close()

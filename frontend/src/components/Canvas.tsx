@@ -232,7 +232,7 @@ export function Canvas() {
       setEdgeDropMenu(null);
       setPendingEdge(null);
     }
-  }, [edgeDropMenu, addTextBlockWithEdge, setEdgeDropMenu]);
+  }, [edgeDropMenu, addTextBlockWithEdge, setEdgeDropMenu, defaultBlockSize]);
 
   const handleEdgeDropAddImageBlock = useCallback(() => {
     if (edgeDropMenu) {
@@ -244,7 +244,7 @@ export function Canvas() {
       setEdgeDropMenu(null);
       setPendingEdge(null);
     }
-  }, [edgeDropMenu, addImageBlockWithEdge, setEdgeDropMenu]);
+  }, [edgeDropMenu, addImageBlockWithEdge, setEdgeDropMenu, defaultBlockSize]);
 
   const defaultEdgeOptions = {
     type: "animated",

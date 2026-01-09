@@ -58,7 +58,7 @@ function RootRoute() {
             await canvasApi.load(savedCanvasId);
             navigate(`/c/${savedCanvasId}`);
             return;
-          } catch (error) {
+          } catch {
             localStorage.removeItem("lastCanvasId");
           }
         }

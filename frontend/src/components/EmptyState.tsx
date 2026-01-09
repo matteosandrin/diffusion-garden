@@ -39,6 +39,22 @@ export function EmptyState() {
           evolve your thoughts.
         </p>
 
+        <p
+          className="text-sm mb-8 max-w-xs mx-auto"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          Feeling lost?{" "}
+          <a
+            href="https://www.youtube.com/watch?v=ruvm8wIi_I0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:underline"
+          >
+            Watch the demo video
+          </a>{" "}
+          for a quick introduction to the canvas.
+        </p>
+
         {/* Quick actions */}
         <div className="flex items-center justify-center gap-3">
           <button

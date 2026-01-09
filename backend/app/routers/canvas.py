@@ -7,6 +7,7 @@ from ..database import get_db
 from ..models import Canvas, Image
 from ..config import get_settings
 from ..rate_limiter import limiter
+from sqlalchemy import func
 
 router = APIRouter(prefix="/canvas", tags=["canvas"])
 
@@ -84,7 +85,12 @@ def extract_thumbnail_url(nodes: list[dict[str, Any]] | None) -> str | None:
 @limiter.limit("60/minute")
 async def list_canvases(request: Request, db: Session = Depends(get_db)):
     """List all canvases with thumbnails."""
-    canvases = db.query(Canvas).order_by(Canvas.updated_at.desc()).all()
+    canvases = (
+        db.query(Canvas)
+        .filter(func.json_array_length(Canvas.nodes) > 0)
+        .order_by(Canvas.created_at.desc())
+        .all()
+    )
 
     return [
         CanvasSummary(

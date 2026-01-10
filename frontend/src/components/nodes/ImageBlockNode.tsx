@@ -378,7 +378,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
   const handleDownload = useCallback(async () => {
     if (!blockData.imageUrl) return;
 
-    // Helper to trigger browser download from a blob/URL and filename
     const triggerDownload = (url: string, filename: string) => {
       const link = document.createElement("a");
       link.href = url;
@@ -388,8 +387,6 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     };
-
-    // Helper to figure out filename from a URL
     const getFilenameFromUrl = (url: string, fallback: string) => {
       try {
         if (url.startsWith("http://") || url.startsWith("https://")) {
@@ -408,7 +405,7 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
 
     try {
       let filename = `image-${id}.png`;
-      // Handle base64 data URLs separately
+      // base64 data URL
       if (blockData.imageUrl.startsWith("data:")) {
         const response = await fetch(blockData.imageUrl);
         const blob = await response.blob();
@@ -416,11 +413,9 @@ function ImageBlockNodeComponent({ id, data, selected }: NodeProps) {
         triggerDownload(url, filename);
         return;
       }
-
-      // Fetch non-data image and download w/ extracted or fallback filename
       const response = await fetch(blockData.imageUrl, {
         mode: "cors",
-        credentials: "include",
+        credentials: "omit",
       });
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);

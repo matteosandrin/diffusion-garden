@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, UTC
 import io
 import uuid
 import boto3
@@ -25,7 +26,12 @@ async def upload_image_and_record(content: bytes, content_type: str, db: Session
         Fileobj=io.BytesIO(content),
         Bucket=settings.r2_bucket,
         Key=r2_key,
-        ExtraArgs={"ContentType": content_type},
+        ExtraArgs={
+            "ContentType": content_type,
+            # images are immutable, so we can cache them for a year
+            "CacheControl": "public, max-age=31536000",
+            "Expires": datetime.now(UTC) + timedelta(days=365),
+        },
     )
     image_url = f"{settings.r2_public_url}/{r2_key}"
     # create image record in db

@@ -313,17 +313,21 @@ export function Canvas() {
           size={1}
           color="#888888"
         />
-        <Controls
-          showZoom
-          showFitView
-          showInteractive={false}
-          position="bottom-left"
-        />
-        <MiniMap
-          nodeColor={getNodeColor}
-          maskColor="rgba(0, 0, 0, 0.8)"
-          position="bottom-right"
-        />
+        {!isMobile && (
+          <Controls
+            showZoom
+            showFitView
+            showInteractive={false}
+            position="bottom-left"
+          />
+        )}
+        {!isMobile && (
+          <MiniMap
+            nodeColor={getNodeColor}
+              maskColor="rgba(0, 0, 0, 0.8)"
+              position="bottom-right"
+            />
+        )}
       </ReactFlow>
 
       {contextMenu && (

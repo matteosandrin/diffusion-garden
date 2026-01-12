@@ -47,6 +47,7 @@ const getCanvasIdFromLocalStorage = (): string | null => {
 function RootRoute() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const { setCanvasId, loadCanvas } = useCanvasStore();
 
   useEffect(() => {
     const redirectToCanvas = async () => {
@@ -61,18 +62,12 @@ function RootRoute() {
             localStorage.removeItem("lastCanvasId");
           }
         }
-        const canvasList = await canvasApi.list();
-        if (canvasList.length > 0) {
-          const sortedCanvases = [...canvasList].sort(
-            (a, b) =>
-              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-          );
-          const latestCanvasId = sortedCanvases[0].id;
-          saveCanvasIdToLocalStorage(latestCanvasId);
-          navigate(`/c/${latestCanvasId}`);
-        } else {
-          navigate("/gallery");
-        }
+        // No saved canvas, create a new one
+        const { id: newId } = await canvasApi.create();
+        setCanvasId(newId);
+        saveCanvasIdToLocalStorage(newId);
+        loadCanvas([], [], { x: 0, y: 0, zoom: 1 });
+        navigate(`/c/${newId}`);
       } catch (error) {
         console.error("Failed to redirect to canvas:", error);
         navigate("/gallery");
@@ -81,7 +76,7 @@ function RootRoute() {
       }
     };
     redirectToCanvas();
-  }, [navigate]);
+  }, [navigate, setCanvasId, loadCanvas]);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -100,6 +95,7 @@ function GalleryRoute() {
     try {
       const { id: newId } = await canvasApi.create();
       setCanvasId(newId);
+      saveCanvasIdToLocalStorage(newId);
       loadCanvas([], [], { x: 0, y: 0, zoom: 1 });
       navigate(`/c/${newId}`);
     } catch (error) {

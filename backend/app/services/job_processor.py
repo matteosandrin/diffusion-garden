@@ -5,6 +5,7 @@ import time
 import uuid
 from typing import Dict, Set
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
@@ -19,6 +20,10 @@ from ..routers.settings import DEFAULT_TEXT_MODEL, DEFAULT_IMAGE_MODEL
 settings = get_settings()
 
 SSE_THROTTLE_INTERVAL = 0.150  # 150ms
+SUBSCRIBER_CLEANUP_INTERVAL = 300  # 5 minutes
+JOB_RETENTION_INTERVAL = 3600  # 1 hour
+JOB_RETENTION_DAYS = 7  # Keep jobs for 7 days
+SUBSCRIBER_QUEUE_MAXSIZE = 100  # Max events per subscriber queue
 
 
 @dataclass
@@ -41,6 +46,8 @@ class JobProcessor:
 
         self._cancellation_events: Dict[str, asyncio.Event] = {}
         self._processor_task: asyncio.Task | None = None
+        self._subscriber_cleanup_task: asyncio.Task | None = None
+        self._job_retention_task: asyncio.Task | None = None
 
         self._running = False
 
@@ -53,18 +60,23 @@ class JobProcessor:
         self._running = True
         self._ai_service = get_ai_service()
         self._processor_task = asyncio.create_task(self._process_jobs())
+        self._subscriber_cleanup_task = asyncio.create_task(self._cleanup_subscribers())
+        self._job_retention_task = asyncio.create_task(self._cleanup_old_jobs())
         print("Job processor started")
 
     async def stop(self):
         self._running = False
         for event in self._cancellation_events.values():
             event.set()
-        if self._processor_task:
-            self._processor_task.cancel()
-            try:
-                await self._processor_task
-            except asyncio.CancelledError:
-                pass
+
+        for task in [self._processor_task, self._subscriber_cleanup_task, self._job_retention_task]:
+            if task:
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+
         print("Job processor stopped")
 
     def enqueue_job(self, job_id: str):
@@ -78,7 +90,7 @@ class JobProcessor:
         """
         if job_id not in self._subscribers:
             self._subscribers[job_id] = set()
-        subscriber_queue: asyncio.Queue = asyncio.Queue()
+        subscriber_queue: asyncio.Queue = asyncio.Queue(maxsize=SUBSCRIBER_QUEUE_MAXSIZE)
         self._subscribers[job_id].add(subscriber_queue)
         return subscriber_queue
 
@@ -274,6 +286,67 @@ class JobProcessor:
             job.error = str(e)
             db.commit()
             self._broadcast(job_id, JobEvent("error", {"error": str(e)}))
+
+    async def _cleanup_subscribers(self):
+        """Periodically clean up subscribers for completed jobs."""
+        while self._running:
+            try:
+                await asyncio.sleep(SUBSCRIBER_CLEANUP_INTERVAL)
+                db: Session = SessionLocal()
+                try:
+                    # Get all job IDs that have subscribers
+                    job_ids_with_subscribers = list(self._subscribers.keys())
+
+                    for job_id in job_ids_with_subscribers:
+                        # Check if job is completed, failed, or cancelled
+                        job = db.query(Job).filter(Job.id == job_id).first()
+                        if job and job.status in ["completed", "failed", "cancelled"]:
+                            # Remove subscribers for this completed job
+                            if job_id in self._subscribers:
+                                num_subscribers = len(self._subscribers[job_id])
+                                del self._subscribers[job_id]
+                                print(f"Cleaned up {num_subscribers} subscriber(s) for completed job {job_id}")
+
+                finally:
+                    db.close()
+
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                print(f"Error in subscriber cleanup: {e}")
+                await asyncio.sleep(60)  # Wait before retrying
+
+    async def _cleanup_old_jobs(self):
+        """Periodically delete old completed/failed jobs from the database."""
+        while self._running:
+            try:
+                await asyncio.sleep(JOB_RETENTION_INTERVAL)
+                db: Session = SessionLocal()
+                try:
+                    # Calculate cutoff date
+                    cutoff_date = datetime.now() - timedelta(days=JOB_RETENTION_DAYS)
+
+                    # Delete old completed and failed jobs
+                    deleted_count = (
+                        db.query(Job)
+                        .filter(Job.status.in_(["completed", "failed", "cancelled"]))
+                        .filter(Job.updated_at < cutoff_date)
+                        .delete(synchronize_session=False)
+                    )
+
+                    db.commit()
+
+                    if deleted_count > 0:
+                        print(f"Deleted {deleted_count} old job(s) older than {JOB_RETENTION_DAYS} days")
+
+                finally:
+                    db.close()
+
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                print(f"Error in job retention cleanup: {e}")
+                await asyncio.sleep(300)  # Wait 5 minutes before retrying
 
 
 # Singleton instance

@@ -26,41 +26,34 @@ npm install
 npm run dev
 ```
 
-## Deployment to Railway
+## Deployment
 
-This app is configured for Railway deployment with two separate services.
+### Frontend (GitHub Pages)
 
-### 1. Create Railway Project
+The frontend is automatically deployed to GitHub Pages via a GitHub Actions workflow on every push to `master` that modifies files in `frontend/`.
+
+**Setup:**
+1. In your repo settings, enable GitHub Pages with **Source** set to **GitHub Actions**
+2. Add a repository secret `VITE_API_HOST` with the backend API URL (e.g., `https://your-backend-domain.railway.app/api`)
+3. If using a custom domain, configure it in the Pages settings
+
+The workflow (`.github/workflows/deploy-frontend.yml`) builds the Vite app and copies `index.html` to `404.html` for SPA routing.
+
+### Backend (Railway)
 
 1. Go to [railway.app](https://railway.app) and create a new empty project
 2. Add a PostgreSQL database: **New** → **Database** → **PostgreSQL**
-
-### 2. Deploy Backend
-
-1. **New** → **GitHub Repo** → Select this repo
-2. Set **Root Directory** to `backend`
-3. Add environment variables:
+3. **New** → **GitHub Repo** → Select this repo
+4. Set **Root Directory** to `backend`
+5. Add environment variables:
    - `OPENAI_API_KEY` - Your OpenAI API key
    - `GOOGLE_API_KEY` - Your Google AI API key
    - `IMAGES_DIR` - `/app/images`
-   - `FRONTEND_URL` - (add after frontend is deployed)
+   - `FRONTEND_URL` - Your GitHub Pages URL (for CORS)
    - `DEBUG` - `false`
-4. Link the PostgreSQL service (auto-injects `DATABASE_URL`)
-5. Add a **Volume** mounted at `/app/images` for image storage
-6. Generate a domain
-
-### 3. Deploy Frontend
-
-1. **New** → **GitHub Repo** → Select the same repo
-2. Set **Root Directory** to `frontend`
-3. Add environment variables:
-   - `VITE_API_HOST` - `https://your-backend-domain.railway.app/api`
-4. Generate a domain
-
-### 4. Finalize
-
-1. Go back to the backend service
-2. Add `FRONTEND_URL` environment variable with the frontend domain (e.g., `https://your-frontend-domain.railway.app`)
+6. Link the PostgreSQL service (auto-injects `DATABASE_URL`)
+7. Add a **Volume** mounted at `/app/images` for image storage
+8. Generate a domain
 
 ### Environment Variables Reference
 
@@ -70,6 +63,6 @@ This app is configured for Railway deployment with two separate services.
 | `OPENAI_API_KEY` | Backend | OpenAI API key |
 | `GOOGLE_API_KEY` | Backend | Google AI API key |
 | `IMAGES_DIR` | Backend | Path to image storage directory |
-| `FRONTEND_URL` | Backend | Frontend domain for CORS |
+| `FRONTEND_URL` | Backend | GitHub Pages URL for CORS |
 | `DEBUG` | Backend | Set to `false` for production |
-| `VITE_API_HOST` | Frontend | Backend API URL |
+| `VITE_API_HOST` | Frontend | Backend API URL (set as GitHub repo secret) |
